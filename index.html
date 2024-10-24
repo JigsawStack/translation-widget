@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Widget Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        nav {
+            margin-bottom: 20px;
+        }
+
+        nav a {
+            margin-right: 20px;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .article {
+            padding: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .product {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .product-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Our Website</h1>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="article-grid">
+            <article class="article">
+                <h2>Latest News</h2>
+                <p>We're excited to announce the launch of our new product line. Our team has been working tirelessly to bring you the best possible experience.</p>
+                <button>Read More</button>
+            </article>
+
+            <article class="article">
+                <h2>Company Updates</h2>
+                <p>Our company has expanded to three new locations this year. We're now serving customers in over 50 countries worldwide.</p>
+                <button>Learn More</button>
+            </article>
+
+            <article class="article">
+                <h2>Customer Stories</h2>
+                <p>Hear from our satisfied customers about how our products have transformed their businesses and improved efficiency.</p>
+                <button>View Stories</button>
+            </article>
+        </section>
+
+        <section class="product">
+            <h2>Featured Product</h2>
+            <p>Experience the next generation of innovation with our latest product. Designed with you in mind, it offers unparalleled performance and reliability.</p>
+            
+            <div class="product-features">
+                <div>
+                    <h3>Key Features</h3>
+                    <ul>
+                        <li>Advanced Technology</li>
+                        <li>User-friendly Interface</li>
+                        <li>24/7 Support</li>
+                        <li>Cloud Integration</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Benefits</h3>
+                    <ul>
+                        <li>Increased Productivity</li>
+                        <li>Cost Effective</li>
+                        <li>Scalable Solution</li>
+                        <li>Secure Platform</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact">
+            <h2>Contact Us</h2>
+            <p>Have questions? Our team is here to help. Reach out to us through any of the following channels:</p>
+            <ul>
+                <li>Email: support@example.com</li>
+                <li>Phone: +1 (555) 123-4567</li>
+                <li>Address: 123 Business Street, Tech City, TC 12345</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Your Company Name. All rights reserved.</p>
+    </footer>
+
+    <!-- Add the translation widget script here -->
+    <script src="./translate-widget.js"></script>
+</body>
+</html>
