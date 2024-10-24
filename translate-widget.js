@@ -1,29 +1,3 @@
-// Language detection function
-async function detectLanguage(text) {
-  try {
-    // This should be replaced with a proper language detection API
-    const commonPatterns = {
-      en: /^[a-zA-Z\s.,!?]+$/,
-      es: /[áéíóúñ¿¡]/i,
-      fr: /[éèêëàâçîïôûù]/i,
-      de: /[äöüß]/i,
-      zh: /[\u4e00-\u9fff]/,
-    };
-
-    for (const [lang, pattern] of Object.entries(commonPatterns)) {
-      if (pattern.test(text)) {
-        return lang;
-      }
-    }
-
-    return "en"; // Default to English if no pattern matches
-  } catch (error) {
-    console.error("Language detection error:", error);
-    return "en"; // Default to English on error
-  }
-}
-
-// Translation cache implementation
 class TranslationCache {
   constructor() {
     this.cache = new Map();
@@ -31,23 +5,23 @@ class TranslationCache {
   }
 
   // Generate a unique key for the cache
-  getKey(text, sourceLang, targetLang) {
-    return `${sourceLang}:${targetLang}:${text}`;
+  getKey(text, targetLang) {
+    return `${targetLang}:${text}`;
   }
 
   // Get cached translation
-  get(text, sourceLang, targetLang) {
-    return this.cache.get(this.getKey(text, sourceLang, targetLang));
+  get(text, targetLang) {
+    return this.cache.get(this.getKey(text, targetLang));
   }
 
   // Store translation in cache
-  set(text, sourceLang, targetLang, translation) {
+  set(text, targetLang, translation) {
     // Remove oldest entry if cache is full
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
     }
-    this.cache.set(this.getKey(text, sourceLang, targetLang), translation);
+    this.cache.set(this.getKey(text, targetLang), translation);
   }
 }
 
@@ -133,7 +107,7 @@ const initializeTranslationWidget = (publicKey) => {
         .translate-reset {
           width: 100%;
           padding: 8px;
-          background: #f1f5f9;
+          background: #2563eb;
           border: none;
           border-radius: 4px;
           cursor: pointer;
@@ -141,7 +115,7 @@ const initializeTranslationWidget = (publicKey) => {
         }
     
         .translate-reset:hover {
-          background: #e2e8f0;
+          background: #2563eb;
         }
     
         .translate-reset.active {
@@ -165,7 +139,7 @@ const initializeTranslationWidget = (publicKey) => {
       `;
   document.head.appendChild(style);
 
-  // Languages configuration - expand based on your API
+  // Languages configuration
   const languages = [
     { code: "en", name: "English" },
     { code: "es", name: "Spanish" },
@@ -227,24 +201,10 @@ const initializeTranslationWidget = (publicKey) => {
   const translationCache = new TranslationCache();
 
   // Modified translation function with caching
-  async function translateText(text, targetLang, sourceLang = null) {
+  async function translateText(text, targetLang) {
     try {
-      // If source language is not provided, detect it
-      if (!sourceLang) {
-        sourceLang = await detectLanguage(text);
-      }
-
-      // If text is already in target language, return it as is
-      if (sourceLang === targetLang) {
-        return text;
-      }
-
       // Check cache first
-      const cachedTranslation = translationCache.get(
-        text,
-        sourceLang,
-        targetLang
-      );
+      const cachedTranslation = translationCache.get(text, targetLang);
       if (cachedTranslation) {
         console.log("Retrieved from cache:", text, "->", cachedTranslation);
         return cachedTranslation;
@@ -270,7 +230,7 @@ const initializeTranslationWidget = (publicKey) => {
       const translation = result.translated_text;
 
       // Store in cache
-      translationCache.set(text, sourceLang, targetLang, translation);
+      translationCache.set(text, targetLang, translation);
 
       return translation;
     } catch (error) {
@@ -314,9 +274,9 @@ const initializeTranslationWidget = (publicKey) => {
     return nodes;
   }
 
-  // Store the current language
   let currentLanguage = "en";
-  let detectedSourceLanguage = null;
+
+  // Handle language selection
 
   languageSelect.addEventListener("change", async function () {
     const targetLang = this.value;
@@ -328,19 +288,7 @@ const initializeTranslationWidget = (publicKey) => {
     try {
       const nodes = getTranslatableNodes();
 
-      // Detect language of the first substantial text node
-      if (!detectedSourceLanguage) {
-        for (const node of nodes) {
-          const text = node.textContent.trim();
-          if (text.length > 20) {
-            // Only detect language for longer text
-            detectedSourceLanguage = await detectLanguage(text);
-            break;
-          }
-        }
-      }
-
-      // Process nodes in batches
+      // Process nodes in batches to avoid overwhelming the API
       const batchSize = 10;
       for (let i = 0; i < nodes.length; i += batchSize) {
         const batch = nodes.slice(i, i + batchSize);
@@ -350,35 +298,30 @@ const initializeTranslationWidget = (publicKey) => {
             if (!parent) return;
 
             let textToTranslate;
-            let sourceLanguage;
 
+            // If this is the first translation, store the original English text
             if (!parent.hasAttribute("data-original-text")) {
               const originalText = node.textContent.trim();
               if (originalText) {
                 parent.setAttribute("data-original-text", originalText);
-                parent.setAttribute(
-                  "data-original-lang",
-                  detectedSourceLanguage
-                );
                 textToTranslate = originalText;
-                sourceLanguage = detectedSourceLanguage;
               }
             } else {
+              // For subsequent translations, either use the original text
+              // or translate the current text, depending on user preference
+              textToTranslate = node.textContent.trim();
+
+              // If switching from a non-English language to another non-English language,
+              // use the original English text to maintain translation quality
               if (currentLanguage !== "en" && targetLang !== "en") {
-                // For translations between non-English languages, use the original text
                 textToTranslate = parent.getAttribute("data-original-text");
-                sourceLanguage = parent.getAttribute("data-original-lang");
-              } else {
-                textToTranslate = node.textContent.trim();
-                sourceLanguage = currentLanguage;
               }
             }
 
             if (textToTranslate) {
               const translatedText = await translateText(
                 textToTranslate,
-                targetLang,
-                sourceLanguage
+                targetLang
               );
               node.textContent = translatedText;
             }
@@ -386,6 +329,7 @@ const initializeTranslationWidget = (publicKey) => {
         );
       }
 
+      // Update current language
       currentLanguage = targetLang;
     } catch (error) {
       console.error("Translation error:", error);
@@ -405,8 +349,8 @@ const initializeTranslationWidget = (publicKey) => {
         textNodes[0].textContent = element.getAttribute("data-original-text");
       }
     });
-    languageSelect.value = detectedSourceLanguage || "en";
-    currentLanguage = detectedSourceLanguage || "en";
+    languageSelect.value = "en";
+    currentLanguage = "en";
     resetButton.classList.remove("active");
   });
 
