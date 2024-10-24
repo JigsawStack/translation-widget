@@ -51,113 +51,118 @@ class TranslationCache {
   }
 }
 
-// Translation Widget Script
-(function () {
+const initializeTranslationWidget = (publicKey) => {
+  if (!publicKey) {
+    console.error(
+      "Public key is required to initialize the translation widget"
+    );
+    return;
+  }
   // Create and inject CSS
   const style = document.createElement("style");
   style.textContent = `
-      .translate-widget {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        font-family: Arial, sans-serif;
-      }
-  
-      .translate-button {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: #2563eb;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      }
-  
-      .translate-button:hover {
-        background: #1d4ed8;
-      }
-  
-      .translate-popup {
-        position: absolute;
-        bottom: 60px;
-        right: 0;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        padding: 16px;
-        width: 250px;
-        display: none;
-      }
-  
-      .translate-popup.active {
-        display: block;
-      }
-  
-      .translate-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-  
-      .translate-title {
-        margin: 0;
-        font-size: 16px;
-        font-weight: bold;
-      }
-  
-      .translate-close {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px;
-      }
-  
-      .translate-select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px;
-        margin-bottom: 12px;
-      }
-  
-      .translate-reset {
-        width: 100%;
-        padding: 8px;
-        background: #f1f5f9;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        display: none;
-      }
-  
-      .translate-reset:hover {
-        background: #e2e8f0;
-      }
-  
-      .translate-reset.active {
-        display: block;
-      }
-  
-      .translate-loading {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #2563eb;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 4px;
-        display: none;
-      }
-  
-      .translate-loading.active {
-        display: block;
-      }
-    `;
+        .translate-widget {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          z-index: 9999;
+          font-family: Arial, sans-serif;
+        }
+    
+        .translate-button {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #2563eb;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+    
+        .translate-button:hover {
+          background: #1d4ed8;
+        }
+    
+        .translate-popup {
+          position: absolute;
+          bottom: 60px;
+          right: 0;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          padding: 16px;
+          width: 250px;
+          display: none;
+        }
+    
+        .translate-popup.active {
+          display: block;
+        }
+    
+        .translate-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+        }
+    
+        .translate-title {
+          margin: 0;
+          font-size: 16px;
+          font-weight: bold;
+        }
+    
+        .translate-close {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+        }
+    
+        .translate-select {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #e2e8f0;
+          border-radius: 4px;
+          margin-bottom: 12px;
+        }
+    
+        .translate-reset {
+          width: 100%;
+          padding: 8px;
+          background: #f1f5f9;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          display: none;
+        }
+    
+        .translate-reset:hover {
+          background: #e2e8f0;
+        }
+    
+        .translate-reset.active {
+          display: block;
+        }
+    
+        .translate-loading {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #2563eb;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 4px;
+          display: none;
+        }
+    
+        .translate-loading.active {
+          display: block;
+        }
+      `;
   document.head.appendChild(style);
 
   // Languages configuration - expand based on your API
@@ -173,28 +178,30 @@ class TranslationCache {
   const widget = document.createElement("div");
   widget.className = "translate-widget";
   widget.innerHTML = `
-      <button class="translate-button">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="2" y1="12" x2="22" y2="12"></line>
-          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-        </svg>
-      </button>
-      <div class="translate-popup">
-        <div class="translate-header">
-          <h3 class="translate-title">Translate Page</h3>
-          <button class="translate-close">✕</button>
+        <button class="translate-button">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </button>
+        <div class="translate-popup">
+          <div class="translate-header">
+            <h3 class="translate-title">Translate Page</h3>
+            <button class="translate-close">✕</button>
+          </div>
+          <select class="translate-select">
+            <option value="">Select Language</option>
+            ${languages
+              .map(
+                (lang) => `<option value="${lang.code}">${lang.name}</option>`
+              )
+              .join("")}
+          </select>
+          <button class="translate-reset">Reset to English</button>
         </div>
-        <select class="translate-select">
-          <option value="">Select Language</option>
-          ${languages
-            .map((lang) => `<option value="${lang.code}">${lang.name}</option>`)
-            .join("")}
-        </select>
-        <button class="translate-reset">Reset to English</button>
-      </div>
-      <div class="translate-loading">Translating...</div>
-    `;
+        <div class="translate-loading">Translating...</div>
+      `;
 
   // Add widget to page
   document.body.appendChild(widget);
@@ -249,7 +256,7 @@ class TranslationCache {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": "<your-api-key-here>",
+            "x-api-key": publicKey,
           },
           body: JSON.stringify({ text, target_language: targetLang }),
         }
@@ -405,10 +412,10 @@ class TranslationCache {
 
   // Add English as the default selected language
   languageSelect.innerHTML = `
-    <option value="en">English</option>
-    ${languages
-      .filter((lang) => lang.code !== "en")
-      .map((lang) => `<option value="${lang.code}">${lang.name}</option>`)
-      .join("")}
-  `;
-})();
+      <option value="en">English</option>
+      ${languages
+        .filter((lang) => lang.code !== "en")
+        .map((lang) => `<option value="${lang.code}">${lang.name}</option>`)
+        .join("")}
+    `;
+};
