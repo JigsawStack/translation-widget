@@ -48,6 +48,10 @@ Here's a minimal working example:
 </html>
 ```
 
+## More Examples
+
+- [Next.js integration guide](./examples/nextjs/README.md)
+
 ## Need Help?
 
 - Reach out on [Discord](https://discord.gg/dj8fMBpnqd)
