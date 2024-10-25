@@ -4,7 +4,7 @@ This guide will help you integrate the Translation Widget into your website.
 
 
 ## Prerequisites
-- A valid public key (obtain from your JigsawStack dashboard)
+- A valid public key (obtain from your [JigsawStack dashboard](https://jigsawstack.com))
 
 ## Installation Steps
 
