@@ -29,10 +29,9 @@ This guide will help you integrate the Translation Widget into your Next.js webs
 
 
 ### 2. Add to Your Layout or Page
-You can add the widget to your app layout (`app/layout.tsx`) or specific pages:
+You can add the widget script to your app layout (`app/layout.tsx`) or specific pages:
 
 ```typescript
-import TranslationWidget from '@/components/TranslationWidget';
 
 export default function RootLayout({
   children,
