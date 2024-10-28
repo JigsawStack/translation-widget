@@ -8,46 +8,23 @@ This guide will help you integrate the Translation Widget into your Next.js webs
 
 ## Installation Steps
 
-### 1. Create a Translation Widget Component
-Create a new file `components/TranslationWidget.tsx`:
+### 1. Copy this script
 
-```typescript
-'use client';
-
-import { useEffect } from 'react';
-
-declare global {
-  interface Window {
-    initializeTranslationWidget: (key: string) => void;
-  }
-}
-
-interface TranslationWidgetProps {
-  publicKey: string;
-}
-
-export default function TranslationWidget({ publicKey }: TranslationWidgetProps) {
-  useEffect(() => {
-    // Load the translation widget script
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js';
-    script.async = true;
-    
-    script.onload = () => {
-      // Initialize the widget once the script is loaded
-      window.initializeTranslationWidget(publicKey, options);
-    };
-
-    document.body.appendChild(script);
-
-    // Cleanup
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [publicKey, options]);
-
-  return null; // This component doesn't render anything
-}
+```html
+  <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
+                script.onload = function() {
+                  initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+                };
+                document.body.appendChild(script);
+              })();
+            `,
+          }}
+        />
 ```
 
 
@@ -67,32 +44,27 @@ export default function RootLayout({
       <body>
         {children}
 
-        <TranslationWidget 
-          publicKey="YOUR_PUBLIC_KEY_HERE"
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
+                script.onload = function() {
+                  initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+                };
+                document.body.appendChild(script);
+              })();
+            `,
+          }}
         />
+
       </body>
     </html>
   );
 }
 ```
 
-
-
-
-### 3. Environment Variables (Optional)
-For better security, store your public key in environment variables:
-
-1. Create or update `.env`:
-```bash
-NEXT_PUBLIC_JIGSAWSTACK_PUBLIC_KEY=your_public_key_here
-```
-
-2. Update your layout:
-```typescript
-<TranslationWidget 
-  publicKey={process.env.NEXT_PUBLIC_JIGSAWSTACK_PUBLIC_KEY}
-/>
-```
 
 ## Need Help?
 
