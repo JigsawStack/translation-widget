@@ -87,6 +87,7 @@ const initializeTranslationWidget = (publicKey) => {
           margin: 0;
           font-size: 16px;
           font-weight: bold;
+          color: #000000;
         }
     
         .translate-close {
@@ -136,6 +137,10 @@ const initializeTranslationWidget = (publicKey) => {
         .translate-loading.active {
           display: block;
         }
+
+        .translate-target-language {
+        color: #000000;
+        }
       `;
   document.head.appendChild(style);
 
@@ -168,7 +173,8 @@ const initializeTranslationWidget = (publicKey) => {
             <option value="">Select Language</option>
             ${languages
               .map(
-                (lang) => `<option value="${lang.code}">${lang.name}</option>`
+                (lang) =>
+                  `<option class="translate-target-language" value="${lang.code}">${lang.name}</option>`
               )
               .join("")}
           </select>
