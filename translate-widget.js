@@ -25,7 +25,7 @@ class TranslationCache {
   }
 }
 
-const initializeTranslationWidget = (publicKey) => {
+const initializeTranslationWidget = (publicKey, config) => {
   if (!publicKey) {
     console.error(
       "Public key is required to initialize the translation widget"
@@ -153,6 +153,11 @@ const initializeTranslationWidget = (publicKey) => {
     { code: "zh", name: "Chinese" },
   ];
 
+  let currentLanguage = config?.defaultLanguage || "en";
+  const currentLanguageLabel =
+    languages.find((language) => language.code === currentLanguage)?.name ||
+    "English";
+
   // Create widget HTML
   const widget = document.createElement("div");
   widget.className = "translate-widget";
@@ -178,7 +183,7 @@ const initializeTranslationWidget = (publicKey) => {
               )
               .join("")}
           </select>
-          <button class="translate-reset">Reset to English</button>
+          <button class="translate-reset">Reset to ${currentLanguageLabel} </button>
         </div>
         <div class="translate-loading">Translating...</div>
       `;
@@ -280,8 +285,6 @@ const initializeTranslationWidget = (publicKey) => {
     return nodes;
   }
 
-  let currentLanguage = "en";
-
   // Handle language selection
 
   languageSelect.addEventListener("change", async function () {
@@ -362,9 +365,9 @@ const initializeTranslationWidget = (publicKey) => {
 
   // Add English as the default selected language
   languageSelect.innerHTML = `
-      <option value="en">English</option>
+      <option value=${currentLanguage}>${currentLanguageLabel}</option>
       ${languages
-        .filter((lang) => lang.code !== "en")
+        .filter((lang) => lang.code !== currentLanguage)
         .map((lang) => `<option value="${lang.code}">${lang.name}</option>`)
         .join("")}
     `;
