@@ -33,7 +33,7 @@ const initializeTranslationWidget = (publicKey, config) => {
     return;
   }
 
-  const primaryColor = config.primaryColor || "#2563eb";
+  const primaryColor = config?.primaryColor || "#2563eb";
 
   // Create and inject CSS
   const style = document.createElement("style");
