@@ -33,7 +33,7 @@ const initializeTranslationWidget = (publicKey, config) => {
     return;
   }
 
-  const primaryColor = config.primaryColor || "#2563eb";
+  const primaryColor = config?.primaryColor || "#2563eb";
 
   // Create and inject CSS
   const style = document.createElement("style");
@@ -106,6 +106,7 @@ const initializeTranslationWidget = (publicKey, config) => {
           border: 1px solid #e2e8f0;
           border-radius: 4px;
           margin-bottom: 12px;
+          background-color:#ffffff;
         }
     
         .translate-reset {
@@ -178,7 +179,7 @@ const initializeTranslationWidget = (publicKey, config) => {
               )
               .join("")}
           </select>
-          <button class="translate-reset">Reset to ${currentLanguageLabel} </button>
+          <button class="translate-reset">Reset to ${currentLanguageLabel}</button>
         </div>
         <div class="translate-loading">Translating...</div>
       `;
@@ -206,7 +207,67 @@ const initializeTranslationWidget = (publicKey, config) => {
   // Initialize translation cache
   const translationCache = new TranslationCache();
 
-  // Modified translation function with caching
+  async function batchTranslateNodes(targetLang, currentLanguage) {
+    const nodes = getTranslatableNodes();
+    const batchSize = 10;
+    const batches = [];
+
+    // Split nodes into batches
+    for (let i = 0; i < nodes.length; i += batchSize) {
+      batches.push(nodes.slice(i, i + batchSize));
+    }
+
+    // Process each batch in parallel
+    await Promise.all(
+      batches.map(async (batch) => {
+        const textsToTranslate = [];
+        const batchNodes = [];
+
+        // Collect texts and nodes for translation
+        batch.forEach((node) => {
+          const parent = node.parentElement;
+          if (!parent) return;
+
+          let textToTranslate;
+
+          // If this is the first translation, store the original English text
+          if (!parent.hasAttribute("data-original-text")) {
+            const originalText = node.textContent.trim();
+            if (originalText) {
+              parent.setAttribute("data-original-text", originalText);
+              textToTranslate = originalText;
+            }
+          } else {
+            textToTranslate = node.textContent.trim();
+
+            // If switching from a non-English language to another non-English language,
+            // use the original English text to maintain translation quality
+            if (currentLanguage !== "en" && targetLang !== "en") {
+              textToTranslate = parent.getAttribute("data-original-text");
+            }
+          }
+
+          if (textToTranslate) {
+            textsToTranslate.push(textToTranslate);
+            batchNodes.push(node);
+          }
+        });
+
+        // Perform batch translation
+        if (textsToTranslate.length > 0) {
+          const translatedTexts = await translateBatchText(
+            textsToTranslate,
+            targetLang
+          );
+
+          // Update nodes with translated text
+          translatedTexts.forEach((translatedText, index) => {
+            batchNodes[index].textContent = translatedText;
+          });
+        }
+      })
+    );
+  }
 
   async function translateBatchText(text, targetLang) {
     try {
@@ -288,7 +349,6 @@ const initializeTranslationWidget = (publicKey, config) => {
   }
 
   // Handle language selection
-
   languageSelect.addEventListener("change", async function () {
     const targetLang = this.value;
     if (!targetLang || targetLang === currentLanguage) return;
@@ -297,63 +357,8 @@ const initializeTranslationWidget = (publicKey, config) => {
     resetButton.classList.add("active");
 
     try {
-      const nodes = getTranslatableNodes();
-
-      // Process nodes in larger batches since we're using batch translation
-      const batchSize = 10; // Increased batch size since we're doing bulk translation
-
-      for (let i = 0; i < nodes.length; i += batchSize) {
-        const batch = nodes.slice(i, i + batchSize);
-
-        // Prepare arrays for batch translation
-        const textsToTranslate = [];
-        const batchNodes = [];
-
-        // Collect texts and nodes for translation
-        batch.forEach((node) => {
-          const parent = node.parentElement;
-          if (!parent) return;
-
-          let textToTranslate;
-
-          // If this is the first translation, store the original English text
-          if (!parent.hasAttribute("data-original-text")) {
-            const originalText = node.textContent.trim();
-            if (originalText) {
-              parent.setAttribute("data-original-text", originalText);
-              textToTranslate = originalText;
-            }
-          } else {
-            textToTranslate = node.textContent.trim();
-
-            // If switching from a non-English language to another non-English language,
-            // use the original English text to maintain translation quality
-            if (currentLanguage !== "en" && targetLang !== "en") {
-              textToTranslate = parent.getAttribute("data-original-text");
-            }
-          }
-
-          if (textToTranslate) {
-            textsToTranslate.push(textToTranslate);
-            batchNodes.push(node);
-          }
-        });
-
-        // Perform batch translation
-        if (textsToTranslate.length > 0) {
-          const translatedTexts = await translateBatchText(
-            textsToTranslate,
-            targetLang
-          );
-
-          // Update nodes with translated text
-          translatedTexts.forEach((translatedText, index) => {
-            batchNodes[index].textContent = translatedText;
-          });
-        }
-      }
-
-      // Update current language
+      await batchTranslateNodes(targetLang, currentLanguage);
+      // Update current language after successful translation
       currentLanguage = targetLang;
     } catch (error) {
       console.error("Translation error:", error);
