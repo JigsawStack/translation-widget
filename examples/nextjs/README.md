@@ -11,12 +11,12 @@ This guide will help you integrate the Translation Widget into your Next.js webs
 ### 1. Copy this script
 
 ```html
-  <script
+  <Script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js";
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js?latest=true";
                 script.onload = function() {
                   initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
                 };
@@ -33,6 +33,8 @@ You can add the widget script to your app layout (`app/layout.tsx`) or specific 
 
 ```typescript
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: {
@@ -43,12 +45,12 @@ export default function RootLayout({
       <body>
         {children}
 
-        <script
+        <Script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js";
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js?latest=true";
                 script.onload = function() {
                   initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
                 };
