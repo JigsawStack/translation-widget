@@ -12,6 +12,7 @@ This guide will help you integrate the Translation Widget into your Next.js webs
 
 ```html
   <Script
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -46,6 +47,7 @@ export default function RootLayout({
         {children}
 
         <Script
+         strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
