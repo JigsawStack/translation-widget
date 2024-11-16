@@ -107,6 +107,7 @@ const initializeTranslationWidget = (publicKey, config) => {
           border-radius: 4px;
           margin-bottom: 12px;
           background-color:#ffffff;
+          color : #000000;
         }
     
         .translate-reset {
@@ -143,7 +144,7 @@ const initializeTranslationWidget = (publicKey, config) => {
         }
 
         .translate-target-language {
-        color: #000000;
+           color: #000000;
         }
       `;
   document.head.appendChild(style);
@@ -385,10 +386,13 @@ const initializeTranslationWidget = (publicKey, config) => {
 
   // Add English as the default selected language
   languageSelect.innerHTML = `
-      <option value=${currentLanguage}>${currentLanguageLabel}</option>
+      <option  class="translate-target-language" value=${currentLanguage}>${currentLanguageLabel}</option>
       ${languages
         .filter((lang) => lang.code !== currentLanguage)
-        .map((lang) => `<option value="${lang.code}">${lang.name}</option>`)
+        .map(
+          (lang) =>
+            `<option  class="translate-target-language" value="${lang.code}">${lang.name}</option>`
+        )
         .join("")}
     `;
 };
