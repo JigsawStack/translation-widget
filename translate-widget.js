@@ -107,7 +107,7 @@ const initializeTranslationWidget = (publicKey, config) => {
           border-radius: 4px;
           margin-bottom: 12px;
           background-color:#ffffff;
-          color : #000000;
+          color:#000000;
         }
     
         .translate-reset {
@@ -319,7 +319,11 @@ const initializeTranslationWidget = (publicKey, config) => {
           const parent = node.parentElement;
           if (!parent) return NodeFilter.FILTER_REJECT;
 
-          if (parent.tagName === "SCRIPT" || parent.tagName === "STYLE") {
+          if (
+            parent.tagName === "SCRIPT" ||
+            parent.tagName === "STYLE" ||
+            parent.tagName === "CODE"
+          ) {
             return NodeFilter.FILTER_REJECT;
           }
           // Skip the translation widget itself
