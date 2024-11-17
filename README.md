@@ -13,7 +13,7 @@ Add the following code to your HTML file, just before the closing `</body>` tag:
 
 ```html
 <!-- Translation Widget -->
-<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
 ```
 
 ### 2. Initialize the Widget
@@ -40,7 +40,7 @@ Here's a minimal working example:
     <!-- Your website content here -->
 
     <!-- Translation Widget -->
-    <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
     <script>
         initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
     </script>
