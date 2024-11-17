@@ -21,7 +21,7 @@ Add the initialization code after the widget script:
 
 ```html
 <script>
-    initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+    initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
 </script>
 ```
 
@@ -42,7 +42,7 @@ Here's a minimal working example:
     <!-- Translation Widget -->
     <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
     <script>
-        initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+      initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
     </script>
 </body>
 </html>
