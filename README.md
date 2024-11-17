@@ -51,7 +51,7 @@ Here's a minimal working example:
 ## Prevent Translation
 To stop an element from being translated, add the class `notranslate` to the HTML element.
 ```html
-<h1 class="notranslate">JigasawStack</h1>
+<h1 class="notranslate">Don't translate</h1>
 ```
 This ensures that the content inside the element remains in its original form, even if  translation is applied to the rest of the page.
 
