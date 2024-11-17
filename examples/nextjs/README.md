@@ -17,7 +17,7 @@ This guide will help you integrate the Translation Widget into your Next.js webs
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js?latest=yes";
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
                 script.onload = function() {
                   initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
                 };
@@ -52,7 +52,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/translate-widget.min.js?latest=yes";
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
                 script.onload = function() {
                   initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
                 };
