@@ -55,6 +55,13 @@ To stop an element from being translated, add the class `notranslate` to the HTM
 ```
 This ensures that the content inside the element remains in its original form, even if  translation is applied to the rest of the page.
 
+## Configuration options
+
+| param          | type   | default   | description                                 |
+|-----------------|--------|-----------|---------------------------------------------|
+| pageLanguage    | string | `en`   | Defines the language of the page content.   |
+| primaryColor    | string | #2563eb   | Sets the primary theme color for the widget.  |
+
 
 ## More Examples
 
