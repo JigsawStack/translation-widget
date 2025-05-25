@@ -12,9 +12,18 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/embed.tsx'),
-      name: 'ChatWidget',
-      fileName: (format) => `widget-bundle.${format}.js`,
+      name: 'TranslationWidget',
+      fileName: 'embed',
+      formats: ['umd'],
     },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false,
+        drop_debugger: true
+      }
+    },
+    sourcemap: true,
     rollupOptions: {
       external: ['react', 'react-dom'],
       output: {
@@ -22,8 +31,11 @@ export default defineConfig({
           react: 'React',
           'react-dom': 'ReactDOM',
         },
+        format: 'umd',
+        entryFileNames: '[name].min.js',
+        chunkFileNames: '[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') return 'widget-bundle.css';
+          if (assetInfo.name === 'style.css') return 'embed.css';
           return assetInfo.name;
         },
       },
