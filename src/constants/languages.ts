@@ -1,10 +1,4 @@
-export interface Language {
-    code: string
-    name: string
-    native: string
-    region: string
-    rtl?: number
-}
+import { Language } from "@/types"
 
 export const languages: Language[] = [
     {

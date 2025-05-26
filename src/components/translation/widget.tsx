@@ -1,4 +1,4 @@
-import { Language, languages } from "@/constants/languages"
+import { languages } from "@/constants/languages"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2, Globe, Languages, Search, X, RotateCcw, Check } from "lucide-react"
@@ -7,17 +7,17 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import CookieStorage from "@/services/storage/cookie"
+import { TranslationWidgetConfig } from "@/embed"
+import { Language } from "@/types"
 
-export default function TranslationWidget() {
-    const [selectedLanguage, setSelectedLanguage] = useState<Language| null>(null)
+export default function TranslationWidget({ pageLanguage, selectedLanguage, setSelectedLanguage, isTranslating, resetTranslation }: TranslationWidgetConfig & {selectedLanguage: Language | null, setSelectedLanguage: (language: Language | null) => void, isTranslating: boolean, resetTranslation: () => void  }) {
     const [isOpen, setIsOpen] = useState(false)
-    const [isTranslating, setIsTranslating] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [focusedIndex, setFocusedIndex] = useState(-1)
 
     const searchInputRef = useRef<HTMLInputElement>(null)
     const listRef = useRef<HTMLDivElement>(null)
-
     // Filter languages based on search query
     const filteredLanguages = useMemo(() => {
         if (!searchQuery.trim()) return languages
@@ -44,26 +44,21 @@ export default function TranslationWidget() {
 
 
     const handleLanguageSelect = async (index: number) => {
-        setIsTranslating(true)
         setIsOpen(false)
         setSearchQuery("")
         setFocusedIndex(-1)
 
         try {
             setSelectedLanguage(filteredLanguages[index])
-            console.log(filteredLanguages[index])
-            const language = languages.find((lang) => lang.code === filteredLanguages[index].code)
-            console.log(language)
+            CookieStorage.setTranslationPair(pageLanguage || "en", filteredLanguages[index].code)
         } catch (error) {
             console.log(error)
-        } finally {
-            setIsTranslating(false)
-        }
+        } 
     }
 
     const handleReset = () => {
-        console.log("Translation reset")
-
+        console.log("Resetting translation")
+        resetTranslation()
         setSelectedLanguage(null)
         setIsOpen(false)
         setSearchQuery("")
@@ -89,7 +84,7 @@ export default function TranslationWidget() {
               variant="outline"
               size="sm"
               disabled={isTranslating}
-              className="h-12 px-4 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-200 relative overflow-hidden focus:outline-none focus:ring-0"
+              className="h-12 px-4 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-200 relative overflow-hidden focus:outline-none "
               aria-label={`Translation widget. ${selectedLanguage ? `Currently translated to ${selectedLanguage}` : "Click to translate page"}`}
             >
               <AnimatePresence mode="wait">

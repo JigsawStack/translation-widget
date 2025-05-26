@@ -1,15 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Translation Widget Demo</title>
-    <link rel="stylesheet" href="./dist/embed.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script src="./dist/embed.min.js"></script>
-  </body>
-</html>
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Translation Widget Demo</title>
+      <link rel="stylesheet" href="./dist/embed.css">
+    </head>
+    <body>
+      <div id="root">
+      </div>
+      <!-- <div id="google_translate_element"></div> -->
+      <!-- DEVELOPMENT -->
+      <script type="module" src="/src/main.tsx"></script>
+
+      <!-- PRODUCTION -->
+      <!-- <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+      <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script> -->
+      <!-- <script src="./dist/embed.min.js"></script> -->
+
+<!-- 
+      <script>  
+        window.initTranslationWidget({ pageLanguage: 'zh', publicKey: '' })
+      </script>
+      <script>
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {pageLanguage: 'en'},
+                'google_translate_element'
+            );
+        }
+    </script>
+    <script src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script> -->
+    </body>
+  </html>
