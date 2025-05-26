@@ -1,82 +1,98 @@
-# JigsawStack Translation Widget
+# Translation Widget
 
-This guide will help you integrate the Translation Widget into your website.
-
+A lightweight, customizable translation widget that can be easily embedded into any website.
 
 ## Prerequisites
-- A valid public key (obtain from your [JigsawStack dashboard](https://jigsawstack.com))
 
-## Installation Steps
+The widget requires React 18 to be loaded in your project. You can include React in one of two ways:
 
-### 1. Add the Widget Script
-Add the following code to your HTML file, just before the closing `</body>` tag:
-
+### Option 1: Using CDN (Recommended for simple websites)
+Add these scripts to your HTML before loading the widget:
 ```html
-<!-- Translation Widget -->
-<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 ```
 
-### 2. Initialize the Widget
-Add the initialization code after the widget script:
+### Option 2: Using npm (Recommended for React projects)
+If you're already using React in your project, you can skip this step.
 
+## Installation
+
+1. Download the widget files from the `dist` directory:
+   - `embed.min.js`
+   - `embed.css`
+
+2. Add the files to your project:
 ```html
-<script>
-    initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
-</script>
+<link rel="stylesheet" href="path/to/embed.css">
+<script src="path/to/embed.min.js"></script>
 ```
 
-Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key.
+## Usage
 
-### Complete Example
-Here's a minimal working example:
+The widget will automatically initialize when the script loads. It will appear in the top-right corner of your website.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Website</title>
-</head>
-<body>
-    <!-- Your website content here -->
+### Manual Initialization
 
-    <!-- Translation Widget -->
-    <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
-    <script>
-      initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
-    </script>
-</body>
-</html>
+If you need to initialize the widget manually, you can call:
+```javascript
+window.initTranslationWidget();
 ```
 
-## Prevent Translation
-To stop an element from being translated, add the class `notranslate` to the HTML element.
-```html
-<h1 class="notranslate">Don't translate</h1>
+### Customization
+
+The widget can be customized by modifying the following CSS variables in your stylesheet:
+
+```css
+:root {
+  --widget-primary-color: #007bff;
+  --widget-background-color: #ffffff;
+  --widget-text-color: #333333;
+  --widget-border-radius: 8px;
+  --widget-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 ```
-This ensures that the content inside the element remains in its original form, even if  translation is applied to the rest of the page.
 
-## Configuration options
+## Features
 
-| param          | type   | default   | description                                 |
-|-----------------|--------|-----------|---------------------------------------------|
-| pageLanguage    | string | `en`   | Defines the language of the page content.   |
-| primaryColor    | string | #2563eb   | Sets the primary theme color for the widget.  |
+- Language selection dropdown
+- Search functionality for languages
+- Responsive design
+- Smooth animations
+- RTL support for languages like Arabic and Hebrew
 
+## Browser Support
 
-## More Examples
+The widget supports all modern browsers:
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-- [Next.js integration guide](./examples/nextjs/README.md)
+## Development
 
-## Need Help?
+To modify or build the widget:
 
-- Reach out on [Discord](https://discord.gg/dj8fMBpnqd)
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Security Best Practices
+3. Start development server:
+```bash
+npm run dev
+```
 
-1. Always load the script from our CDN to receive automatic updates and security patches
-2. Never expose your private key in the frontend code
-3. Keep your public key secure and rotate it if compromised
+4. Build for production:
+```bash
+npm run build
+```
 
+## License
 
-## Contributing
-JigsawStack Translation Widget is open-source and welcomes contributions. Please open an issue or submit a pull request with your changes. Make sure to be as descriptive as possible with your submissions, include examples if relevant.
+MIT License - feel free to use this widget in your projects.
+
+## Support
+
+For issues and feature requests, please open an issue in the repository.

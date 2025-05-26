@@ -7,3 +7,4 @@ yarn.lock
 app/
 scripts.js
 new-language.json
+dist/
