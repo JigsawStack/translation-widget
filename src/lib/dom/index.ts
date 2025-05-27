@@ -1,5 +1,7 @@
 // type TreeWalkerFilter = (node: Node) => number
 
+import { generateHashForContent } from "../../utils/utils"
+
 interface NodeProcessor {
     acceptNode(node: Node): number
 }
@@ -50,6 +52,9 @@ export class DocumentNavigator {
             }
         }
 
+        // generate the hash for the content
+        const hash = generateHashForContent(results.join(''))
+        console.log(hash)
         return results
     }
 
