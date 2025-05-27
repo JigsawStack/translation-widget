@@ -4,6 +4,7 @@ import { languages } from '../constants/languages'
 import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
+import { generateHashForContent } from '../utils/utils'
 
 interface WidgetElements {
     trigger: HTMLDivElement | null
@@ -202,6 +203,7 @@ export class TranslationWidget {
         this.setTranslatingState(true);
         try {
             const nodes = DocumentNavigator.findTranslatableContent();
+            const hash = generateHashForContent(nodes)
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
     
             // Store all nodes and their corresponding texts for each batch

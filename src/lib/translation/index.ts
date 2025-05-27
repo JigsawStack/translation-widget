@@ -69,6 +69,7 @@ export class TranslationService {
                 return cached_translations as string[]
             }
 
+
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
