@@ -9,8 +9,9 @@ export class LocalStorageWrapper {
       this.prefix = prefix;
     }
   
-    getKey(hash:string, url:string, targetLang:string): string {
-        return `${hash}-${url}-${targetLang}`
+    getKey(hash: string, url: string, targetLang: string): string {
+        // Only encode the URL, not the whole key
+        return `${hash}-${encodeURIComponent(url)}-${targetLang}`;
     }
 
     private shouldCompress(value: string): boolean {
