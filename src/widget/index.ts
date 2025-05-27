@@ -5,7 +5,8 @@ import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
 import { generateHashForContent } from '../utils/utils'
-
+import { CACHE_PREFIX } from '../constants'
+import { LocalStorageWrapper } from '../lib/storage/localstorage'
 interface WidgetElements {
     trigger: HTMLDivElement | null
     dropdown: HTMLDivElement | null
@@ -203,9 +204,10 @@ export class TranslationWidget {
         this.setTranslatingState(true);
         try {
             const nodes = DocumentNavigator.findTranslatableContent();
-            const hash = generateHashForContent(nodes)
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
     
+            const cache = new LocalStorageWrapper(CACHE_PREFIX)
+            let hash = generateHashForContent(nodes)
             // Store all nodes and their corresponding texts for each batch
             const allBatchNodes: Node[][] = [];
             const allBatchTexts: string[][] = [];
@@ -232,6 +234,21 @@ export class TranslationWidget {
                 allBatchTexts.push(textsToTranslate);
             });
     
+
+            const key = cache.getKey(hash, window.location.href, targetLang)
+            const cachedTranslations = cache.getItem(key)
+            if (cachedTranslations) {
+                cachedTranslations.forEach((translatedTexts: string[], batchIndex: number) => {
+                    translatedTexts.forEach((translatedText: string, index: number) => {
+                        const node = allBatchNodes[batchIndex][index];
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.textContent = translatedText;
+                        }
+                    });
+                });
+                return;
+            }
+
             // Send all batch requests in parallel
             const allTranslatedTexts = await Promise.all(
                 allBatchTexts.map(texts =>
@@ -248,7 +265,9 @@ export class TranslationWidget {
                     }
                 });
             });
-    
+
+            cache.setItem(key, allTranslatedTexts)
+
             this.isTranslated = true;
             this.updateResetButtonVisibility();
         } finally {

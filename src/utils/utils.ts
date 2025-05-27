@@ -1,12 +1,10 @@
 function generateHashForContent(nodes: Node[]): string {
-    console.log(nodes)
     const content = nodes.map(node => {
         if(node.nodeType === Node.TEXT_NODE) {
             // get rid of all the whitespace and new lines
             return node.textContent?.replace(/\s+/g, ' ').trim()
         }
     }).join(' ').trim()
-    console.log(content)
     return murmurhash3_32_gc(content, 42).toString(16)
 }
 

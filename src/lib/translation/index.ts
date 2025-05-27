@@ -1,4 +1,3 @@
-import { Cache } from "../storage/cache"
 
 interface TranslationResponse {
     translated_text: string | string[]
@@ -19,14 +18,12 @@ interface CacheMetrics {
 
 export class TranslationService {
     private readonly publicKey: string
-    private readonly cache: Cache
     private cacheMetrics: CacheMetrics = { hits: 0, misses: 0 }
     // Todo: convert this to use sdk instead of api
     private readonly apiUrl = 'https://api.jigsawstack.com/v1/ai/translate'
 
     constructor(publicKey: string) {
         this.publicKey = publicKey
-        this.cache = new Cache()
     }
 
     getCacheMetrics(): CacheMetrics {
@@ -50,26 +47,10 @@ export class TranslationService {
 
     async translateBatchText(
         texts: string[],
-        targetLang: string
+        targetLang: string,
     ): Promise<string[]> {
         try {
-            const cached_translations = texts.map(text => this.cache.get(text, targetLang))
-            
-            // Track cache hits and misses
-            cached_translations.forEach(translation => {
-                if (translation === undefined) {
-                    this.cacheMetrics.misses++
-                } else {
-                    this.cacheMetrics.hits++
-                }
-            })
            
-            if (!cached_translations.includes(undefined)) {
-                console.log(`Cache metrics - Hits: ${this.cacheMetrics.hits}, Misses: ${this.cacheMetrics.misses}`)
-                return cached_translations as string[]
-            }
-
-
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
@@ -96,13 +77,9 @@ export class TranslationService {
                 ? result.translated_text
                 : [result.translated_text]
 
-            texts.forEach((text, index) => {
-                if(translations[index]) {
-                    this.cache.set(text, targetLang, translations[index])
-                }
-            })
+            // Cache the translations
+            // this.cache.setItem(key, translations)
 
-            console.log(`Cache metrics - Hits: ${this.cacheMetrics.hits}, Misses: ${this.cacheMetrics.misses}`)
             return translations
         } catch (error) {
             console.error('Translation error:', error)
