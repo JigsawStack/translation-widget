@@ -13,6 +13,7 @@ export class DocumentNavigator {
         const validator: NodeProcessor = {
             acceptNode(node: Node): number {
                 if (node.nodeType !== Node.TEXT_NODE) {
+                    // Log non-text nodes
                     return NodeFilter.FILTER_REJECT
                 }
 
@@ -28,6 +29,7 @@ export class DocumentNavigator {
                     container.closest('.translate-widget') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
+
 
                 return shouldSkip
                     ? NodeFilter.FILTER_REJECT
@@ -50,6 +52,7 @@ export class DocumentNavigator {
             }
         }
 
+        console.log('[findTranslatableContent] FINAL RESULTS:', results);
         return results
     }
 

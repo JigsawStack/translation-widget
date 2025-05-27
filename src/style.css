@@ -11,7 +11,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+    /* background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); */
     min-height: 100vh;
 }
 

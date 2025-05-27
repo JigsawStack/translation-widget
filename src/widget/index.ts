@@ -25,7 +25,10 @@ export class TranslationWidget {
     private autoDetectLanguage: boolean
     private isTranslated: boolean = false
     private isTranslating: boolean = false
-    // private currentUrl: string = location.href
+    private observer: MutationObserver | null = null
+    private translationScheduled: boolean = false
+    private scheduleTimeout: number | null = null
+    private lastTranslatedUrl: string | null = null
     
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -53,16 +56,31 @@ export class TranslationWidget {
         this.createWidget()
         this.setupEventListeners()
         this.setupURLObserver()
+        // this.setupContentObserver()
     }
 
-    private onUrlChange() {
+    // private setupContentObserver(): void {
+    //     this.observer = new MutationObserver(() => {
+    //         if (this.isTranslating) return;
+    //         this.scheduleTranslation();
+    //     });
+    //     this.observeBody();
+    // }
+
+    private observeBody() {
+        this.observer?.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
+
+    private onUrlChange = () => {
         const newUrl = location.href;
-        // if (newUrl !== this.currentUrl) {
-        //     this.currentUrl = newUrl
-        //     this.translationService.resetTranslations()
-        // }
-        console.log("URL changed to:", newUrl)
-      }
+        // this.translationService.resetTranslations();
+        this.scheduleTranslation();
+        console.log("URL changed to:", newUrl);
+    }
 
     private setupURLObserver(): void {
         const historyMethods = ['pushState', 'replaceState'] as const;
@@ -198,40 +216,41 @@ export class TranslationWidget {
         triggerSpan.classList.add('fade-in')
     }
 
-    private setTranslatingState(isTranslating: boolean): void {
-        this.isTranslating = isTranslating
-        const trigger = this.elements.trigger
-        const dropdown = this.elements.dropdown
-        const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
-        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
-        const searchInput = this.elements.searchInput
+    // private setTranslatingState(isTranslating: boolean): void {
+    //     this.isTranslating = isTranslating
+    //     const trigger = this.elements.trigger
+    //     const dropdown = this.elements.dropdown
+    //     const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+    //     const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
+    //     const searchInput = this.elements.searchInput
 
-        if (trigger) {
-            trigger.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            trigger.style.opacity = isTranslating ? '0.7' : '1'
-        }
+    //     if (trigger) {
+    //         trigger.style.pointerEvents = isTranslating ? 'none' : 'auto'
+    //         trigger.style.opacity = isTranslating ? '0.7' : '1'
+    //     }
 
-        if (dropdown) {
-            dropdown.style.pointerEvents = isTranslating ? 'none' : 'auto'
-        }
+    //     if (dropdown) {
+    //         dropdown.style.pointerEvents = isTranslating ? 'none' : 'auto'
+    //     }
 
-        if (searchInput) {
-            searchInput.disabled = isTranslating
-        }
+    //     if (searchInput) {
+    //         searchInput.disabled = isTranslating
+    //     }
 
-        languageItems.forEach(item => {
-            item.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            item.style.opacity = isTranslating ? '0.7' : '1'
-        })
+    //     languageItems.forEach(item => {
+    //         item.style.pointerEvents = isTranslating ? 'none' : 'auto'
+    //         item.style.opacity = isTranslating ? '0.7' : '1'
+    //     })
 
-        if (resetButton) {
-            resetButton.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            resetButton.style.opacity = isTranslating ? '0.7' : '1'
-        }
-    }
+    //     if (resetButton) {
+    //         resetButton.style.pointerEvents = isTranslating ? 'none' : 'auto'
+    //         resetButton.style.opacity = isTranslating ? '0.7' : '1'
+    //     }
+    // }
 
     private async translatePage(targetLang: string): Promise<void> {
-        this.setTranslatingState(true);
+        this.isTranslating = true;
+        this.observer?.disconnect(); // Pause observing during translation
         try {
             const nodes = DocumentNavigator.findTranslatableContent();
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
@@ -301,7 +320,8 @@ export class TranslationWidget {
             this.isTranslated = true;
             this.updateResetButtonVisibility();
         } finally {
-            this.setTranslatingState(false);
+            this.isTranslating = false;
+            this.observeBody(); // Resume observing after translation
         }
     }
 
@@ -518,5 +538,45 @@ export class TranslationWidget {
                 trigger.focus()
             }
         })
+    }
+
+    private scheduleTranslation() {
+        if (this.translationScheduled) return;
+        const currentUrl = window.location.href;
+        if (this.lastTranslatedUrl === currentUrl) return; // Prevent duplicate translation for same URL
+        this.translationScheduled = true;
+        if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
+        this.scheduleTimeout = window.setTimeout(() => {
+            this.translationScheduled = false;
+            if (this.currentLanguage !== this.config.pageLanguage) {
+                this.lastTranslatedUrl = currentUrl;
+                // Show loading state
+                const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+                const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
+                if (triggerContent && triggerLoading) {
+                    triggerContent.style.display = 'none'
+                    triggerLoading.style.display = 'flex'
+                }
+                this.translatePage(this.currentLanguage)
+                    .then(() => {
+                        // Update UI to reflect the selected language
+                        const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+                        languageItems.forEach(item => {
+                            const isSelected = item.getAttribute('data-language-code') === this.currentLanguage
+                            item.classList.toggle('selected', isSelected)
+                            item.setAttribute('aria-selected', isSelected.toString())
+                        })
+                    })
+                    .catch(error => {
+                        console.error('Auto-translation error:', error)
+                    })
+                    .finally(() => {
+                        if (triggerContent && triggerLoading) {
+                            triggerLoading.style.display = 'none'
+                            triggerContent.style.display = 'flex'
+                        }
+                    })
+            }
+        }, 200);
     }
 }
