@@ -20,12 +20,14 @@ export class TranslationWidget {
     private currentLanguage: string
     private widget: HTMLDivElement
     private elements: WidgetElements
-
+    private autoDetectLanguage: boolean
+    
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
         this.translationService = new TranslationService(
             publicKey,
         )
+        this.autoDetectLanguage = this.config.autoDetectLanguage || false
         this.currentLanguage = this.config.pageLanguage
         this.widget = document.createElement('div')
         this.elements = {
@@ -44,6 +46,8 @@ export class TranslationWidget {
         this.createWidget()
         this.setupEventListeners()
     }
+
+    
 
     private validateConfig(): boolean {
         if (!this.translationService) {

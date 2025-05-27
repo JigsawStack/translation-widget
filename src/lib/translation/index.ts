@@ -13,6 +13,7 @@ interface TranslationError extends Error {
 
 export class TranslationService {
     private readonly publicKey: string
+    // Todo: convert this to use sdk instead of api
     private readonly apiUrl = 'https://api.jigsawstack.com/v1/ai/translate'
 
     constructor(publicKey: string) {

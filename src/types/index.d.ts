@@ -9,7 +9,7 @@ export interface Language {
 export interface TranslationConfig {
     primaryColor?: string
     pageLanguage?: string
-    // autoDetectLanguage?: boolean
+    autoDetectLanguage?: boolean
 }
 
 export interface CacheEntry {

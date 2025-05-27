@@ -1,7 +1,5 @@
 // type TreeWalkerFilter = (node: Node) => number
 
-type NodeValidator = (node: Node) => number
-
 interface NodeProcessor {
     acceptNode(node: Node): number
 }
