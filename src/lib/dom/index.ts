@@ -27,8 +27,6 @@ export class DocumentNavigator {
                     container.closest('.translate-widget') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
-
-                console.log('[findTranslatableContent] ACCEPT:', { node, container: container.tagName, shouldSkip });
                 return shouldSkip
                     ? NodeFilter.FILTER_REJECT
                     : NodeFilter.FILTER_ACCEPT
@@ -49,8 +47,6 @@ export class DocumentNavigator {
                 results.push(currentNode as Text)
             }
         }
-
-        console.log('[findTranslatableContent] FINAL RESULTS:', results);
         return results
     }
 

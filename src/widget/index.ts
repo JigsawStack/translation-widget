@@ -28,7 +28,7 @@ export class TranslationWidget {
     private observer: MutationObserver | null = null
     private translationScheduled: boolean = false
     private scheduleTimeout: number | null = null
-    private lastTranslatedUrl: string | null = null
+    private lastTranslated: { url: string, lang: string } | null = null
     
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -76,10 +76,8 @@ export class TranslationWidget {
     }
 
     private onUrlChange = () => {
-        const newUrl = location.href;
-        // this.translationService.resetTranslations();
+        this.translationService.resetTranslations();
         this.scheduleTranslation();
-        console.log("URL changed to:", newUrl);
     }
 
     private setupURLObserver(): void {
@@ -295,6 +293,8 @@ export class TranslationWidget {
                         }
                     });
                 });
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
                 return;
             }
 
@@ -375,6 +375,7 @@ export class TranslationWidget {
                 this.translationService.resetTranslations()
                 resetButton.classList.remove('active')
                 this.isTranslated = false
+                this.lastTranslated = null;
                 this.updateResetButtonVisibility()
                 // Reset language selector to page language
                 const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
@@ -543,13 +544,14 @@ export class TranslationWidget {
     private scheduleTranslation() {
         if (this.translationScheduled) return;
         const currentUrl = window.location.href;
-        if (this.lastTranslatedUrl === currentUrl) return; // Prevent duplicate translation for same URL
+        const currentLang = this.currentLanguage;
+        if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang) return;
         this.translationScheduled = true;
         if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
         this.scheduleTimeout = window.setTimeout(() => {
             this.translationScheduled = false;
             if (this.currentLanguage !== this.config.pageLanguage) {
-                this.lastTranslatedUrl = currentUrl;
+                this.lastTranslated = { url: currentUrl, lang: currentLang };
                 // Show loading state
                 const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
                 const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
