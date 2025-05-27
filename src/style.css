@@ -147,6 +147,12 @@ button:hover {
 }
 
 /* Widget Trigger */
+.trigger-content, .trigger-loading{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width:  3rem;
+}
 .widget-trigger {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
