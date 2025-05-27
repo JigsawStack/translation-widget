@@ -16,24 +16,24 @@ body {
 }
 
 /* Layout Components */
-header {
+.tw-header {
     background-color: #f8f9fa;
     padding: 20px;
     margin-bottom: 30px;
     border-radius: 8px;
 }
 
-nav {
+.tw-nav {
     margin-bottom: 20px;
 }
 
-nav a {
+.tw-nav a {
     margin-right: 20px;
     color: #2563eb;
     text-decoration: none;
 }
 
-footer {
+.tw-footer {
     margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #e5e7eb;
@@ -124,7 +124,7 @@ footer {
 }
 
 /* Buttons */
-button {
+.tw-button {
     background: #2563eb;
     color: white;
     border: none;
@@ -133,7 +133,7 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.tw-button:hover {
     background: #1d4ed8;
 }
 

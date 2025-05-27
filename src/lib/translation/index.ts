@@ -50,6 +50,9 @@ export class TranslationService {
         targetLang: string,
     ): Promise<string[]> {
         try {
+
+
+            // await new Promise(resolve => setTimeout(resolve, 60000 * 5))
            
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
