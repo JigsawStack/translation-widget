@@ -25,6 +25,7 @@ export class TranslationWidget {
     private autoDetectLanguage: boolean
     private isTranslated: boolean = false
     private isTranslating: boolean = false
+    // private currentUrl: string = location.href
     
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -51,9 +52,38 @@ export class TranslationWidget {
         }
         this.createWidget()
         this.setupEventListeners()
+        this.setupURLObserver()
     }
 
+    private onUrlChange() {
+        const newUrl = location.href;
+        // if (newUrl !== this.currentUrl) {
+        //     this.currentUrl = newUrl
+        //     this.translationService.resetTranslations()
+        // }
+        console.log("URL changed to:", newUrl)
+      }
 
+    private setupURLObserver(): void {
+        const historyMethods = ['pushState', 'replaceState'] as const;
+        
+        historyMethods.forEach((method) => {
+            const original = history[method];
+            history[method] = function(
+                state: any,
+                title: string,
+                url?: string | URL | null
+            ) {
+                const result = original.call(this, state, title, url);
+                window.dispatchEvent(new Event(method));
+                return result;
+            };
+            window.addEventListener(method, this.onUrlChange);
+        });
+
+        // Also listen for popstate events (browser back/forward)
+        window.addEventListener('popstate', this.onUrlChange);
+    }
 
     private validateConfig(): boolean {
         if (!this.translationService) {
