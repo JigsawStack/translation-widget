@@ -2,7 +2,7 @@ import LZString from 'lz-string';
 
 export class LocalStorageWrapper {
     private prefix: string;
-    private readonly COMPRESSION_THRESHOLD = 1024; // 1KB threshold for compression
+    private readonly COMPRESSION_THRESHOLD = 1024;
     private readonly COMPRESSION_MARKER = '__COMPRESSED__';
 
     constructor(prefix = '') {
@@ -10,7 +10,7 @@ export class LocalStorageWrapper {
     }
   
     getKey(hash:string, url:string, targetLang:string): string {
-        return `${this.prefix}${hash}-${url}-${targetLang}`
+        return `${hash}-${url}-${targetLang}`
     }
 
     private shouldCompress(value: string): boolean {
