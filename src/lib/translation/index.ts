@@ -11,8 +11,14 @@ interface TranslationError extends Error {
     response?: Response
 }
 
+interface CacheMetrics {
+    hits: number
+    misses: number
+}
+
 export class TranslationService {
     private readonly publicKey: string
+    private cacheMetrics: CacheMetrics = { hits: 0, misses: 0 }
     // Todo: convert this to use sdk instead of api
     private readonly apiUrl = 'https://api.jigsawstack.com/v1/ai/translate'
 
@@ -20,11 +26,31 @@ export class TranslationService {
         this.publicKey = publicKey
     }
 
+    getCacheMetrics(): CacheMetrics {
+        return { ...this.cacheMetrics }
+    }
+
+    resetTranslations(): void {
+        const elements = document.querySelectorAll<HTMLElement>('[data-original-text]')
+        elements.forEach(element => {
+            const textNodes = Array.from(element.childNodes).filter(
+                (node): node is Text => node.nodeType === Node.TEXT_NODE
+            )
+            if (textNodes.length > 0) {
+                const originalText = element.getAttribute('data-original-text')
+                if (originalText) {
+                    textNodes[0].textContent = originalText
+                }
+            }
+        })
+    }
+
     async translateBatchText(
         texts: string[],
-        targetLang: string
+        targetLang: string,
     ): Promise<string[]> {
         try {
+           
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
                 headers: {
@@ -51,6 +77,9 @@ export class TranslationService {
                 ? result.translated_text
                 : [result.translated_text]
 
+            // Cache the translations
+            // this.cache.setItem(key, translations)
+
             return translations
         } catch (error) {
             console.error('Translation error:', error)
@@ -66,4 +95,5 @@ export class TranslationService {
             return texts // Return original texts on error
         }
     }
+
 }

@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+dist/
 .pnp
 .pnp.js
 
@@ -48,4 +49,3 @@ yarn.lock
 app/
 scripts.js
 new-language.json
-dist/
