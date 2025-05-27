@@ -98,10 +98,10 @@
             <p>© 2024 Your Company Name. All rights reserved.</p>
         </footer>
 
-        <script src="./dist/index.min.js"></script>
-        <script>
+        <script defer src="./dist/index.min.js"></script>
+        <script  defer type="module">
             window.addEventListener('DOMContentLoaded', () => {
-                TranslationWidget('PUBLIC_API_KEY', {
+                TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
                     primaryColor: '#2563eb',
                     pageLanguage: 'en',
                 })

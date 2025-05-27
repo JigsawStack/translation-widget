@@ -1,105 +1,107 @@
 // type TreeWalkerFilter = (node: Node) => number
 
-interface NodeFilterCallback {
+type NodeValidator = (node: Node) => number
+
+interface NodeProcessor {
     acceptNode(node: Node): number
 }
 
-export class DOMUtils {
+export class DocumentNavigator {
     /**
-     * Gets all translatable text nodes from the document body
-     * @returns Array of Text nodes that can be translated
+     * Retrieves text nodes eligible for translation from the document
+     * @returns Collection of text nodes ready for translation
      */
-    static getTranslatableNodes(): Text[] {
-        const filter: NodeFilterCallback = {
+    static findTranslatableContent(): Text[] {
+        const validator: NodeProcessor = {
             acceptNode(node: Node): number {
                 if (node.nodeType !== Node.TEXT_NODE) {
                     return NodeFilter.FILTER_REJECT
                 }
 
-                const parent = (node as Text).parentElement
-                if (!parent) {
+                const container = (node as Text).parentElement
+                if (!container) {
                     return NodeFilter.FILTER_REJECT
                 }
 
-                const isExcluded =
-                    parent.tagName === 'SCRIPT' ||
-                    parent.tagName === 'STYLE' ||
-                    parent.tagName === 'CODE' ||
-                    parent.closest('.translate-widget') !== null ||
-                    parent.closest('.notranslate') !== null ||
+                const shouldSkip =
+                    container.tagName === 'SCRIPT' ||
+                    container.tagName === 'STYLE' ||
+                    container.tagName === 'CODE' ||
+                    container.closest('.translate-widget') !== null ||
+                    container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
 
-                return isExcluded
+                return shouldSkip
                     ? NodeFilter.FILTER_REJECT
                     : NodeFilter.FILTER_ACCEPT
-            },
-        }
-
-        const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-            filter
-        )
-
-        const nodes: Text[] = []
-        let node: Node | null
-
-        while ((node = walker.nextNode())) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                nodes.push(node as Text)
             }
         }
 
-        return nodes
-    }
+        const navigator = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            validator
+        )
 
-    /**
-     * Creates batches of nodes for processing
-     * @param nodes Array of nodes to batch
-     * @param batchSize Size of each batch
-     * @returns Array of node batches
-     */
-    static createBatches<T>(nodes: T[], batchSize: number): T[][] {
-        const batches: T[][] = []
+        const results: Text[] = []
+        let currentNode: Node | null
 
-        for (let i = 0; i < nodes.length; i += batchSize) {
-            batches.push(nodes.slice(i, i + batchSize))
+        while ((currentNode = navigator.nextNode())) {
+            if (currentNode.nodeType === Node.TEXT_NODE) {
+                results.push(currentNode as Text)
+            }
         }
 
-        return batches
+        return results
     }
 
     /**
-     * Checks if a node is a text node that can be translated
-     * @param node Node to check
-     * @returns Whether the node is translatable
+     * Divides a collection into smaller groups
+     * @param items Collection to divide
+     * @param groupSize Maximum size of each group
+     * @returns Array of item groups
      */
-    static isTranslatableNode(node: Node): node is Text {
+    static divideIntoGroups<T>(items: T[], groupSize: number): T[][] {
+        const groups: T[][] = []
+
+        for (let i = 0; i < items.length; i += groupSize) {
+            groups.push(items.slice(i, i + groupSize))
+        }
+
+        return groups
+    }
+
+    /**
+     * Determines if a node contains translatable text
+     * @param node Node to evaluate
+     * @returns Whether the node contains translatable content
+     */
+    static containsTranslatableContent(node: Node): node is Text {
         if (node.nodeType !== Node.TEXT_NODE) {
             return false
         }
 
-        const parent = node.parentElement
-        if (!parent) {
+        const container = node.parentElement
+        if (!container) {
             return false
         }
 
         return !(
-            parent.tagName === 'SCRIPT' ||
-            parent.tagName === 'STYLE' ||
-            parent.tagName === 'CODE' ||
-            parent.closest('.translate-widget') ||
-            parent.closest('.notranslate') ||
+            container.tagName === 'SCRIPT' ||
+            container.tagName === 'STYLE' ||
+            container.tagName === 'CODE' ||
+            container.closest('.translate-widget') ||
+            container.closest('.notranslate') ||
             !node.textContent?.trim()
         )
     }
 
     /**
-     * Gets the parent element of a node, with type checking
-     * @param node Node to get parent of
-     * @returns Parent element or null if none exists
+     * Retrieves the containing element of a node
+     * @param node Node to find container for
+     * @returns Containing element or null if none exists
      */
-    static getParentElement(node: Node): HTMLElement | null {
+    static getContainer(node: Node): HTMLElement | null {
         return node.parentElement
     }
 }

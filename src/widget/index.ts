@@ -1,11 +1,10 @@
-import { TranslationService } from './lib/translation/index'
-import { TranslationCache } from './lib/storage/index'
-import { DOMUtils } from './lib/dom'
-import { languages } from './languages'
-import { DEFAULT_CONFIG, BATCH_SIZE } from './constants'
-import type { Language, TranslationConfig } from './types'
-import widgetTemplate from './widget.html?raw'
-// import widget2Template from './widget.html?raw'
+import { TranslationService } from '../lib/translation/index'
+import { DocumentNavigator } from '../lib/dom'
+import { languages } from '../constants/languages'
+import { DEFAULT_CONFIG, BATCH_SIZE } from '../constants'
+import type { Language, TranslationConfig } from '../types'
+import widgetTemplate from '../templates/html/widget.html?raw'
+
 interface WidgetElements {
     trigger: HTMLDivElement | null
     dropdown: HTMLDivElement | null
@@ -26,7 +25,6 @@ export class TranslationWidget {
         this.config = { ...DEFAULT_CONFIG, ...config }
         this.translationService = new TranslationService(
             publicKey,
-            new TranslationCache()
         )
         this.currentLanguage = this.config.pageLanguage
         this.widget = document.createElement('div')
@@ -72,6 +70,12 @@ export class TranslationWidget {
             languageItems: this.widget.querySelectorAll<HTMLDivElement>('.language-item'),
             loadingIndicator: this.widget.querySelector<HTMLDivElement>('.loading-spinner')
         }
+
+        // Initialize trigger text with fade-in class
+        const triggerSpan = this.elements.trigger?.querySelector('span')
+        if (triggerSpan) {
+            triggerSpan.classList.add('fade-in')
+        }
     }
 
     private getCurrentLanguageLabel(): string {
@@ -84,9 +88,11 @@ export class TranslationWidget {
 
     private createWidgetHTML(currentLanguageLabel: string): string {
         const languageOptions = this.createLanguageOptions()
+        const languageCount = languages.length
         return widgetTemplate
             .replace('{{languageOptions}}', languageOptions)
             .replace('{{currentLanguageLabel}}', currentLanguageLabel)
+            .replace('{{languageCount}}', languageCount.toString())
     }
 
     private createLanguageOptions(): string {
@@ -102,17 +108,54 @@ export class TranslationWidget {
 
         if (!currentLanguage) return ''
 
+        const createLanguageItem = (lang: Language, isSelected: boolean = false) => `
+            <div class="language-item ${isSelected ? 'selected' : ''}" tabindex="0" role="option" aria-selected="${isSelected}" data-language-code="${lang.code}">
+                <div class="language-info">
+                    <div class="language-main">
+                        <span class="language-name">${lang.name}</span>
+                        <div class="language-code">${lang.code}</div>
+                    </div>
+                    <div class="language-details">
+                        <span class="language-native">${lang.native}</span>
+                        <span class="language-separator">•</span>
+                        <span class="language-region">${lang.region}</span>
+                    </div>
+                </div>
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        `
+
         return `
-      <option class="translate-target-language" value="${currentLang}">${
-            currentLanguage.native
-        }</option>
-      ${otherLanguages
-          .map(
-              (lang: Language) =>
-                  `<option class="translate-target-language" value="${lang.code}">${lang.native}</option>`
-          )
-          .join('')}
-    `
+            ${createLanguageItem(currentLanguage, true)}
+            ${otherLanguages.map(lang => createLanguageItem(lang)).join('')}
+        `
+    }
+
+    private async updateTriggerText(newText: string): Promise<void> {
+        const triggerSpan = this.elements.trigger?.querySelector('span')
+        if (!triggerSpan) return
+
+        // Force a reflow to ensure the animation plays
+        triggerSpan.offsetHeight
+
+        // Start fade out
+        triggerSpan.classList.remove('fade-in')
+        triggerSpan.classList.add('fade-out')
+
+        // Wait for fade out
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Update text
+        triggerSpan.textContent = newText
+
+        // Force a reflow
+        triggerSpan.offsetHeight
+
+        // Start fade in
+        triggerSpan.classList.remove('fade-out')
+        triggerSpan.classList.add('fade-in')
     }
 
     private setupEventListeners(): void {
@@ -122,7 +165,6 @@ export class TranslationWidget {
             searchInput,
             clearSearch,
             languageItems,
-            loadingIndicator
         } = this.elements
 
         if (!trigger || !dropdown || !searchInput || !clearSearch || !languageItems) {
@@ -143,21 +185,67 @@ export class TranslationWidget {
         // Close dropdown when clicking outside
         document.addEventListener('click', (e: MouseEvent) => {
             if (!(e.target as Element).closest('.translation-widget')) {
-                dropdown.classList.remove('open')
-                trigger.setAttribute('aria-expanded', 'false')
+                if (dropdown.classList.contains('open')) {
+                    dropdown.classList.add('closing')
+                    setTimeout(() => {
+                        dropdown.classList.remove('open', 'closing')
+                        trigger.setAttribute('aria-expanded', 'false')
+                    }, 300)
+                }
             }
         })
 
         // Search functionality
         searchInput.addEventListener('input', () => {
-            const hasValue = searchInput.value.length > 0
+            const searchTerm = searchInput.value.toLowerCase()
+            const hasValue = searchTerm.length > 0
             clearSearch.classList.toggle('visible', hasValue)
+
+            // Filter language items
+            const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
+            const noResults = this.widget.querySelector<HTMLElement>('.no-results')
+            let visibleCount = 0
+
+            /**
+             * Feature - User can actually search for languages by name, native, code, and region.
+             */
+            items.forEach(item => {
+                const name = item.querySelector('.language-name')?.textContent?.toLowerCase() || ''
+                const native = item.querySelector('.language-native')?.textContent?.toLowerCase() || ''
+                const code = item.querySelector('.language-code')?.textContent?.toLowerCase() || ''
+                const region = item.querySelector('.language-region')?.textContent?.toLowerCase() || ''
+
+                const matches = name.includes(searchTerm) || 
+                              native.includes(searchTerm) || 
+                              code.includes(searchTerm) || 
+                              region.includes(searchTerm)
+
+                item.style.display = matches ? '' : 'none'
+                if (matches) visibleCount++
+            })
+
+            // Show/hide no results message
+            if (noResults) {
+                noResults.style.display = visibleCount === 0 ? 'flex' : 'none'
+            }
         })
 
         clearSearch.addEventListener('click', () => {
             searchInput.value = ''
             clearSearch.classList.remove('visible')
             searchInput.focus()
+            
+            // Show all language items and hide no results
+            const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
+            const noResults = this.widget.querySelector<HTMLElement>('.no-results')
+            
+            items.forEach(item => {
+                item.style.display = ''
+            })
+            
+            if (noResults) {
+                noResults.style.display = 'none'
+            }
         })
 
         // Language selection
@@ -175,15 +263,10 @@ export class TranslationWidget {
 
                 // Update trigger text
                 const langName = item.querySelector('.language-name')?.textContent
-                const langCode = item.querySelector('.language-code')?.textContent
-                const triggerSpan = trigger.querySelector('span')
-                const triggerBadge = trigger.querySelector('.language-badge')
+                const langCode = item.getAttribute('data-language-code')
 
-                if (triggerSpan && langName) {
-                    triggerSpan.textContent = langName
-                }
-                if (triggerBadge && langCode) {
-                    triggerBadge.textContent = langCode
+                if (langName) {
+                    await this.updateTriggerText(langName)
                 }
 
                 // Close dropdown
@@ -192,9 +275,15 @@ export class TranslationWidget {
 
                 // Handle translation
                 if (langCode && langCode !== this.currentLanguage) {
-                    if (loadingIndicator) {
-                        loadingIndicator.style.display = 'flex'
+                    // Show loading state
+                    const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
+                    const triggerLoading = trigger.querySelector<HTMLDivElement>('.trigger-loading')
+                    
+                    if (triggerContent && triggerLoading) {
+                        triggerContent.style.display = 'none'
+                        triggerLoading.style.display = 'flex'
                     }
+
                     try {
                         await this.translatePage(langCode)
                         this.currentLanguage = langCode
@@ -202,8 +291,10 @@ export class TranslationWidget {
                         console.error('Translation error:', error)
                         alert('An error occurred during translation. Please try again.')
                     } finally {
-                        if (loadingIndicator) {
-                            loadingIndicator.style.display = 'none'
+                        // Hide loading state
+                        if (triggerContent && triggerLoading) {
+                            triggerLoading.style.display = 'none'
+                            triggerContent.style.display = 'flex'
                         }
                     }
                 }
@@ -223,8 +314,8 @@ export class TranslationWidget {
     }
 
     private async translatePage(targetLang: string): Promise<void> {
-        const nodes = DOMUtils.getTranslatableNodes()
-        const batches = DOMUtils.createBatches(nodes, BATCH_SIZE)
+        const nodes = DocumentNavigator.findTranslatableContent()
+        const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE)
 
         await Promise.all(
             batches.map(batch => this.processBatch(batch, targetLang))
@@ -255,6 +346,15 @@ export class TranslationWidget {
             }
         })
 
+       /**
+        * Adds incremental change state - 
+        * 
+        * TODO: Remove this once we have a way to load all at once.
+        * 
+        * Review 1 by yoeven - it may be better to load this all at once rather than 
+        * incrementally, because it may be a bit jarring for the user.
+        * 
+        */
         if (textsToTranslate.length > 0) {
             const translatedTexts =
                 await this.translationService.translateBatchText(

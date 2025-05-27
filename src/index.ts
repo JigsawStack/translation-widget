@@ -1,4 +1,4 @@
-import { TranslationWidget } from './translationWidget'
+import { TranslationWidget } from './widget'
 import type { TranslationConfig } from './types'
 
 declare global {

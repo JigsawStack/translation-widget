@@ -31,5 +31,5 @@ export default defineConfig({
             insertTypesEntry: true,
             include: ['src'],
         }),
-    ],
+    ]
 })
