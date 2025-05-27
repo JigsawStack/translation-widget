@@ -5,6 +5,7 @@ This guide will help you integrate the Translation Widget into your website.
 
 ## Prerequisites
 - A valid public key (obtain from your [JigsawStack dashboard](https://jigsawstack.com))
+- Node.js 16+ and npm/yarn (for local development)
 
 ## Installation Steps
 
@@ -47,6 +48,46 @@ Here's a minimal working example:
 </body>
 </html>
 ```
+
+## Running Locally
+
+To run and test the widget locally:
+
+1. Clone the repository:
+```bash
+git clone https://github.com/JigsawStack/translation-widget.git
+cd translation-widget
+```
+
+2. Create a `.env` file in the root directory and add your public key:
+```bash
+VITE_TRANSLATION_WIDGET_PUBLIC_KEY=your_public_key_here
+```
+
+3. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+4. Start the development server:
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+5. Open your browser and navigate to `http://localhost:5173`
+
+6. To build for production:
+```bash
+npm run build
+# or
+yarn build
+```
+
+The built files will be available in the `dist` directory.
 
 ## Prevent Translation
 To stop an element from being translated, add the class `notranslate` to the HTML element.
