@@ -1,3 +1,4 @@
+import './style.css'
 import { TranslationWidget } from './widget'
 import type { TranslationConfig } from './types'
 

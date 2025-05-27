@@ -288,6 +288,7 @@ button:hover {
     border-radius: 0.5rem;
     outline: none;
     font-size: 0.875rem;
+    color: black;
     background: white;
     transition: all 0.2s ease;
 }
