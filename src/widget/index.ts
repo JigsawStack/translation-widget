@@ -21,6 +21,7 @@ export class TranslationWidget {
     private widget: HTMLDivElement
     private elements: WidgetElements
     private autoDetectLanguage: boolean
+    private isTranslated: boolean = false
     
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -43,11 +44,13 @@ export class TranslationWidget {
 
     private initialize(): void {
         if (!this.validateConfig()) return
+        if (this.autoDetectLanguage) {
+        }
         this.createWidget()
         this.setupEventListeners()
     }
 
-    
+
 
     private validateConfig(): boolean {
         if (!this.translationService) {
@@ -175,6 +178,35 @@ export class TranslationWidget {
             console.error('Failed to find required elements')
             return
         }
+
+        // Reset button functionality
+        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
+        if (resetButton) {
+            resetButton.addEventListener('click', () => {
+                this.translationService.resetTranslations()
+                resetButton.classList.remove('active')
+                this.isTranslated = false
+                this.updateResetButtonVisibility()
+                // Reset language selector to page language
+                const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+                languageItems.forEach(item => {
+                    const isSelected = item.getAttribute('data-language-code') === this.config.pageLanguage
+                    item.classList.toggle('selected', isSelected)
+                    item.setAttribute('aria-selected', isSelected.toString())
+                })
+                // Update trigger text
+                const currentLanguage = languages.find(lang => lang.code === this.config.pageLanguage)
+                if (currentLanguage) {
+                    this.updateTriggerText(currentLanguage.name)
+                }
+                // Close dropdown
+                dropdown.classList.remove('open')
+                trigger.setAttribute('aria-expanded', 'false')
+            })
+        }
+
+        // Initialize reset button visibility
+        this.updateResetButtonVisibility()
 
         // Toggle dropdown
         trigger.addEventListener('click', () => {
@@ -317,6 +349,13 @@ export class TranslationWidget {
         })
     }
 
+    private updateResetButtonVisibility(): void {
+        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
+        if (resetButton) {
+            resetButton.style.display = this.isTranslated ? 'flex' : 'none'
+        }
+    }
+
     private async translatePage(targetLang: string): Promise<void> {
         const nodes = DocumentNavigator.findTranslatableContent()
         const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE)
@@ -324,6 +363,8 @@ export class TranslationWidget {
         await Promise.all(
             batches.map(batch => this.processBatch(batch, targetLang))
         )
+        this.isTranslated = true
+        this.updateResetButtonVisibility()
     }
 
     private async processBatch(
@@ -373,6 +414,7 @@ export class TranslationWidget {
         }
     }
 
+     
     private getTextToTranslate(
         node: Text,
         parent: HTMLElement,

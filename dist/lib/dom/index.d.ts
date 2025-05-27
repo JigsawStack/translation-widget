@@ -1,26 +1,26 @@
-export declare class DOMUtils {
+export declare class DocumentNavigator {
     /**
-     * Gets all translatable text nodes from the document body
-     * @returns Array of Text nodes that can be translated
+     * Retrieves text nodes eligible for translation from the document
+     * @returns Collection of text nodes ready for translation
      */
-    static getTranslatableNodes(): Text[];
+    static findTranslatableContent(): Text[];
     /**
-     * Creates batches of nodes for processing
-     * @param nodes Array of nodes to batch
-     * @param batchSize Size of each batch
-     * @returns Array of node batches
+     * Divides a collection into smaller groups
+     * @param items Collection to divide
+     * @param groupSize Maximum size of each group
+     * @returns Array of item groups
      */
-    static createBatches<T>(nodes: T[], batchSize: number): T[][];
+    static divideIntoGroups<T>(items: T[], groupSize: number): T[][];
     /**
-     * Checks if a node is a text node that can be translated
-     * @param node Node to check
-     * @returns Whether the node is translatable
+     * Determines if a node contains translatable text
+     * @param node Node to evaluate
+     * @returns Whether the node contains translatable content
      */
-    static isTranslatableNode(node: Node): node is Text;
+    static containsTranslatableContent(node: Node): node is Text;
     /**
-     * Gets the parent element of a node, with type checking
-     * @param node Node to get parent of
-     * @returns Parent element or null if none exists
+     * Retrieves the containing element of a node
+     * @param node Node to find container for
+     * @returns Containing element or null if none exists
      */
-    static getParentElement(node: Node): HTMLElement | null;
+    static getContainer(node: Node): HTMLElement | null;
 }

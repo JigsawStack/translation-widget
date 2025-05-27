@@ -3,4 +3,5 @@ export declare const BATCH_SIZE = 10;
 export declare const DEFAULT_CONFIG: {
     primaryColor: string;
     pageLanguage: string;
+    autoDetectLanguage: boolean;
 };
