@@ -278,6 +278,7 @@ export class TranslationWidget {
                     if (!parent) return;
 
                     const translatedLang = parent.getAttribute('data-translated-lang')
+
                     // Skip if parent already has data-original-text and we're not translating to English
                     if (parent.hasAttribute('data-original-text') && targetLang === translatedLang) {
                         return;
@@ -376,6 +377,41 @@ export class TranslationWidget {
         }
     }
 
+
+    resetTranslations(): void {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
+        const elements = document.querySelectorAll<HTMLElement>('[data-original-text]')
+        elements.forEach(element => {
+            const textNodes = Array.from(element.childNodes).filter(
+                (node): node is Text => node.nodeType === Node.TEXT_NODE
+            )
+            if (textNodes.length > 0) {
+                const originalText = element.getAttribute('data-original-text')
+                if (originalText) {
+                    textNodes[0].textContent = originalText
+                }
+            }
+            element.removeAttribute('data-original-text');
+            element.removeAttribute('data-translated-lang');
+        })
+        this.isTranslated = false;
+
+        this.currentLanguage = this.config.pageLanguage;
+        // Update lastTranslated to reflect the reset state
+        const nodes = DocumentNavigator.findTranslatableContent();
+        const hash = generateHashForContent(nodes);
+        this.lastTranslated = {
+            url: window.location.href,
+            lang: this.config.pageLanguage, // or 'en' if that's your default
+            hash
+        };
+
+        this.updateResetButtonVisibility();
+        this.observeBody(); // Reconnect observer
+    }
+
     private setupEventListeners(): void {
         const {
             trigger,
@@ -395,10 +431,10 @@ export class TranslationWidget {
         if (resetButton) {
             resetButton.addEventListener('click', () => {
                 if (this.isTranslating) return
-                this.translationService.resetTranslations()
+                this.resetTranslations()
                 resetButton.classList.remove('active')
                 this.isTranslated = false
-                this.lastTranslated = null;
+                // this.lastTranslated = null;
                 this.updateResetButtonVisibility()
                 // Reset language selector to page language
                 const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
@@ -575,11 +611,12 @@ export class TranslationWidget {
         // step 1 - getting 
         const nodes = DocumentNavigator.findTranslatableContent();
         const hash = generateHashForContent(nodes);
+
+        console.log(this.lastTranslated)
         // step 2 - check if hash has changed
         if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang && this.lastTranslated.hash === hash) {
-            console.log('No change in content, skipping translation');
             return;
-        };
+        }
         this.translationScheduled = true;
         if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
         this.scheduleTimeout = window.setTimeout(() => {

@@ -30,20 +30,7 @@ export class TranslationService {
         return { ...this.cacheMetrics }
     }
 
-    resetTranslations(): void {
-        const elements = document.querySelectorAll<HTMLElement>('[data-original-text]')
-        elements.forEach(element => {
-            const textNodes = Array.from(element.childNodes).filter(
-                (node): node is Text => node.nodeType === Node.TEXT_NODE
-            )
-            if (textNodes.length > 0) {
-                const originalText = element.getAttribute('data-original-text')
-                if (originalText) {
-                    textNodes[0].textContent = originalText
-                }
-            }
-        })
-    }
+   
 
     async translateBatchText(
         texts: string[],
