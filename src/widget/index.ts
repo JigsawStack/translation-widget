@@ -28,8 +28,8 @@ export class TranslationWidget {
     private observer: MutationObserver | null = null
     private translationScheduled: boolean = false
     private scheduleTimeout: number | null = null
-    private lastTranslated: { url: string, lang: string } | null = null
-    
+    private lastTranslated: { url: string, lang: string, hash: string } | null = null
+
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
         this.translationService = new TranslationService(
@@ -56,16 +56,38 @@ export class TranslationWidget {
         this.createWidget()
         this.setupEventListeners()
         this.setupURLObserver()
-        // this.setupContentObserver()
+        this.setupContentObserver()
     }
 
-    // private setupContentObserver(): void {
-    //     this.observer = new MutationObserver(() => {
-    //         if (this.isTranslating) return;
-    //         this.scheduleTranslation();
-    //     });
-    //     this.observeBody();
-    // }
+    private setupContentObserver(): void {
+        this.observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+
+                if (this.widget.contains(mutation.target)) {
+                    return;
+                }
+                if (mutation.type === 'characterData' ||
+                    (mutation.type === 'childList' &&
+                        Array.from(mutation.addedNodes).some(node => node.nodeType === Node.TEXT_NODE))) {
+
+                    console.log('Text Change detected:', {
+                        type: mutation.type,
+                        target: mutation.target,
+                        text: mutation.target.textContent,
+                        // For text changes
+                        oldValue: mutation.oldValue,
+                        // For new text nodes
+                        addedTextNodes: Array.from(mutation.addedNodes)
+                            .filter(node => node.nodeType === Node.TEXT_NODE)
+                            .map(node => node.textContent)
+                    });
+                }
+            });
+            // if (this.isTranslating) return;
+            // this.scheduleTranslation();
+        });
+        this.observeBody();
+    }
 
     private observeBody() {
         this.observer?.observe(document.body, {
@@ -76,16 +98,17 @@ export class TranslationWidget {
     }
 
     private onUrlChange = () => {
-        this.translationService.resetTranslations();
+        console.log('URL changed')
+        // this.translationService.resetTranslations();
         this.scheduleTranslation();
     }
 
     private setupURLObserver(): void {
         const historyMethods = ['pushState', 'replaceState'] as const;
-        
+
         historyMethods.forEach((method) => {
             const original = history[method];
-            history[method] = function(
+            history[method] = function (
                 state: any,
                 title: string,
                 url?: string | URL | null
@@ -252,13 +275,13 @@ export class TranslationWidget {
         try {
             const nodes = DocumentNavigator.findTranslatableContent();
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
-    
+
             const cache = new LocalStorageWrapper(CACHE_PREFIX)
             let hash = generateHashForContent(nodes)
             // Store all nodes and their corresponding texts for each batch
             const allBatchNodes: Node[][] = [];
             const allBatchTexts: string[][] = [];
-    
+
             // Prepare batches
             batches.forEach(batch => {
                 const textsToTranslate: string[] = [];
@@ -267,6 +290,13 @@ export class TranslationWidget {
                     if (node.nodeType !== Node.TEXT_NODE) return;
                     const parent = node.parentElement;
                     if (!parent) return;
+
+                    const translatedLang = parent.getAttribute('data-translated-lang')
+                    // Skip if parent already has data-original-text and we're not translating to English
+                    if (parent.hasAttribute('data-original-text') && targetLang === translatedLang) {
+                        return;
+                    }
+
                     const textToTranslate = this.getTextToTranslate(
                         node as Text,
                         parent,
@@ -280,7 +310,7 @@ export class TranslationWidget {
                 allBatchNodes.push(batchNodes);
                 allBatchTexts.push(textsToTranslate);
             });
-    
+
 
             const key = cache.getKey(hash, window.location.href, targetLang)
             const cachedTranslations = cache.getItem(key)
@@ -298,13 +328,18 @@ export class TranslationWidget {
                 return;
             }
 
+          
             // Send all batch requests in parallel
             const allTranslatedTexts = await Promise.all(
-                allBatchTexts.map(texts =>
-                    this.translationService.translateBatchText(texts, targetLang)
+                allBatchTexts.map(texts => {
+                    if(texts.length > 0) {
+                        return this.translationService.translateBatchText(texts, targetLang)
+                    }
+                    return [];
+                }
                 )
             );
-    
+
             // Update the DOM after all translations are done
             allTranslatedTexts.forEach((translatedTexts, batchIndex) => {
                 translatedTexts.forEach((translatedText: string, index: number) => {
@@ -333,12 +368,14 @@ export class TranslationWidget {
         if (!parent.hasAttribute('data-original-text')) {
             const originalText = node.textContent?.trim()
             if (originalText) {
+                parent.setAttribute('data-translated-lang', targetLang)
                 parent.setAttribute('data-original-text', originalText)
                 return originalText
             }
         } else {
             const textToTranslate = node.textContent?.trim()
             if (this.currentLanguage !== 'en' && targetLang !== 'en') {
+                parent.setAttribute('data-translated-lang', targetLang)
                 return parent.getAttribute('data-original-text')
             }
             return textToTranslate || null
@@ -442,10 +479,10 @@ export class TranslationWidget {
                 const code = item.querySelector('.language-code')?.textContent?.toLowerCase() || ''
                 const region = item.querySelector('.language-region')?.textContent?.toLowerCase() || ''
 
-                const matches = name.includes(searchTerm) || 
-                              native.includes(searchTerm) || 
-                              code.includes(searchTerm) || 
-                              region.includes(searchTerm)
+                const matches = name.includes(searchTerm) ||
+                    native.includes(searchTerm) ||
+                    code.includes(searchTerm) ||
+                    region.includes(searchTerm)
 
                 item.style.display = matches ? '' : 'none'
                 if (matches) visibleCount++
@@ -461,15 +498,15 @@ export class TranslationWidget {
             searchInput.value = ''
             clearSearch.classList.remove('visible')
             searchInput.focus()
-            
+
             // Show all language items and hide no results
             const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
             const noResults = this.widget.querySelector<HTMLElement>('.no-results')
-            
+
             items.forEach(item => {
                 item.style.display = ''
             })
-            
+
             if (noResults) {
                 noResults.style.display = 'none'
             }
@@ -506,7 +543,7 @@ export class TranslationWidget {
                     // Show loading state
                     const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
                     const triggerLoading = trigger.querySelector<HTMLDivElement>('.trigger-loading')
-                    
+
                     if (triggerContent && triggerLoading) {
                         triggerContent.style.display = 'none'
                         triggerLoading.style.display = 'flex'
@@ -545,13 +582,24 @@ export class TranslationWidget {
         if (this.translationScheduled) return;
         const currentUrl = window.location.href;
         const currentLang = this.currentLanguage;
-        if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang) return;
+        /**
+         * Problem 1- will fail during infinite loading state
+         *    - generate hash for content and see if it has changed rather than  checking url
+         */
+        // step 1 - getting 
+        const nodes = DocumentNavigator.findTranslatableContent();
+        const hash = generateHashForContent(nodes);
+        // step 2 - check if hash has changed
+        if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang && this.lastTranslated.hash === hash) {
+            console.log('No change in content, skipping translation');
+            return;
+        };
         this.translationScheduled = true;
         if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
         this.scheduleTimeout = window.setTimeout(() => {
             this.translationScheduled = false;
             if (this.currentLanguage !== this.config.pageLanguage) {
-                this.lastTranslated = { url: currentUrl, lang: currentLang };
+                this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
                 // Show loading state
                 const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
                 const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
