@@ -277,6 +277,9 @@ export class TranslationWidget {
                 }
             });
 
+
+            // add a delay of 10min
+
             const key = cache.getKey(hash, window.location.href, targetLang)
             const cachedTranslations = cache.getItem(key)
             if (cachedTranslations && cachedTranslations[0]) {

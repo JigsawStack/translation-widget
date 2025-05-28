@@ -10,7 +10,7 @@ function generateHashForContent(nodes: Node[]): string {
         }
     }).join(' ').trim();
 
-    const hash = murmurhash3_32_gc(content, 42).toString(16);
+    const hash = murmurhash3_32_gc(content.toLowerCase(), 42).toString(16);
     return hash;
 }
 
@@ -62,4 +62,25 @@ function murmurhash3_32_gc(key: string, seed: number) {
     return h1 >>> 0;
 }
 
-export { generateHashForContent }
+function getVisibleTextContent(element: HTMLElement): string {
+    // Get all child text nodes that are not inside .sr-only or [aria-hidden="true"]
+    let text = '';
+    element.childNodes.forEach(node => {
+        if (
+            node.nodeType === Node.TEXT_NODE &&
+            !(element.classList.contains('sr-only') || element.getAttribute('aria-hidden') === 'true')
+        ) {
+            text += node.textContent;
+        }
+        if (
+            node.nodeType === Node.ELEMENT_NODE &&
+            !(node as HTMLElement).classList.contains('sr-only') &&
+            (node as HTMLElement).getAttribute('aria-hidden') !== 'true'
+        ) {
+            text += getVisibleTextContent(node as HTMLElement);
+        }
+    });
+    return text.trim();
+}
+
+export { generateHashForContent, getVisibleTextContent }

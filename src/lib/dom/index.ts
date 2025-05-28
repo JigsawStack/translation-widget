@@ -22,6 +22,17 @@ export class DocumentNavigator {
                     return NodeFilter.FILTER_REJECT
                 }
 
+                // Skip if any ancestor has aria-hidden="true"
+                if (container.closest('[aria-hidden="true"]')) {
+                    return NodeFilter.FILTER_REJECT
+                }
+
+                // // check if the classname is sr-only
+                if (container.classList.contains('sr-only')) {
+                    return NodeFilter.FILTER_REJECT
+                }
+
+
                 const shouldSkip =
                     container.closest('script, style, code') !== null ||
                     container.closest('next-route-announcer') !== null ||
@@ -45,9 +56,18 @@ export class DocumentNavigator {
 
         while ((currentNode = navigator.nextNode())) {
             if (currentNode.nodeType === Node.TEXT_NODE) {
+                const text = currentNode.textContent?.trim() || ''
+                // Skip if empty, only one character, or only punctuation/symbols
+                if (
+                    text.length === 0 ||
+                    text.length === 1 
+                ) {
+                    continue
+                }
                 results.push(currentNode as Text)
             }
         }
+
         return results
     }
 
