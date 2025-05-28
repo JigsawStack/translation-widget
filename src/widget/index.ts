@@ -5,8 +5,8 @@ import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
 import { generateHashForContent } from '../utils/utils'
-import { CACHE_PREFIX } from '../constants'
-import { LocalStorageWrapper } from '../lib/storage/localstorage'
+// import { CACHE_PREFIX } from '../constants'
+// import { LocalStorageWrapper } from '../lib/storage/localstorage'
 interface WidgetElements {
     trigger: HTMLDivElement | null
     dropdown: HTMLDivElement | null
@@ -62,29 +62,16 @@ export class TranslationWidget {
     private setupContentObserver(): void {
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
-
                 if (this.widget.contains(mutation.target)) {
                     return;
                 }
                 if (mutation.type === 'characterData' ||
                     (mutation.type === 'childList' &&
                         Array.from(mutation.addedNodes).some(node => node.nodeType === Node.TEXT_NODE))) {
-
-                    console.log('Text Change detected:', {
-                        type: mutation.type,
-                        target: mutation.target,
-                        text: mutation.target.textContent,
-                        // For text changes
-                        oldValue: mutation.oldValue,
-                        // For new text nodes
-                        addedTextNodes: Array.from(mutation.addedNodes)
-                            .filter(node => node.nodeType === Node.TEXT_NODE)
-                            .map(node => node.textContent)
-                    });
                 }
             });
-            // if (this.isTranslating) return;
-            // this.scheduleTranslation();
+            if (this.isTranslating) return;
+            this.scheduleTranslation();
         });
         this.observeBody();
     }
@@ -93,13 +80,12 @@ export class TranslationWidget {
         this.observer?.observe(document.body, {
             childList: true,
             subtree: true,
+            attributes: true,
             characterData: true
         });
     }
 
     private onUrlChange = () => {
-        console.log('URL changed')
-        // this.translationService.resetTranslations();
         this.scheduleTranslation();
     }
 
@@ -276,8 +262,8 @@ export class TranslationWidget {
             const nodes = DocumentNavigator.findTranslatableContent();
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
 
-            const cache = new LocalStorageWrapper(CACHE_PREFIX)
-            let hash = generateHashForContent(nodes)
+            // const cache = new LocalStorageWrapper(CACHE_PREFIX)
+            // let hash = generateHashForContent(nodes)
             // Store all nodes and their corresponding texts for each batch
             const allBatchNodes: Node[][] = [];
             const allBatchTexts: string[][] = [];
@@ -312,27 +298,27 @@ export class TranslationWidget {
             });
 
 
-            const key = cache.getKey(hash, window.location.href, targetLang)
-            const cachedTranslations = cache.getItem(key)
-            if (cachedTranslations) {
-                cachedTranslations.forEach((translatedTexts: string[], batchIndex: number) => {
-                    translatedTexts.forEach((translatedText: string, index: number) => {
-                        const node = allBatchNodes[batchIndex][index];
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            node.textContent = translatedText;
-                        }
-                    });
-                });
-                this.isTranslated = true;
-                this.updateResetButtonVisibility();
-                return;
-            }
+            // const key = cache.getKey(hash, window.location.href, targetLang)
+            // const cachedTranslations = cache.getItem(key)
+            // if (cachedTranslations) {
+            //     cachedTranslations.forEach((translatedTexts: string[], batchIndex: number) => {
+            //         translatedTexts.forEach((translatedText: string, index: number) => {
+            //             const node = allBatchNodes[batchIndex][index];
+            //             if (node.nodeType === Node.TEXT_NODE) {
+            //                 node.textContent = translatedText;
+            //             }
+            //         });
+            //     });
+            //     this.isTranslated = true;
+            //     this.updateResetButtonVisibility();
+            //     return;
+            // }
 
-          
+
             // Send all batch requests in parallel
             const allTranslatedTexts = await Promise.all(
                 allBatchTexts.map(texts => {
-                    if(texts.length > 0) {
+                    if (texts.length > 0) {
                         return this.translationService.translateBatchText(texts, targetLang)
                     }
                     return [];
@@ -350,7 +336,7 @@ export class TranslationWidget {
                 });
             });
 
-            cache.setItem(key, allTranslatedTexts)
+            // cache.setItem(key, allTranslatedTexts)
 
             this.isTranslated = true;
             this.updateResetButtonVisibility();
