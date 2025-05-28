@@ -24,6 +24,7 @@ export class DocumentNavigator {
 
                 const shouldSkip =
                     container.closest('script, style, code') !== null ||
+                    container.closest('next-route-announcer') !== null ||
                     container.closest('.translate-widget') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
@@ -80,11 +81,11 @@ export class DocumentNavigator {
         if (!container) {
             return false
         }
-
         return !(
             container.tagName === 'SCRIPT' ||
             container.tagName === 'STYLE' ||
             container.tagName === 'CODE' ||
+            container.tagName === 'next-route-announcer' ||
             container.closest('.translate-widget') ||
             container.closest('.notranslate') ||
             !node.textContent?.trim()

@@ -1,11 +1,17 @@
 function generateHashForContent(nodes: Node[]): string {
     const content = nodes.map(node => {
-        if(node.nodeType === Node.TEXT_NODE) {
-            // get rid of all the whitespace and new lines
-            return node.textContent?.replace(/\s+/g, ' ').trim()
+        if (node.nodeType === Node.TEXT_NODE) {
+            const parent = node.parentElement as HTMLElement | null;
+            // Use original text if available, else current text
+            if (parent && parent.hasAttribute('data-original-text')) {
+                return parent.getAttribute('data-original-text')?.replace(/\s+/g, ' ').trim();
+            }
+            return node.textContent?.replace(/\s+/g, ' ').trim().toLocaleLowerCase();
         }
-    }).join(' ').trim()
-    return murmurhash3_32_gc(content, 42).toString(16)
+    }).join(' ').trim();
+
+    const hash = murmurhash3_32_gc(content, 42).toString(16);
+    return hash;
 }
 
 function murmurhash3_32_gc(key: string, seed: number) {

@@ -5,8 +5,8 @@ import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
 import { generateHashForContent } from '../utils/utils'
-// import { CACHE_PREFIX } from '../constants'
-// import { LocalStorageWrapper } from '../lib/storage/localstorage'
+import { CACHE_PREFIX } from '../constants'
+import { LocalStorageWrapper } from '../lib/storage/localstorage'
 interface WidgetElements {
     trigger: HTMLDivElement | null
     dropdown: HTMLDivElement | null
@@ -223,37 +223,6 @@ export class TranslationWidget {
         triggerSpan.classList.add('fade-in')
     }
 
-    // private setTranslatingState(isTranslating: boolean): void {
-    //     this.isTranslating = isTranslating
-    //     const trigger = this.elements.trigger
-    //     const dropdown = this.elements.dropdown
-    //     const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
-    //     const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
-    //     const searchInput = this.elements.searchInput
-
-    //     if (trigger) {
-    //         trigger.style.pointerEvents = isTranslating ? 'none' : 'auto'
-    //         trigger.style.opacity = isTranslating ? '0.7' : '1'
-    //     }
-
-    //     if (dropdown) {
-    //         dropdown.style.pointerEvents = isTranslating ? 'none' : 'auto'
-    //     }
-
-    //     if (searchInput) {
-    //         searchInput.disabled = isTranslating
-    //     }
-
-    //     languageItems.forEach(item => {
-    //         item.style.pointerEvents = isTranslating ? 'none' : 'auto'
-    //         item.style.opacity = isTranslating ? '0.7' : '1'
-    //     })
-
-    //     if (resetButton) {
-    //         resetButton.style.pointerEvents = isTranslating ? 'none' : 'auto'
-    //         resetButton.style.opacity = isTranslating ? '0.7' : '1'
-    //     }
-    // }
 
     private async translatePage(targetLang: string): Promise<void> {
         this.isTranslating = true;
@@ -262,8 +231,8 @@ export class TranslationWidget {
             const nodes = DocumentNavigator.findTranslatableContent();
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
 
-            // const cache = new LocalStorageWrapper(CACHE_PREFIX)
-            // let hash = generateHashForContent(nodes)
+            const cache = new LocalStorageWrapper(CACHE_PREFIX)
+            let hash = generateHashForContent(nodes)
             // Store all nodes and their corresponding texts for each batch
             const allBatchNodes: Node[][] = [];
             const allBatchTexts: string[][] = [];
@@ -298,46 +267,66 @@ export class TranslationWidget {
                 allBatchTexts.push(textsToTranslate);
             });
 
+            // Only keep non-empty batches
+            const nonEmptyBatchNodes: Node[][] = [];
+            const nonEmptyBatchTexts: string[][] = [];
+            allBatchTexts.forEach((texts, i) => {
+                if (texts.length > 0) {
+                    nonEmptyBatchTexts.push(texts);
+                    nonEmptyBatchNodes.push(allBatchNodes[i]);
+                }
+            });
 
-            // const key = cache.getKey(hash, window.location.href, targetLang)
-            // const cachedTranslations = cache.getItem(key)
-            // if (cachedTranslations) {
-            //     cachedTranslations.forEach((translatedTexts: string[], batchIndex: number) => {
-            //         translatedTexts.forEach((translatedText: string, index: number) => {
-            //             const node = allBatchNodes[batchIndex][index];
-            //             if (node.nodeType === Node.TEXT_NODE) {
-            //                 node.textContent = translatedText;
-            //             }
-            //         });
-            //     });
-            //     this.isTranslated = true;
-            //     this.updateResetButtonVisibility();
-            //     return;
-            // }
-
+            const key = cache.getKey(hash, window.location.href, targetLang)
+            const cachedTranslations = cache.getItem(key)
+            if (cachedTranslations && cachedTranslations[0]) {
+                const fullTranslations = cachedTranslations[0];
+                nodes.forEach((node, idx) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        node.textContent = fullTranslations[idx];
+                    }
+                });
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
+                return;
+            }
 
             // Send all batch requests in parallel
             const allTranslatedTexts = await Promise.all(
-                allBatchTexts.map(texts => {
-                    if (texts.length > 0) {
-                        return this.translationService.translateBatchText(texts, targetLang)
-                    }
-                    return [];
-                }
+                nonEmptyBatchTexts.map(texts =>
+                    this.translationService.translateBatchText(texts, targetLang)
                 )
             );
 
-            // Update the DOM after all translations are done
-            allTranslatedTexts.forEach((translatedTexts, batchIndex) => {
-                translatedTexts.forEach((translatedText: string, index: number) => {
-                    const node = allBatchNodes[batchIndex][index];
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        node.textContent = translatedText;
-                    }
-                });
+            if (allTranslatedTexts.length === 0) {
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
+                return;
+            }
+
+            // Build a full translation array for all nodes
+            const fullTranslations: string[] = [];
+            nodes.forEach((node, nodeIdx) => {
+                const parent = node.parentElement as HTMLElement | null;
+                // Check if this node was included in the API call
+                const batchIdx = nonEmptyBatchNodes.findIndex(batch => batch.includes(node));
+                if (batchIdx !== -1) {
+                    // This node was translated in this batch
+                    const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
+                    const translatedText = allTranslatedTexts[batchIdx][textIdx];
+                    fullTranslations[nodeIdx] = translatedText;
+                    node.textContent = translatedText;
+                } else if (parent && parent.getAttribute('data-translated-lang') === targetLang) {
+                    // Already translated, use current text
+                    fullTranslations[nodeIdx] = node.textContent || '';
+                } else {
+                    // Fallback: use original text
+                    fullTranslations[nodeIdx] = node.textContent || '';
+                }
             });
 
-            // cache.setItem(key, allTranslatedTexts)
+            // Save the full array in cache for this hash
+            cache.setItem(key, [fullTranslations]);
 
             this.isTranslated = true;
             this.updateResetButtonVisibility();
@@ -604,16 +593,8 @@ export class TranslationWidget {
         if (this.translationScheduled) return;
         const currentUrl = window.location.href;
         const currentLang = this.currentLanguage;
-        /**
-         * Problem 1- will fail during infinite loading state
-         *    - generate hash for content and see if it has changed rather than  checking url
-         */
-        // step 1 - getting 
         const nodes = DocumentNavigator.findTranslatableContent();
         const hash = generateHashForContent(nodes);
-
-        console.log(this.lastTranslated)
-        // step 2 - check if hash has changed
         if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang && this.lastTranslated.hash === hash) {
             return;
         }

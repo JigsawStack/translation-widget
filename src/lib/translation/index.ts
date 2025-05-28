@@ -67,9 +67,6 @@ export class TranslationService {
                 ? result.translated_text
                 : [result.translated_text]
 
-            // Cache the translations
-            // this.cache.setItem(key, translations)
-
             return translations
         } catch (error) {
             console.error('Translation error:', error)
