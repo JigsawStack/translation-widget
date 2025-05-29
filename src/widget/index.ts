@@ -31,6 +31,7 @@ export class TranslationWidget {
     private translationScheduled: boolean = false
     private scheduleTimeout: number | null = null
     private lastTranslated: { url: string, lang: string, hash: string } | null = null
+    private static instance: TranslationWidget | null = null
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -50,6 +51,7 @@ export class TranslationWidget {
             loadingIndicator: null
         }
         this.initialize()
+        TranslationWidget.instance = this
     }
 
     private initialize(): void {
@@ -742,4 +744,78 @@ export class TranslationWidget {
             }
         }, 200);
     }
+
+    /**
+     * Public method to translate the page to a specific language
+     * @param langCode The language code to translate to
+     * @returns Promise that resolves when translation is complete
+     */
+    public async translateTo(langCode: string): Promise<void> {
+        if (this.isTranslating) {
+            console.warn('Translation already in progress')
+            return
+        }
+
+        const supportedLang = languages.find(lang => lang.code === langCode)
+        if (!supportedLang) {
+            console.error(`Unsupported language code: ${langCode}`)
+            return
+        }
+
+        if (langCode === this.currentLanguage) {
+            console.log('Page is already in the requested language')
+            return
+        }
+
+        try {
+            await this.translatePage(langCode)
+            this.currentLanguage = langCode
+            
+            // Update UI to reflect the selected language
+            const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+            languageItems.forEach(item => {
+                const isSelected = item.getAttribute('data-language-code') === langCode
+                item.classList.toggle('selected', isSelected)
+                item.setAttribute('aria-selected', isSelected.toString())
+            })
+
+            // Update trigger text
+            const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+            if (triggerContent) {
+                triggerContent.classList.add('has-translation')
+                const triggerSpan = triggerContent.querySelector('span')
+                if (triggerSpan) {
+                    this.updateTriggerText(supportedLang.name)
+                }
+            }
+        } catch (error) {
+            console.error('Translation error:', error)
+            throw error
+        }
+    }
+
+    /**
+     * Get the current instance of TranslationWidget
+     * @returns The current TranslationWidget instance or null if not initialized
+     */
+    public static getInstance(): TranslationWidget | null {
+        return TranslationWidget.instance
+    }
+}
+
+// Expose the translate function globally
+declare global {
+    interface Window {
+        translate: (langCode: string) => Promise<void>
+    }
+}
+
+// Add the global translate function
+window.translate = async (langCode: string): Promise<void> => {
+    const instance = TranslationWidget.getInstance()
+    if (!instance) {
+        console.error('Translation widget not initialized')
+        return
+    }
+    await instance.translateTo(langCode)
 }
