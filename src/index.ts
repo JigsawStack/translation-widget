@@ -11,6 +11,10 @@ declare global {
     }
 }
 
+let widgetInstance: TranslationWidget | undefined;
+
+
+
 const initializeTranslationWidget = (
     publicKey: string,
     config?: TranslationConfig
@@ -22,23 +26,25 @@ const initializeTranslationWidget = (
     }
 
     const initWidget = () => {
-        // Ensure styles are injected
-        if (!document.querySelector('style[data-translation-widget]')) {
-            const style = document.createElement('style')
-            style.setAttribute('data-translation-widget', '')
-            style.textContent = styles
-            document.head.appendChild(style)
+        if (!widgetInstance) {
+            // Ensure styles are injected
+            if (!document.querySelector('style[data-translation-widget]')) {
+                const style = document.createElement('style')
+                style.setAttribute('data-translation-widget', '')
+                style.textContent = styles
+                document.head.appendChild(style)
+            }
+            widgetInstance = new TranslationWidget(publicKey, config)
         }
-        return new TranslationWidget(publicKey, config)
+        return widgetInstance;
     }
 
     if (document.readyState === 'loading') {
         window.addEventListener('DOMContentLoaded', initWidget)
+        return undefined as any; // Widget will be created after DOMContentLoaded
     } else {
-        initWidget()
+        return initWidget()
     }
-
-    return initWidget()
 }
 
 export default initializeTranslationWidget
