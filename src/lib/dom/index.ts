@@ -57,11 +57,15 @@ export class DocumentNavigator {
         while ((currentNode = navigator.nextNode())) {
             if (currentNode.nodeType === Node.TEXT_NODE) {
                 const text = currentNode.textContent?.trim() || ''
-                // Skip if empty, only one character, or only punctuation/symbols
+                /**
+                 * Skip the content if 
+                 * 1. the content if empty 
+                 * 2. the content is only one character in length 
+                 */
                 if (
                     text.length === 0 ||
-                    text.length === 1 
-                ) {
+                    text.length === 1
+                 ) {
                     continue
                 }
                 results.push(currentNode as Text)

@@ -4,9 +4,10 @@ import { languages } from '../constants/languages'
 import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
-import { generateHashForContent } from '../utils/utils'
+import { generateHashForContent, removeEmojis } from '../utils/utils'
 import { CACHE_PREFIX } from '../constants'
 import { LocalStorageWrapper } from '../lib/storage/localstorage'
+// import emojiRegex from 'emoji-regex'
 interface WidgetElements {
     trigger: HTMLDivElement | null
     dropdown: HTMLDivElement | null
@@ -253,13 +254,18 @@ export class TranslationWidget {
                         return;
                     }
 
-                    const textToTranslate = this.getTextToTranslate(
+                    let textToTranslate = this.getTextToTranslate(
                         node as Text,
                         parent,
                         targetLang
                     );
+                    textToTranslate = removeEmojis(textToTranslate || '')
+                    if (textToTranslate.length === 0 || textToTranslate.length === 1) {
+                        return;
+                    }
+
                     if (textToTranslate) {
-                        textsToTranslate.push(textToTranslate);
+                        textsToTranslate.push(textToTranslate.trim());
                         batchNodes.push(node);
                     }
                 });

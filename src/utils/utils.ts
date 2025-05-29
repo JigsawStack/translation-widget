@@ -83,4 +83,7 @@ function getVisibleTextContent(element: HTMLElement): string {
     return text.trim();
 }
 
-export { generateHashForContent, getVisibleTextContent }
+const removeEmojis = (text: string) => text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
+
+
+export { generateHashForContent, getVisibleTextContent, removeEmojis }
