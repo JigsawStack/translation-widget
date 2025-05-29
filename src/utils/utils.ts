@@ -1,3 +1,4 @@
+import { languages } from "../constants/languages";
 function generateHashForContent(nodes: Node[]): string {
     const content = nodes.map(node => {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -85,5 +86,10 @@ function getVisibleTextContent(element: HTMLElement): string {
 
 const removeEmojis = (text: string) => text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '');
 
+const getUserLanguage = () => {
+    const userLanguages = window.navigator.languages
+    const userLanguage = languages.find(lang => userLanguages.includes(lang.code))
+    return userLanguage?.code || 'en';
+}
 
-export { generateHashForContent, getVisibleTextContent, removeEmojis }
+export { generateHashForContent, getVisibleTextContent, removeEmojis, getUserLanguage }

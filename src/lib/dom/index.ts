@@ -4,6 +4,8 @@ interface NodeProcessor {
     acceptNode(node: Node): number
 }
 
+import { removeEmojis } from '../../utils/utils'
+
 export class DocumentNavigator {
     /**
      * Retrieves text nodes eligible for translation from the document
@@ -61,11 +63,14 @@ export class DocumentNavigator {
                  * Skip the content if 
                  * 1. the content if empty 
                  * 2. the content is only one character in length 
+                 * 3. the content is only an emoji
                  */
+                const textWithoutEmojis = removeEmojis(text)
                 if (
                     text.length === 0 ||
-                    text.length === 1
-                 ) {
+                    text.length === 1 ||
+                    textWithoutEmojis.length === 0
+                ) {
                     continue
                 }
                 results.push(currentNode as Text)

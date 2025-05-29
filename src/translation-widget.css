@@ -5,15 +5,7 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    line-height: 1.6;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    /* background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); */
-    min-height: 100vh;
-}
+
 
 /* Layout Components */
 .tw-header {
@@ -139,7 +131,7 @@ body {
 
 /* Translation Widget */
 .translation-widget {
-    position: fixed;
+    position: absolute;
     bottom: 1.5rem;
     right: 1.5rem;
     z-index: 1000;
@@ -150,8 +142,15 @@ body {
 .trigger-content, .trigger-loading{
     display: flex;
     align-items: center;
+    /* max-width: 5rem; */
+    /* min-width:  3rem; */
+}
+
+.trigger-loading {
     gap: 0.5rem;
-    min-width:  3rem;
+}
+.trigger-content.has-translation {
+    gap: 0.5rem;
 }
 .widget-trigger {
     background: rgba(255, 255, 255, 0.95);
