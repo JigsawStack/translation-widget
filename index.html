@@ -100,12 +100,10 @@
 
         <script defer src="./dist/index.min.js"></script>
         <script  defer type="module">
-            window.addEventListener('DOMContentLoaded', () => {
-                TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
-                    primaryColor: '#2563eb',
-                    pageLanguage: 'en',
-                    autoDetectLanguage: true,
-                })
+            TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
+                primaryColor: '#2563eb',
+                pageLanguage: 'en',
+                autoDetectLanguage: true,
             })
         </script>
     </body>

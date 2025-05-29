@@ -20,7 +20,18 @@ const initializeTranslationWidget = (
             'Translation widget can only be used in browser environment'
         )
     }
-    return new TranslationWidget(publicKey, config)
+
+    const initWidget = () => {
+        return new TranslationWidget(publicKey, config)
+    }
+
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', initWidget)
+    } else {
+        initWidget()
+    }
+
+    return initWidget()
 }
 
 export default initializeTranslationWidget
