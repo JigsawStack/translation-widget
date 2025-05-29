@@ -54,13 +54,28 @@ export class TranslationWidget {
 
     private initialize(): void {
         if (!this.validateConfig()) return
-        if (this.autoDetectLanguage) {
+        
+        // Get language from URL parameter
+        const urlLang = this.getUrlParameter('lang')
+        if (urlLang) {
+            console.log('Language from URL parameter:', urlLang)
+            const supportedLang = languages.find(lang => lang.code === urlLang)
+            if (supportedLang) {
+                this.currentLanguage = urlLang
+            }
+        } else if (this.autoDetectLanguage) {
             this.currentLanguage = this.userLanguage
         }
+        
         this.createWidget()
         this.setupEventListeners()
         this.setupURLObserver()
         this.setupContentObserver()
+    }
+
+    private getUrlParameter(name: string): string | null {
+        const urlParams = new URLSearchParams(window.location.search)
+        return urlParams.get(name)
     }
 
     private setupContentObserver(): void {
