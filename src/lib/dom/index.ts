@@ -57,10 +57,16 @@ export class DocumentNavigator {
         while ((currentNode = navigator.nextNode())) {
             if (currentNode.nodeType === Node.TEXT_NODE) {
                 const text = currentNode.textContent?.trim() || ''
-                // Skip if empty, only one character, or only punctuation/symbols
+                /**
+                 * Skip the content if 
+                 * 1. the content if empty 
+                 * 2. the content is only one character in length 
+                 * 3. the content is not a valid string
+                 */
                 if (
                     text.length === 0 ||
-                    text.length === 1 
+                    text.length === 1 ||
+                    !text.match(/^[a-zA-Z0-9]+$/)
                 ) {
                     continue
                 }
