@@ -4,7 +4,7 @@ import { languages } from '../constants/languages'
 import { BATCH_SIZE, DEFAULT_CONFIG } from '../constants'
 import type { Language, TranslationConfig } from '../types'
 import widgetTemplate from '../templates/html/widget.html?raw'
-import { generateHashForContent, removeEmojis } from '../utils/utils'
+import { generateHashForContent, getUserLanguage, removeEmojis } from '../utils/utils'
 import { CACHE_PREFIX } from '../constants'
 import { LocalStorageWrapper } from '../lib/storage/localstorage'
 // import emojiRegex from 'emoji-regex'
@@ -25,6 +25,7 @@ export class TranslationWidget {
     private elements: WidgetElements
     private autoDetectLanguage: boolean
     private isTranslated: boolean = false
+    private userLanguage: string
     private isTranslating: boolean = false
     private observer: MutationObserver | null = null
     private translationScheduled: boolean = false
@@ -38,6 +39,7 @@ export class TranslationWidget {
         )
         this.autoDetectLanguage = this.config.autoDetectLanguage || false
         this.currentLanguage = this.config.pageLanguage
+        this.userLanguage = getUserLanguage()
         this.widget = document.createElement('div')
         this.elements = {
             trigger: null,
@@ -53,6 +55,7 @@ export class TranslationWidget {
     private initialize(): void {
         if (!this.validateConfig()) return
         if (this.autoDetectLanguage) {
+            this.currentLanguage = this.userLanguage
         }
         this.createWidget()
         this.setupEventListeners()
@@ -433,7 +436,6 @@ export class TranslationWidget {
                 this.resetTranslations()
                 resetButton.classList.remove('active')
                 this.isTranslated = false
-                // this.lastTranslated = null;
                 this.updateResetButtonVisibility()
                 // Reset language selector to page language
                 const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
@@ -450,6 +452,9 @@ export class TranslationWidget {
                 // Close dropdown
                 dropdown.classList.remove('open')
                 trigger.setAttribute('aria-expanded', 'false')
+                // Remove has-translation class
+                const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
+                if (triggerContent) triggerContent.classList.remove('has-translation')
             })
         }
 
@@ -560,11 +565,11 @@ export class TranslationWidget {
                 trigger.setAttribute('aria-expanded', 'false')
 
                 // Handle translation
+                const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
                 if (langCode && langCode !== this.currentLanguage) {
+                    if (triggerContent) triggerContent.classList.add('has-translation')
                     // Show loading state
-                    const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
                     const triggerLoading = trigger.querySelector<HTMLDivElement>('.trigger-loading')
-
                     if (triggerContent && triggerLoading) {
                         triggerContent.style.display = 'none'
                         triggerLoading.style.display = 'flex'
@@ -583,6 +588,9 @@ export class TranslationWidget {
                             triggerContent.style.display = 'flex'
                         }
                     }
+                } else if (triggerContent) {
+                    // If original language is selected, remove the class
+                    triggerContent.classList.remove('has-translation')
                 }
             })
         })

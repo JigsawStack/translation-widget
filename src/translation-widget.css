@@ -142,8 +142,15 @@
 .trigger-content, .trigger-loading{
     display: flex;
     align-items: center;
+    /* max-width: 5rem; */
+    /* min-width:  3rem; */
+}
+
+.trigger-loading {
     gap: 0.5rem;
-    min-width:  3rem;
+}
+.trigger-content.has-translation {
+    gap: 0.5rem;
 }
 .widget-trigger {
     background: rgba(255, 255, 255, 0.95);
