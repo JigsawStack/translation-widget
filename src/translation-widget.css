@@ -131,11 +131,8 @@
 
 /* Translation Widget */
 .translation-widget {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 1000;
-    font-family: Arial, sans-serif;
+
+    max-width: fit-content;
 }
 
 /* Widget Trigger */
