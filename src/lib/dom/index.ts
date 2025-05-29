@@ -61,13 +61,11 @@ export class DocumentNavigator {
                  * Skip the content if 
                  * 1. the content if empty 
                  * 2. the content is only one character in length 
-                 * 3. the content is not a valid string
                  */
                 if (
                     text.length === 0 ||
-                    text.length === 1 ||
-                    !text.match(/^[a-zA-Z0-9]+$/)
-                ) {
+                    text.length === 1
+                 ) {
                     continue
                 }
                 results.push(currentNode as Text)
