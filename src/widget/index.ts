@@ -25,7 +25,11 @@ export class TranslationWidget {
     private autoDetectLanguage: boolean
     private isTranslated: boolean = false
     private isTranslating: boolean = false
-    
+    private observer: MutationObserver | null = null
+    private translationScheduled: boolean = false
+    private scheduleTimeout: number | null = null
+    private lastTranslated: { url: string, lang: string, hash: string } | null = null
+
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
         this.translationService = new TranslationService(
@@ -51,9 +55,60 @@ export class TranslationWidget {
         }
         this.createWidget()
         this.setupEventListeners()
+        this.setupURLObserver()
+        this.setupContentObserver()
     }
 
+    private setupContentObserver(): void {
+        this.observer = new MutationObserver((mutations) => {
+            mutations.forEach(mutation => {
+                if (this.widget.contains(mutation.target)) {
+                    return;
+                }
+                if (mutation.type === 'characterData' ||
+                    (mutation.type === 'childList' &&
+                        Array.from(mutation.addedNodes).some(node => node.nodeType === Node.TEXT_NODE))) {
+                }
+            });
+            if (this.isTranslating) return;
+            this.scheduleTranslation();
+        });
+        this.observeBody();
+    }
 
+    private observeBody() {
+        this.observer?.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true
+        });
+    }
+
+    private onUrlChange = () => {
+        this.scheduleTranslation();
+    }
+
+    private setupURLObserver(): void {
+        const historyMethods = ['pushState', 'replaceState'] as const;
+
+        historyMethods.forEach((method) => {
+            const original = history[method];
+            history[method] = function (
+                state: any,
+                title: string,
+                url?: string | URL | null
+            ) {
+                const result = original.call(this, state, title, url);
+                window.dispatchEvent(new Event(method));
+                return result;
+            };
+            window.addEventListener(method, this.onUrlChange);
+        });
+
+        // Also listen for popstate events (browser back/forward)
+        window.addEventListener('popstate', this.onUrlChange);
+    }
 
     private validateConfig(): boolean {
         if (!this.translationService) {
@@ -168,50 +223,20 @@ export class TranslationWidget {
         triggerSpan.classList.add('fade-in')
     }
 
-    private setTranslatingState(isTranslating: boolean): void {
-        this.isTranslating = isTranslating
-        const trigger = this.elements.trigger
-        const dropdown = this.elements.dropdown
-        const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
-        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
-        const searchInput = this.elements.searchInput
-
-        if (trigger) {
-            trigger.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            trigger.style.opacity = isTranslating ? '0.7' : '1'
-        }
-
-        if (dropdown) {
-            dropdown.style.pointerEvents = isTranslating ? 'none' : 'auto'
-        }
-
-        if (searchInput) {
-            searchInput.disabled = isTranslating
-        }
-
-        languageItems.forEach(item => {
-            item.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            item.style.opacity = isTranslating ? '0.7' : '1'
-        })
-
-        if (resetButton) {
-            resetButton.style.pointerEvents = isTranslating ? 'none' : 'auto'
-            resetButton.style.opacity = isTranslating ? '0.7' : '1'
-        }
-    }
 
     private async translatePage(targetLang: string): Promise<void> {
-        this.setTranslatingState(true);
+        this.isTranslating = true;
+        this.observer?.disconnect(); // Pause observing during translation
         try {
             const nodes = DocumentNavigator.findTranslatableContent();
             const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
-    
+
             const cache = new LocalStorageWrapper(CACHE_PREFIX)
             let hash = generateHashForContent(nodes)
             // Store all nodes and their corresponding texts for each batch
             const allBatchNodes: Node[][] = [];
             const allBatchTexts: string[][] = [];
-    
+
             // Prepare batches
             batches.forEach(batch => {
                 const textsToTranslate: string[] = [];
@@ -220,6 +245,14 @@ export class TranslationWidget {
                     if (node.nodeType !== Node.TEXT_NODE) return;
                     const parent = node.parentElement;
                     if (!parent) return;
+
+                    const translatedLang = parent.getAttribute('data-translated-lang')
+
+                    // Skip if parent already has data-original-text and we're not translating to English
+                    if (parent.hasAttribute('data-original-text') && targetLang === translatedLang) {
+                        return;
+                    }
+
                     const textToTranslate = this.getTextToTranslate(
                         node as Text,
                         parent,
@@ -233,45 +266,76 @@ export class TranslationWidget {
                 allBatchNodes.push(batchNodes);
                 allBatchTexts.push(textsToTranslate);
             });
-    
+
+            // Only keep non-empty batches
+            const nonEmptyBatchNodes: Node[][] = [];
+            const nonEmptyBatchTexts: string[][] = [];
+            allBatchTexts.forEach((texts, i) => {
+                if (texts.length > 0) {
+                    nonEmptyBatchTexts.push(texts);
+                    nonEmptyBatchNodes.push(allBatchNodes[i]);
+                }
+            });
+
+
+            // add a delay of 10min
 
             const key = cache.getKey(hash, window.location.href, targetLang)
             const cachedTranslations = cache.getItem(key)
-            if (cachedTranslations) {
-                cachedTranslations.forEach((translatedTexts: string[], batchIndex: number) => {
-                    translatedTexts.forEach((translatedText: string, index: number) => {
-                        const node = allBatchNodes[batchIndex][index];
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            node.textContent = translatedText;
-                        }
-                    });
+            if (cachedTranslations && cachedTranslations[0]) {
+                const fullTranslations = cachedTranslations[0];
+                nodes.forEach((node, idx) => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        node.textContent = fullTranslations[idx];
+                    }
                 });
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
                 return;
             }
 
             // Send all batch requests in parallel
             const allTranslatedTexts = await Promise.all(
-                allBatchTexts.map(texts =>
+                nonEmptyBatchTexts.map(texts =>
                     this.translationService.translateBatchText(texts, targetLang)
                 )
             );
-    
-            // Update the DOM after all translations are done
-            allTranslatedTexts.forEach((translatedTexts, batchIndex) => {
-                translatedTexts.forEach((translatedText: string, index: number) => {
-                    const node = allBatchNodes[batchIndex][index];
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        node.textContent = translatedText;
-                    }
-                });
+
+            if (allTranslatedTexts.length === 0) {
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
+                return;
+            }
+
+            // Build a full translation array for all nodes
+            const fullTranslations: string[] = [];
+            nodes.forEach((node, nodeIdx) => {
+                const parent = node.parentElement as HTMLElement | null;
+                // Check if this node was included in the API call
+                const batchIdx = nonEmptyBatchNodes.findIndex(batch => batch.includes(node));
+                if (batchIdx !== -1) {
+                    // This node was translated in this batch
+                    const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
+                    const translatedText = allTranslatedTexts[batchIdx][textIdx];
+                    fullTranslations[nodeIdx] = translatedText;
+                    node.textContent = translatedText;
+                } else if (parent && parent.getAttribute('data-translated-lang') === targetLang) {
+                    // Already translated, use current text
+                    fullTranslations[nodeIdx] = node.textContent || '';
+                } else {
+                    // Fallback: use original text
+                    fullTranslations[nodeIdx] = node.textContent || '';
+                }
             });
 
-            cache.setItem(key, allTranslatedTexts)
+            // Save the full array in cache for this hash
+            cache.setItem(key, [fullTranslations]);
 
             this.isTranslated = true;
             this.updateResetButtonVisibility();
         } finally {
-            this.setTranslatingState(false);
+            this.isTranslating = false;
+            this.observeBody(); // Resume observing after translation
         }
     }
 
@@ -283,12 +347,14 @@ export class TranslationWidget {
         if (!parent.hasAttribute('data-original-text')) {
             const originalText = node.textContent?.trim()
             if (originalText) {
+                parent.setAttribute('data-translated-lang', targetLang)
                 parent.setAttribute('data-original-text', originalText)
                 return originalText
             }
         } else {
             const textToTranslate = node.textContent?.trim()
             if (this.currentLanguage !== 'en' && targetLang !== 'en') {
+                parent.setAttribute('data-translated-lang', targetLang)
                 return parent.getAttribute('data-original-text')
             }
             return textToTranslate || null
@@ -301,6 +367,41 @@ export class TranslationWidget {
         if (resetButton) {
             resetButton.style.display = this.isTranslated ? 'flex' : 'none'
         }
+    }
+
+
+    resetTranslations(): void {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
+        const elements = document.querySelectorAll<HTMLElement>('[data-original-text]')
+        elements.forEach(element => {
+            const textNodes = Array.from(element.childNodes).filter(
+                (node): node is Text => node.nodeType === Node.TEXT_NODE
+            )
+            if (textNodes.length > 0) {
+                const originalText = element.getAttribute('data-original-text')
+                if (originalText) {
+                    textNodes[0].textContent = originalText
+                }
+            }
+            element.removeAttribute('data-original-text');
+            element.removeAttribute('data-translated-lang');
+        })
+        this.isTranslated = false;
+
+        this.currentLanguage = this.config.pageLanguage;
+        // Update lastTranslated to reflect the reset state
+        const nodes = DocumentNavigator.findTranslatableContent();
+        const hash = generateHashForContent(nodes);
+        this.lastTranslated = {
+            url: window.location.href,
+            lang: this.config.pageLanguage, // or 'en' if that's your default
+            hash
+        };
+
+        this.updateResetButtonVisibility();
+        this.observeBody(); // Reconnect observer
     }
 
     private setupEventListeners(): void {
@@ -322,9 +423,10 @@ export class TranslationWidget {
         if (resetButton) {
             resetButton.addEventListener('click', () => {
                 if (this.isTranslating) return
-                this.translationService.resetTranslations()
+                this.resetTranslations()
                 resetButton.classList.remove('active')
                 this.isTranslated = false
+                // this.lastTranslated = null;
                 this.updateResetButtonVisibility()
                 // Reset language selector to page language
                 const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
@@ -391,10 +493,10 @@ export class TranslationWidget {
                 const code = item.querySelector('.language-code')?.textContent?.toLowerCase() || ''
                 const region = item.querySelector('.language-region')?.textContent?.toLowerCase() || ''
 
-                const matches = name.includes(searchTerm) || 
-                              native.includes(searchTerm) || 
-                              code.includes(searchTerm) || 
-                              region.includes(searchTerm)
+                const matches = name.includes(searchTerm) ||
+                    native.includes(searchTerm) ||
+                    code.includes(searchTerm) ||
+                    region.includes(searchTerm)
 
                 item.style.display = matches ? '' : 'none'
                 if (matches) visibleCount++
@@ -410,15 +512,15 @@ export class TranslationWidget {
             searchInput.value = ''
             clearSearch.classList.remove('visible')
             searchInput.focus()
-            
+
             // Show all language items and hide no results
             const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
             const noResults = this.widget.querySelector<HTMLElement>('.no-results')
-            
+
             items.forEach(item => {
                 item.style.display = ''
             })
-            
+
             if (noResults) {
                 noResults.style.display = 'none'
             }
@@ -455,7 +557,7 @@ export class TranslationWidget {
                     // Show loading state
                     const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
                     const triggerLoading = trigger.querySelector<HTMLDivElement>('.trigger-loading')
-                    
+
                     if (triggerContent && triggerLoading) {
                         triggerContent.style.display = 'none'
                         triggerLoading.style.display = 'flex'
@@ -488,5 +590,50 @@ export class TranslationWidget {
                 trigger.focus()
             }
         })
+    }
+
+    private scheduleTranslation() {
+        if (this.translationScheduled) return;
+        const currentUrl = window.location.href;
+        const currentLang = this.currentLanguage;
+        const nodes = DocumentNavigator.findTranslatableContent();
+        const hash = generateHashForContent(nodes);
+        if (this.lastTranslated && this.lastTranslated.url === currentUrl && this.lastTranslated.lang === currentLang && this.lastTranslated.hash === hash) {
+            return;
+        }
+        this.translationScheduled = true;
+        if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
+        this.scheduleTimeout = window.setTimeout(() => {
+            this.translationScheduled = false;
+            if (this.currentLanguage !== this.config.pageLanguage) {
+                this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
+                // Show loading state
+                const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+                const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
+                if (triggerContent && triggerLoading) {
+                    triggerContent.style.display = 'none'
+                    triggerLoading.style.display = 'flex'
+                }
+                this.translatePage(this.currentLanguage)
+                    .then(() => {
+                        // Update UI to reflect the selected language
+                        const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+                        languageItems.forEach(item => {
+                            const isSelected = item.getAttribute('data-language-code') === this.currentLanguage
+                            item.classList.toggle('selected', isSelected)
+                            item.setAttribute('aria-selected', isSelected.toString())
+                        })
+                    })
+                    .catch(error => {
+                        console.error('Auto-translation error:', error)
+                    })
+                    .finally(() => {
+                        if (triggerContent && triggerLoading) {
+                            triggerLoading.style.display = 'none'
+                            triggerContent.style.display = 'flex'
+                        }
+                    })
+            }
+        }, 200);
     }
 }

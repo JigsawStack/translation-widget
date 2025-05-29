@@ -1,3 +1,4 @@
+import styles from './translation-widget.css?inline'
 import { TranslationWidget } from './widget'
 import type { TranslationConfig } from './types'
 
@@ -19,7 +20,25 @@ const initializeTranslationWidget = (
             'Translation widget can only be used in browser environment'
         )
     }
-    return new TranslationWidget(publicKey, config)
+
+    const initWidget = () => {
+        // Ensure styles are injected
+        if (!document.querySelector('style[data-translation-widget]')) {
+            const style = document.createElement('style')
+            style.setAttribute('data-translation-widget', '')
+            style.textContent = styles
+            document.head.appendChild(style)
+        }
+        return new TranslationWidget(publicKey, config)
+    }
+
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', initWidget)
+    } else {
+        initWidget()
+    }
+
+    return initWidget()
 }
 
 export default initializeTranslationWidget

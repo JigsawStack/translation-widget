@@ -1,11 +1,17 @@
 function generateHashForContent(nodes: Node[]): string {
     const content = nodes.map(node => {
-        if(node.nodeType === Node.TEXT_NODE) {
-            // get rid of all the whitespace and new lines
-            return node.textContent?.replace(/\s+/g, ' ').trim()
+        if (node.nodeType === Node.TEXT_NODE) {
+            const parent = node.parentElement as HTMLElement | null;
+            // Use original text if available, else current text
+            if (parent && parent.hasAttribute('data-original-text')) {
+                return parent.getAttribute('data-original-text')?.replace(/\s+/g, ' ').trim();
+            }
+            return node.textContent?.replace(/\s+/g, ' ').trim().toLocaleLowerCase();
         }
-    }).join(' ').trim()
-    return murmurhash3_32_gc(content, 42).toString(16)
+    }).join(' ').trim();
+
+    const hash = murmurhash3_32_gc(content.toLowerCase(), 42).toString(16);
+    return hash;
 }
 
 function murmurhash3_32_gc(key: string, seed: number) {
@@ -56,4 +62,25 @@ function murmurhash3_32_gc(key: string, seed: number) {
     return h1 >>> 0;
 }
 
-export { generateHashForContent }
+function getVisibleTextContent(element: HTMLElement): string {
+    // Get all child text nodes that are not inside .sr-only or [aria-hidden="true"]
+    let text = '';
+    element.childNodes.forEach(node => {
+        if (
+            node.nodeType === Node.TEXT_NODE &&
+            !(element.classList.contains('sr-only') || element.getAttribute('aria-hidden') === 'true')
+        ) {
+            text += node.textContent;
+        }
+        if (
+            node.nodeType === Node.ELEMENT_NODE &&
+            !(node as HTMLElement).classList.contains('sr-only') &&
+            (node as HTMLElement).getAttribute('aria-hidden') !== 'true'
+        ) {
+            text += getVisibleTextContent(node as HTMLElement);
+        }
+    });
+    return text.trim();
+}
+
+export { generateHashForContent, getVisibleTextContent }

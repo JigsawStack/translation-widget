@@ -7,9 +7,9 @@
         <link rel="stylesheet" href="src/style.css" />
     </head>
     <body>
-        <header>
+        <header class="tw-header">
             <h1>Welcome to Our Website</h1>
-            <nav>
+            <nav class="tw-nav">
                 <a href="#home">Home</a>
                 <a href="#products">Products</a>
                 <a href="#about">About</a>
@@ -26,7 +26,7 @@
                         line. Our team has been working tirelessly to bring you
                         the best possible experience.
                     </p>
-                    <button>Read More</button>
+                    <button class="tw-button">Read More</button>
                 </article>
 
                 <article class="article">
@@ -36,7 +36,7 @@
                         year. We're now serving customers in over 50 countries
                         worldwide.
                     </p>
-                    <button>Learn More</button>
+                    <button class="tw-button">Learn More</button>
                 </article>
 
                 <article class="article">
@@ -46,7 +46,7 @@
                         have transformed their businesses and improved
                         efficiency.
                     </p>
-                    <button>View Stories</button>
+                    <button class="tw-button">View Stories</button>
                 </article>
             </section>
 
@@ -94,18 +94,16 @@
             </section>
         </main>
 
-        <footer>
+        <footer class="tw-footer">
             <p>© 2024 Your Company Name. All rights reserved.</p>
         </footer>
 
         <script defer src="./dist/index.min.js"></script>
         <script  defer type="module">
-            window.addEventListener('DOMContentLoaded', () => {
-                TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
-                    primaryColor: '#2563eb',
-                    pageLanguage: 'en',
-                    autoDetectLanguage: true,
-                })
+            TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
+                primaryColor: '#2563eb',
+                pageLanguage: 'en',
+                autoDetectLanguage: true,
             })
         </script>
     </body>

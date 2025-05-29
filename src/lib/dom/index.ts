@@ -13,6 +13,7 @@ export class DocumentNavigator {
         const validator: NodeProcessor = {
             acceptNode(node: Node): number {
                 if (node.nodeType !== Node.TEXT_NODE) {
+                    // Log non-text nodes
                     return NodeFilter.FILTER_REJECT
                 }
 
@@ -21,14 +22,23 @@ export class DocumentNavigator {
                     return NodeFilter.FILTER_REJECT
                 }
 
+                // Skip if any ancestor has aria-hidden="true"
+                if (container.closest('[aria-hidden="true"]')) {
+                    return NodeFilter.FILTER_REJECT
+                }
+
+                // // check if the classname is sr-only
+                if (container.classList.contains('sr-only')) {
+                    return NodeFilter.FILTER_REJECT
+                }
+
+
                 const shouldSkip =
-                    container.tagName === 'SCRIPT' ||
-                    container.tagName === 'STYLE' ||
-                    container.tagName === 'CODE' ||
+                    container.closest('script, style, code') !== null ||
+                    container.closest('next-route-announcer') !== null ||
                     container.closest('.translate-widget') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
-
                 return shouldSkip
                     ? NodeFilter.FILTER_REJECT
                     : NodeFilter.FILTER_ACCEPT
@@ -46,6 +56,14 @@ export class DocumentNavigator {
 
         while ((currentNode = navigator.nextNode())) {
             if (currentNode.nodeType === Node.TEXT_NODE) {
+                const text = currentNode.textContent?.trim() || ''
+                // Skip if empty, only one character, or only punctuation/symbols
+                if (
+                    text.length === 0 ||
+                    text.length === 1 
+                ) {
+                    continue
+                }
                 results.push(currentNode as Text)
             }
         }
@@ -83,11 +101,11 @@ export class DocumentNavigator {
         if (!container) {
             return false
         }
-
         return !(
             container.tagName === 'SCRIPT' ||
             container.tagName === 'STYLE' ||
             container.tagName === 'CODE' ||
+            container.tagName === 'next-route-announcer' ||
             container.closest('.translate-widget') ||
             container.closest('.notranslate') ||
             !node.textContent?.trim()

@@ -11,29 +11,29 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+    /* background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%); */
     min-height: 100vh;
 }
 
 /* Layout Components */
-header {
+.tw-header {
     background-color: #f8f9fa;
     padding: 20px;
     margin-bottom: 30px;
     border-radius: 8px;
 }
 
-nav {
+.tw-nav {
     margin-bottom: 20px;
 }
 
-nav a {
+.tw-nav a {
     margin-right: 20px;
     color: #2563eb;
     text-decoration: none;
 }
 
-footer {
+.tw-footer {
     margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid #e5e7eb;
@@ -124,7 +124,7 @@ footer {
 }
 
 /* Buttons */
-button {
+.tw-button {
     background: #2563eb;
     color: white;
     border: none;
@@ -133,7 +133,7 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.tw-button:hover {
     background: #1d4ed8;
 }
 
@@ -288,6 +288,7 @@ button:hover {
     border-radius: 0.5rem;
     outline: none;
     font-size: 0.875rem;
+    color: black;
     background: white;
     transition: all 0.2s ease;
 }

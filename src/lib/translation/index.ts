@@ -30,26 +30,16 @@ export class TranslationService {
         return { ...this.cacheMetrics }
     }
 
-    resetTranslations(): void {
-        const elements = document.querySelectorAll<HTMLElement>('[data-original-text]')
-        elements.forEach(element => {
-            const textNodes = Array.from(element.childNodes).filter(
-                (node): node is Text => node.nodeType === Node.TEXT_NODE
-            )
-            if (textNodes.length > 0) {
-                const originalText = element.getAttribute('data-original-text')
-                if (originalText) {
-                    textNodes[0].textContent = originalText
-                }
-            }
-        })
-    }
+   
 
     async translateBatchText(
         texts: string[],
         targetLang: string,
     ): Promise<string[]> {
         try {
+
+
+            // await new Promise(resolve => setTimeout(resolve, 60000 * 5))
            
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
@@ -76,9 +66,6 @@ export class TranslationService {
             const translations = Array.isArray(result.translated_text)
                 ? result.translated_text
                 : [result.translated_text]
-
-            // Cache the translations
-            // this.cache.setItem(key, translations)
 
             return translations
         } catch (error) {
