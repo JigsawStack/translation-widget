@@ -5,7 +5,7 @@ This guide will help you integrate the Translation Widget into your website.
 
 ## Prerequisites
 - A valid public key (obtain from your [JigsawStack dashboard](https://jigsawstack.com))
-- Node.js 16+ and npm/yarn (for local development)
+
 
 ## Installation Steps
 
@@ -21,9 +21,14 @@ Add the following code to your HTML file, just before the closing `</body>` tag:
 Add the initialization code after the widget script:
 
 ```html
-<script>
-    initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
-</script>
+ <script  defer type="module">
+       TranslationWidget('YOUR_PUBLIC_KEY_HERE', 
+            {
+                primaryColor: '#2563eb',
+                pageLanguage: 'en',
+                autoDetectLanguage: false,
+            })
+        </script>
 ```
 
 Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key.
@@ -41,10 +46,14 @@ Here's a minimal working example:
     <!-- Your website content here -->
 
     <!-- Translation Widget -->
-    <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
-    <script>
-      initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE', {pageLanguage: 'en'});
-    </script>
+     <script defer src="./dist/index.min.js"></script>
+        <script  defer type="module">
+            TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
+                primaryColor: '#2563eb',
+                pageLanguage: 'en',
+                autoDetectLanguage: false,
+            })
+        </script>
 </body>
 </html>
 ```
@@ -103,6 +112,20 @@ This ensures that the content inside the element remains in its original form, e
 | pageLanguage    | string | `en`   | Defines the language of the page content.   |
 | primaryColor    | string | #2563eb   | Sets the primary theme color for the widget.  |
 
+## Additional Features
+
+### Translation Widget Container
+Add a div with the class `translation-widget` where you want the translation widget to appear:
+```html
+<div class="translation-widget"></div>
+```
+
+### Direct Translation Button
+You can add a button to trigger translation to a specific language using the `window.translate()` function:
+```html
+<button onclick="window.translate('hi')" class="translate-hindi-btn">Translate to Hindi</button>
+```
+Replace `'hi'` with the language code you want to translate to (e.g., 'es' for Spanish, 'fr' for French).
 
 ## More Examples
 

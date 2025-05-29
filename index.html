@@ -73,7 +73,7 @@
                     </div>
                     <div>
                         <h3>Benefits</h3>
-                        <!-- <div class="translation-widget"></div> -->
+                        <div class="translation-widget"></div>
                         <button onclick="window.translate('hi')" class="translate-hindi-btn">Translate to Hindi</button>
                         <ul>
                             <li>Increased Productivity</li>
@@ -104,7 +104,6 @@
         <script defer src="./dist/index.min.js"></script>
         <script  defer type="module">
             TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
-                primaryColor: '#2563eb',
                 pageLanguage: 'en',
                 autoDetectLanguage: false,
             })
