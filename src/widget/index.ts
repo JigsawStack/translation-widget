@@ -260,6 +260,7 @@ export class TranslationWidget {
                         targetLang
                     );
                     textToTranslate = removeEmojis(textToTranslate || '')
+                    console.log('textToTranslate', textToTranslate)
                     if (textToTranslate.length === 0 || textToTranslate.length === 1) {
                         return;
                     }
