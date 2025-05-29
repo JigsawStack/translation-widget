@@ -23,14 +23,14 @@ export default defineConfig({
                 entryFileNames: '[name].min.js',
                 // Clean up the output directory on each build
                 chunkFileNames: '[name]-[hash].js',
-                // Include CSS in the output
-                assetFileNames: (assetInfo) => {
-                    if (assetInfo.name === 'style.css') return 'style.css'
-                    if (assetInfo.name === 'translation-widget.css') return 'style.css'
-                    return '[name]-[hash][extname]'
-                },
+                // Ensure CSS is bundled with the JavaScript
+                assetFileNames: '[name][extname]',
             },
         },
+        // Ensure CSS is injected into the JavaScript bundle
+        cssCodeSplit: false,
+        // Ensure CSS is inlined in the JavaScript bundle
+        cssMinify: true,
     },
     plugins: [
         dts({
