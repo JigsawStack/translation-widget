@@ -131,7 +131,7 @@
 
 /* Translation Widget */
 .translation-widget {
-
+    position: relative;
     max-width: fit-content;
 }
 
@@ -196,9 +196,6 @@
 /* Widget Dropdown */
 .widget-dropdown {
     position: absolute;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 0.5rem;
     width: 20rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -214,6 +211,7 @@
     min-height: 30rem;
     display: none;
     flex-direction: column;
+    z-index: 1000;
 }
 
 .widget-dropdown.open {

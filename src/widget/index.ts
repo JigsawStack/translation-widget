@@ -435,6 +435,68 @@ export class TranslationWidget {
         this.observeBody(); // Reconnect observer
     }
 
+    private adjustDropdownPosition(): void {
+        const { dropdown, trigger } = this.elements;
+        if (!dropdown || !trigger) return;
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const dropdownRect = dropdown.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Reset any previous positioning
+        dropdown.style.top = '';
+        dropdown.style.bottom = '';
+        dropdown.style.left = '';
+        dropdown.style.right = '';
+        dropdown.style.transform = '';
+
+        // Calculate available space
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+        const spaceRight = viewportWidth - triggerRect.right;
+        const spaceLeft = triggerRect.left;
+
+        // Determine vertical position
+        if (spaceBelow < dropdownRect.height && spaceAbove > spaceBelow) {
+            // Position above if there's more space above
+            dropdown.style.bottom = '100%';
+            dropdown.style.top = 'auto';
+            dropdown.style.marginBottom = '0.5rem';
+            dropdown.style.marginTop = '0';
+        } else {
+            // Position below (default)
+            dropdown.style.top = '100%';
+            dropdown.style.bottom = 'auto';
+            dropdown.style.marginTop = '0.5rem';
+            dropdown.style.marginBottom = '0';
+        }
+
+        // Determine horizontal position
+        if (spaceRight < dropdownRect.width && spaceLeft > spaceRight) {
+            // Position to the left if there's more space on the left
+            dropdown.style.right = '0';
+            dropdown.style.left = 'auto';
+        } else {
+            // Position to the right (default)
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+        }
+
+        // Adjust if dropdown would overflow viewport
+        const finalRect = dropdown.getBoundingClientRect();
+        
+        if (finalRect.right > viewportWidth) {
+            dropdown.style.right = '0';
+            dropdown.style.left = 'auto';
+        }
+        
+        if (finalRect.left < 0) {
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+        }
+    }
+
     private setupEventListeners(): void {
         const {
             trigger,
@@ -489,7 +551,15 @@ export class TranslationWidget {
             const isOpen = dropdown.classList.contains('open')
             trigger.setAttribute('aria-expanded', isOpen.toString())
             if (isOpen) {
+                this.adjustDropdownPosition()
                 searchInput.focus()
+            }
+        })
+
+        // Adjust position on window resize
+        window.addEventListener('resize', () => {
+            if (dropdown.classList.contains('open')) {
+                this.adjustDropdownPosition()
             }
         })
 
