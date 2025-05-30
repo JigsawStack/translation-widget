@@ -31,6 +31,7 @@ export class TranslationWidget {
     private translationScheduled: boolean = false
     private scheduleTimeout: number | null = null
     private lastTranslated: { url: string, lang: string, hash: string } | null = null
+    private static instance: TranslationWidget | null = null
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
@@ -50,17 +51,32 @@ export class TranslationWidget {
             loadingIndicator: null
         }
         this.initialize()
+        TranslationWidget.instance = this
     }
 
     private initialize(): void {
         if (!this.validateConfig()) return
-        if (this.autoDetectLanguage) {
+        
+        // Get language from URL parameter
+        const urlLang = this.getUrlParameter('lang')
+        if (urlLang) {
+            const supportedLang = languages.find(lang => lang.code === urlLang)
+            if (supportedLang) {
+                this.currentLanguage = urlLang
+            }
+        } else if (this.autoDetectLanguage) {
             this.currentLanguage = this.userLanguage
         }
+        
         this.createWidget()
         this.setupEventListeners()
         this.setupURLObserver()
         this.setupContentObserver()
+    }
+
+    private getUrlParameter(name: string): string | null {
+        const urlParams = new URLSearchParams(window.location.search)
+        return urlParams.get(name)
     }
 
     private setupContentObserver(): void {
@@ -126,9 +142,16 @@ export class TranslationWidget {
 
     private createWidget(): void {
         const currentLanguageLabel = this.getCurrentLanguageLabel()
-        this.widget.className = 'translate-widget'
+        // Find existing container
+        const container = document.querySelector<HTMLDivElement>('.translation-widget')
+        if (!container) {
+            console.error('No element with class "translation-widget" found. Please add a div with class="translation-widget" where you want the widget to appear.')
+            return
+        }
+        
+        // Set widget reference to the existing container
+        this.widget = container
         this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel)
-        document.body.appendChild(this.widget)
 
         // Cache element references
         this.elements = {
@@ -414,6 +437,68 @@ export class TranslationWidget {
         this.observeBody(); // Reconnect observer
     }
 
+    private adjustDropdownPosition(): void {
+        const { dropdown, trigger } = this.elements;
+        if (!dropdown || !trigger) return;
+
+        const triggerRect = trigger.getBoundingClientRect();
+        const dropdownRect = dropdown.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Reset any previous positioning
+        dropdown.style.top = '';
+        dropdown.style.bottom = '';
+        dropdown.style.left = '';
+        dropdown.style.right = '';
+        dropdown.style.transform = '';
+
+        // Calculate available space
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+        const spaceRight = viewportWidth - triggerRect.right;
+        const spaceLeft = triggerRect.left;
+
+        // Determine vertical position
+        if (spaceBelow < dropdownRect.height && spaceAbove > spaceBelow) {
+            // Position above if there's more space above
+            dropdown.style.bottom = '100%';
+            dropdown.style.top = 'auto';
+            dropdown.style.marginBottom = '0.5rem';
+            dropdown.style.marginTop = '0';
+        } else {
+            // Position below (default)
+            dropdown.style.top = '100%';
+            dropdown.style.bottom = 'auto';
+            dropdown.style.marginTop = '0.5rem';
+            dropdown.style.marginBottom = '0';
+        }
+
+        // Determine horizontal position
+        if (spaceRight < dropdownRect.width && spaceLeft > spaceRight) {
+            // Position to the left if there's more space on the left
+            dropdown.style.right = '0';
+            dropdown.style.left = 'auto';
+        } else {
+            // Position to the right (default)
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+        }
+
+        // Adjust if dropdown would overflow viewport
+        const finalRect = dropdown.getBoundingClientRect();
+        
+        if (finalRect.right > viewportWidth) {
+            dropdown.style.right = '0';
+            dropdown.style.left = 'auto';
+        }
+        
+        if (finalRect.left < 0) {
+            dropdown.style.left = '0';
+            dropdown.style.right = 'auto';
+        }
+    }
+
     private setupEventListeners(): void {
         const {
             trigger,
@@ -468,7 +553,15 @@ export class TranslationWidget {
             const isOpen = dropdown.classList.contains('open')
             trigger.setAttribute('aria-expanded', isOpen.toString())
             if (isOpen) {
+                this.adjustDropdownPosition()
                 searchInput.focus()
+            }
+        })
+
+        // Adjust position on window resize
+        window.addEventListener('resize', () => {
+            if (dropdown.classList.contains('open')) {
+                this.adjustDropdownPosition()
             }
         })
 
@@ -651,4 +744,78 @@ export class TranslationWidget {
             }
         }, 200);
     }
+
+    /**
+     * Public method to translate the page to a specific language
+     * @param langCode The language code to translate to
+     * @returns Promise that resolves when translation is complete
+     */
+    public async translateTo(langCode: string): Promise<void> {
+        if (this.isTranslating) {
+            console.warn('Translation already in progress')
+            return
+        }
+
+        const supportedLang = languages.find(lang => lang.code === langCode)
+        if (!supportedLang) {
+            console.error(`Unsupported language code: ${langCode}`)
+            return
+        }
+
+        if (langCode === this.currentLanguage) {
+            console.log('Page is already in the requested language')
+            return
+        }
+
+        try {
+            await this.translatePage(langCode)
+            this.currentLanguage = langCode
+            
+            // Update UI to reflect the selected language
+            const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+            languageItems.forEach(item => {
+                const isSelected = item.getAttribute('data-language-code') === langCode
+                item.classList.toggle('selected', isSelected)
+                item.setAttribute('aria-selected', isSelected.toString())
+            })
+
+            // Update trigger text
+            const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+            if (triggerContent) {
+                triggerContent.classList.add('has-translation')
+                const triggerSpan = triggerContent.querySelector('span')
+                if (triggerSpan) {
+                    this.updateTriggerText(supportedLang.name)
+                }
+            }
+        } catch (error) {
+            console.error('Translation error:', error)
+            throw error
+        }
+    }
+
+    /**
+     * Get the current instance of TranslationWidget
+     * @returns The current TranslationWidget instance or null if not initialized
+     */
+    public static getInstance(): TranslationWidget | null {
+        return TranslationWidget.instance
+    }
+}
+
+// Expose the translate function globally
+declare global {
+    interface Window {
+        translate: (langCode: string) => Promise<void>
+    }
+}
+
+// Add the global translate function
+window.translate = async (langCode: string): Promise<void> => {
+    const instance = TranslationWidget.getInstance()
+    if (!instance) {
+        console.error('Translation widget not initialized')
+        return
+    }
+    await instance.translateTo(langCode)
 }

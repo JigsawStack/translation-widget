@@ -39,6 +39,8 @@ export class DocumentNavigator {
                     container.closest('script, style, code') !== null ||
                     container.closest('next-route-announcer') !== null ||
                     container.closest('.translate-widget') !== null ||
+                    container.closest('.widget-trigger') !== null ||
+                    container.closest('.widget-dropdown') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
                 return shouldSkip

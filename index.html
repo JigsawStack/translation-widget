@@ -8,7 +8,8 @@
     </head>
     <body>
         <header class="tw-header">
-            <h1>Welcome to Our Website humara 😀 🇮🇳</h1>
+                
+                <h1>Welcome to Our Website humara 😀 🇮🇳 </h1>
             <nav class="tw-nav">
                 <p> 😀</p>
                 <a href="#home">Home</a>
@@ -41,6 +42,7 @@
                 </article>
 
                 <article class="article">
+
                     <h2>Customer Stories</h2>
                     <p>
                         Hear from our satisfied customers about how our products
@@ -71,6 +73,8 @@
                     </div>
                     <div>
                         <h3>Benefits</h3>
+                        <div class="translation-widget"></div>
+                        <button onclick="window.translate('hi')" class="translate-hindi-btn">Translate to Hindi</button>
                         <ul>
                             <li>Increased Productivity</li>
                             <li>Cost Effective</li>
@@ -80,7 +84,6 @@
                     </div>
                 </div>
             </section>
-
             <section class="contact">
                 <h2>Contact Us</h2>
                 <p>
@@ -94,7 +97,6 @@
                 </ul>
             </section>
         </main>
-
         <footer class="tw-footer">
             <p>© 2024 Your Company Name. All rights reserved.</p>
         </footer>
@@ -102,8 +104,7 @@
         <script defer src="./dist/index.min.js"></script>
         <script  defer type="module">
             TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
-                primaryColor: '#2563eb',
-                pageLanguage: 'hi',
+                pageLanguage: 'en',
                 autoDetectLanguage: false,
             })
         </script>

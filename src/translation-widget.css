@@ -131,11 +131,8 @@
 
 /* Translation Widget */
 .translation-widget {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    z-index: 1000;
-    font-family: Arial, sans-serif;
+    position: relative;
+    max-width: fit-content;
 }
 
 /* Widget Trigger */
@@ -199,9 +196,6 @@
 /* Widget Dropdown */
 .widget-dropdown {
     position: absolute;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 0.5rem;
     width: 20rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -217,6 +211,7 @@
     min-height: 30rem;
     display: none;
     flex-direction: column;
+    z-index: 1000;
 }
 
 .widget-dropdown.open {
@@ -703,4 +698,31 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* Translate to Hindi Button */
+.translate-hindi-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.translate-hindi-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.translate-hindi-btn:active {
+    transform: translateY(0);
 }
