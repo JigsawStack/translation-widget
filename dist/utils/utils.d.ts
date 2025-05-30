@@ -1,3 +1,5 @@
 declare function generateHashForContent(nodes: Node[]): string;
 declare function getVisibleTextContent(element: HTMLElement): string;
-export { generateHashForContent, getVisibleTextContent };
+declare const removeEmojis: (text: string) => string;
+declare const getUserLanguage: () => string;
+export { generateHashForContent, getVisibleTextContent, removeEmojis, getUserLanguage };
