@@ -1,0 +1,33 @@
+import { TranslationConfig } from '../types';
+export declare class TranslationWidget {
+    private config;
+    private translationService;
+    private currentLanguage;
+    private widget;
+    private elements;
+    private autoDetectLanguage;
+    private isTranslated;
+    private isTranslating;
+    private observer;
+    private translationScheduled;
+    private scheduleTimeout;
+    private lastTranslated;
+    constructor(publicKey: string, config?: Partial<TranslationConfig>);
+    private initialize;
+    private setupContentObserver;
+    private observeBody;
+    private onUrlChange;
+    private setupURLObserver;
+    private validateConfig;
+    private createWidget;
+    private getCurrentLanguageLabel;
+    private createWidgetHTML;
+    private createLanguageOptions;
+    private updateTriggerText;
+    private translatePage;
+    private getTextToTranslate;
+    private updateResetButtonVisibility;
+    resetTranslations(): void;
+    private setupEventListeners;
+    private scheduleTranslation;
+}
