@@ -142,15 +142,12 @@ export class TranslationWidget {
 
     private createWidget(): void {
         const currentLanguageLabel = this.getCurrentLanguageLabel()
-        // Find existing container
-        const container = document.querySelector<HTMLDivElement>('.translation-widget')
-        if (!container) {
-            console.error('No element with class "translation-widget" found. Please add a div with class="translation-widget" where you want the widget to appear.')
-            return
-        }
         
-        // Set widget reference to the existing container
-        this.widget = container
+        // Create widget element
+        this.widget = document.createElement('div')
+        this.widget.className = 'translation-widget'
+        document.body.appendChild(this.widget)
+        
         this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel)
 
         // Cache element references

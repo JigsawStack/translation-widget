@@ -6,6 +6,12 @@
 }
 
 
+.translation-widget {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 1000;
+}
 
 /* Layout Components */
 .tw-header {
@@ -131,7 +137,6 @@
 
 /* Translation Widget */
 .translation-widget {
-    position: relative;
     max-width: fit-content;
 }
 
