@@ -37,7 +37,7 @@ Insert the following just before the closing `</body>` tag in your HTML file:
 
 <!-- JigsawStack Translation Widget -->
 
-<script  defer  src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
+<script  defer  src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js"></script>
 
 ```
 
@@ -137,7 +137,7 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
 
 <!-- JigsawStack Translation Widget -->
 
-<script  defer  src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js"></script>
+<script  defer  src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js"></script>
 
 <script  defer  type="module">
 
