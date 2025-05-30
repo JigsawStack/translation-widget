@@ -442,6 +442,4 @@ Please open an issue or submit a pull request with improvements. Be sure to:
 
 ## 💬 Need Help?
 
-  
-
-Join our developer community: [Discord](https://discord.gg/dj8fMBpnqd)
+Join our developer community: [Discord](https://discord.gg/fzezy9qYPq)

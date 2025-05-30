@@ -8,18 +8,24 @@ This guide will help you integrate the Translation Widget into your Next.js webs
 
 ## Installation Steps
 
-### 1. Copy this script
+### 1. Copy this
 
 ```html
-  <Script
-          strategy="afterInteractive"
+<!-- Add this div in the place where you want the widget to show up  -->
+        <div className="translation-widget"></div>
+<!--  -->
+        <Script
+         strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
+                script.src = "https://translation-widget.vercel.app/index.min.js";
                 script.onload = function() {
-                  initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+                 TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                pageLanguage: 'en',
+                autoDetectLanguage: false,
+            })
                 };
                 document.body.appendChild(script);
               })();
@@ -45,16 +51,21 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-
+<!-- Add this div in the place where you want the widget to show up  -->
+        <div className="translation-widget"></div>
+<!--  -->
         <Script
          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/translate-widget.min.js";
+                script.src = "https://translation-widget.vercel.app/index.min.js";
                 script.onload = function() {
-                  initializeTranslationWidget('YOUR_PUBLIC_KEY_HERE');
+                 TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                pageLanguage: 'en',
+                autoDetectLanguage: false,
+            })
                 };
                 document.body.appendChild(script);
               })();
@@ -71,7 +82,7 @@ export default function RootLayout({
 
 ## Need Help?
 
-- Reach out on [Discord](https://discord.gg/dj8fMBpnqd). We'll be happy to help.
+- Reach out on [Discord](https://discord.gg/fzezy9qYPq). We'll be happy to help.
 
 ## Security Best Practices
 
