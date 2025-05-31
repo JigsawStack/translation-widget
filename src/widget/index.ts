@@ -41,17 +41,20 @@ export class TranslationWidget {
             safeConfig.position = 'top-right';
         }
         this.config = safeConfig as Required<TranslationConfig>;
+
         if ( ! publicKey) {
             throw new Error('Public key is required to initialize the translation widget')
         }
-        if ( ! this.config.pageLanguage) {
-            throw new Error('Page language is required to initialize the translation widget')
+
+        if ( !publicKey.startsWith('sk_')) {
+            throw new Error('Please use proper api key. You can get one from https://jigsawstack.com')
         }
+
         this.translationService = new TranslationService(
             publicKey,
         )
         this.autoDetectLanguage = this.config.autoDetectLanguage || false
-        this.currentLanguage = this.config.pageLanguage
+        this.currentLanguage = this.config.pageLanguage || 'en'
         this.userLanguage = getUserLanguage()
         this.widget = document.createElement('div')
         this.elements = {
@@ -88,6 +91,11 @@ export class TranslationWidget {
         }
         this.currentLanguage = initialLang;
         this.createWidget()
+        // Update icon if not default language
+        const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+        if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
+            triggerIcon.innerHTML = `<span class=\"lang-code\">${this.currentLanguage.toUpperCase()}</span>`;
+        }
         this.setupEventListeners()
         this.setupURLObserver()
         this.setupContentObserver()
@@ -545,10 +553,10 @@ export class TranslationWidget {
                     item.classList.toggle('selected', isSelected)
                     item.setAttribute('aria-selected', isSelected.toString())
                 })
-                // Update trigger text
-                const currentLanguage = languages.find(lang => lang.code === this.config.pageLanguage)
-                if (currentLanguage) {
-                    this.updateTriggerText(currentLanguage.name)
+                // Restore SVG icon
+                const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                if (triggerIcon) {
+                    triggerIcon.innerHTML = this.getLanguageSVG();
                 }
                 // Close dropdown
                 dropdown.classList.remove('open')
@@ -672,6 +680,12 @@ export class TranslationWidget {
                 // Save preference to localStorage
                 if (langCode) {
                     localStorage.setItem('jss-pref', langCode);
+                }
+
+                // Change icon to language code
+                const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                if (triggerIcon && langCode) {
+                    triggerIcon.innerHTML = `<span class=\"lang-code\">${langCode.toUpperCase()}</span>`;
                 }
 
                 // Close dropdown
@@ -821,6 +835,11 @@ export class TranslationWidget {
      */
     public static getInstance(): TranslationWidget | null {
         return TranslationWidget.instance
+    }
+
+    // Add this helper method to the class
+    private getLanguageSVG(): string {
+        return `\n            <svg class=\"languages-icon\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"\n                    d=\"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129\">\n                </path>\n            </svg>\n        `;
     }
 }
 

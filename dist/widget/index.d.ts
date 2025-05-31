@@ -45,6 +45,7 @@ export declare class TranslationWidget {
      * @returns The current TranslationWidget instance or null if not initialized
      */
     static getInstance(): TranslationWidget | null;
+    private getLanguageSVG;
 }
 declare global {
     interface Window {
