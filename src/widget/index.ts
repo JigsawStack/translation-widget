@@ -34,9 +34,18 @@ export class TranslationWidget {
     private static instance: TranslationWidget | null = null
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
-        this.config = { ...DEFAULT_CONFIG, ...config }
+        const allowedPositions = ['top-right', 'top-left', 'bottom-left', 'bottom-right'] as const;
+        let safeConfig = { ...DEFAULT_CONFIG, ...config };
+        if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
+            console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
+            safeConfig.position = 'top-right';
+        }
+        this.config = safeConfig as Required<TranslationConfig>;
         if ( ! publicKey) {
             throw new Error('Public key is required to initialize the translation widget')
+        }
+        if ( ! this.config.pageLanguage) {
+            throw new Error('Page language is required to initialize the translation widget')
         }
         this.translationService = new TranslationService(
             publicKey,
