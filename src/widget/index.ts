@@ -373,10 +373,6 @@ export class TranslationWidget {
             if (this.currentTranslationPromise === this.currentTranslationPromise) {
                 this.currentTranslationPromise = null;
             }
-            console.log("currentTranslationPromise", this.currentTranslationPromise)
-            console.log("lastRequestedLanguage", this.lastRequestedLanguage)
-            console.log("targetLang", targetLang)
-            console.log("resetting loading state")
             if(this.lastRequestedLanguage === targetLang) {
                 this.updateLoadingState(false);
             }
