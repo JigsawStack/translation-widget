@@ -9,6 +9,7 @@ export interface Language {
 export interface TranslationConfig {
     pageLanguage?: string
     autoDetectLanguage?: boolean
+    position?: 'top-right' | 'top-left' | 'bottom-left' | 'bottom-right'
 }
 
 export interface CacheEntry {

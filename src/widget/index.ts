@@ -145,7 +145,7 @@ export class TranslationWidget {
         
         // Create widget element
         this.widget = document.createElement('div')
-        this.widget.className = 'translation-widget'
+        this.widget.className = `translation-widget position-${this.config.position || 'top-right'}`
         document.body.appendChild(this.widget)
         
         this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel)

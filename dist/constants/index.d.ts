@@ -5,4 +5,5 @@ export declare const DEFAULT_CONFIG: {
     primaryColor: string;
     pageLanguage: string;
     autoDetectLanguage: boolean;
+    position: "top-right";
 };

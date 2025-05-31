@@ -5,12 +5,54 @@
     box-sizing: border-box;
 }
 
-
 .translation-widget {
-    position: absolute;
+    position: fixed;
+    z-index: 1000;
+}
+
+/* Position Configurations */
+.translation-widget.position-top-right {
+    top: 2rem;
+    right: 2rem;
+}
+
+.translation-widget.position-top-left {
+    top: 2rem;
+    left: 2rem;
+}
+
+.translation-widget.position-bottom-left {
     bottom: 2rem;
     left: 2rem;
-    z-index: 1000;
+}
+
+.translation-widget.position-bottom-right {
+    bottom: 2rem;
+    right: 2rem;
+}
+
+/* Position-specific dropdown adjustments */
+.position-top-right .widget-dropdown,
+.position-top-left .widget-dropdown {
+    top: calc(100% + 0.5rem);
+}
+
+.position-bottom-right .widget-dropdown,
+.position-bottom-left .widget-dropdown {
+    bottom: calc(100% + 0.5rem);
+}
+
+.position-top-right .widget-dropdown,
+.position-bottom-right .widget-dropdown {
+    right: 0;
+}
+
+.position-top-left .widget-dropdown,
+.position-bottom-left .widget-dropdown {
+    left: 0;
+}
+.translation-widget { 
+    position: fixed;
 }
 
 /* Layout Components */
@@ -158,7 +200,7 @@
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border: 1px solid #e5e7eb;
-    border-radius: 0.75rem;
+    border-radius: 50%;
     padding: 0.75rem 1rem;
     cursor: pointer;
     display: flex;
