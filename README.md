@@ -239,6 +239,102 @@ To apply these customizations, place your CSS after the widget's script tag.
 ```
 
 
+## 🚀 Next.js Integration
+
+### App Router (Next.js 13+)
+
+Add the widget container and script to your root layout (`app/layout.tsx`):
+
+```tsx
+import Script from "next/script";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        {/* Add this div where you want the widget to appear */}
+        <div className="translation-widget"></div>
+        
+        <Script
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var script = document.createElement('script');
+                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js";
+                script.onload = function() {
+                  TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                    pageLanguage: 'en',
+                    position: "top-right",
+                    autoDetectLanguage: false,
+                  })
+                };
+                document.body.appendChild(script);
+              })();
+            `,
+          }}
+        />
+      </body>
+    </html>
+  );
+}
+```
+
+### Pages Router (Legacy)
+
+If you're using the Pages Router, add the widget to your `pages/_app.tsx`:
+
+```tsx
+import Script from "next/script";
+
+function MyApp({ Component, pageProps }) {
+  return (
+    <>
+      <Component {...pageProps} />
+      <div className="translation-widget"></div>
+      <Script
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              var script = document.createElement('script');
+              script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js";
+              script.onload = function() {
+                TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                  pageLanguage: 'en',
+                  position: "top-right",
+                  autoDetectLanguage: false,
+                })
+              };
+              document.body.appendChild(script);
+            })();
+          `,
+        }}
+      />
+    </>
+  );
+}
+
+export default MyApp;
+```
+
+### Configuration Options
+
+You can customize the widget by modifying the configuration object in the `TranslationWidget` initialization:
+
+```js
+TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+  pageLanguage: 'en',          // Your page's default language
+  autoDetectLanguage: false,   // Enable/disable auto-detection
+  position: "top-right",       // Widget position
+});
+```
+
 ## 🧪 Running Locally
 
 ### 1. Clone the Repo
