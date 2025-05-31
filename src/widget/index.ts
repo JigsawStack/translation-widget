@@ -32,6 +32,8 @@ export class TranslationWidget {
     private scheduleTimeout: number | null = null
     private lastTranslated: { url: string, lang: string, hash: string } | null = null
     private static instance: TranslationWidget | null = null
+    private currentTranslationPromise: Promise<void> | null = null
+    private lastRequestedLanguage: string | null = null
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         const allowedPositions = ['top-right', 'top-left', 'bottom-left', 'bottom-right'] as const;
@@ -325,7 +327,63 @@ export class TranslationWidget {
         return `${fontSize}px`;
     }
 
+    private updateLoadingState(isLoading: boolean): void {
+        const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+        const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
+        if (triggerContent && triggerLoading) {
+            if (isLoading) {
+                triggerContent.style.display = 'none'
+                triggerLoading.style.display = 'flex'
+            } else {
+                triggerLoading.style.display = 'none'
+                triggerContent.style.display = 'flex'
+                
+                // Update trigger content with language code and name
+                if (this.lastRequestedLanguage) {
+                    const langObj = languages.find(lang => lang.code === this.lastRequestedLanguage);
+                    if (langObj) {
+                        const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                        if (triggerIcon) {
+                            triggerIcon.innerHTML = `<span class="lang-code">${this.lastRequestedLanguage.toUpperCase()}</span><span class="lang-name">${langObj.name}</span>`;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private async translatePage(targetLang: string): Promise<void> {
+        // Store the most recently requested language
+        this.lastRequestedLanguage = targetLang;
+        
+        // Show loading state
+        this.updateLoadingState(true);
+        
+        // If there's already a translation in progress, wait for it
+        if (this.currentTranslationPromise) {
+            await this.currentTranslationPromise;
+        }
+        
+        // Create a new promise for this translation
+        this.currentTranslationPromise = this._translatePage(targetLang);
+        
+        try {
+            await this.currentTranslationPromise;
+        } finally {
+            if (this.currentTranslationPromise === this.currentTranslationPromise) {
+                this.currentTranslationPromise = null;
+            }
+            console.log("currentTranslationPromise", this.currentTranslationPromise)
+            console.log("lastRequestedLanguage", this.lastRequestedLanguage)
+            console.log("targetLang", targetLang)
+            console.log("resetting loading state")
+            if(this.lastRequestedLanguage === targetLang) {
+                this.updateLoadingState(false);
+            }
+        }
+    }
+
+    private async _translatePage(targetLang: string): Promise<void> {
         this.isTranslating = true;
         this.observer?.disconnect(); // Pause observing during translation
         try {
@@ -387,19 +445,22 @@ export class TranslationWidget {
             const cachedTranslations = cache.getItem(key)
             if (cachedTranslations && cachedTranslations[0]) {
                 const fullTranslations = cachedTranslations[0];
-                nodes.forEach((node, idx) => {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        const parent = node.parentElement;
-                        if (parent) {
-                            const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
-                            const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize);
-                            parent.style.fontSize = newFontSize;
+                // Only update DOM if this is still the most recently requested language
+                if (this.lastRequestedLanguage === targetLang) {
+                    nodes.forEach((node, idx) => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            const parent = node.parentElement;
+                            if (parent) {
+                                const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
+                                const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize);
+                                parent.style.fontSize = newFontSize;
+                            }
+                            node.textContent = fullTranslations[idx];
                         }
-                        node.textContent = fullTranslations[idx];
-                    }
-                });
-                this.isTranslated = true;
-                this.updateResetButtonVisibility();
+                    });
+                    this.isTranslated = true;
+                    this.updateResetButtonVisibility();
+                }
                 return;
             }
 
@@ -411,8 +472,10 @@ export class TranslationWidget {
             );
 
             if (allTranslatedTexts.length === 0) {
-                this.isTranslated = true;
-                this.updateResetButtonVisibility();
+                if (this.lastRequestedLanguage === targetLang) {
+                    this.isTranslated = true;
+                    this.updateResetButtonVisibility();
+                }
                 return;
             }
 
@@ -424,8 +487,10 @@ export class TranslationWidget {
 
             if (allBatchesFailed) {
                 console.warn('All translations failed, not caching results');
-                this.isTranslated = true;
-                this.updateResetButtonVisibility();
+                if (this.lastRequestedLanguage === targetLang) {
+                    this.isTranslated = true;
+                    this.updateResetButtonVisibility();
+                }
                 return;
             }
 
@@ -441,14 +506,16 @@ export class TranslationWidget {
                     const translatedText = allTranslatedTexts[batchIdx][textIdx];
                     fullTranslations[nodeIdx] = translatedText;
                     
-                    // Apply font size adjustment
-                    if (parent) {
-                        const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
-                        const newFontSize = this.calculateFontSize(translatedText, originalFontSize);
-                        parent.style.fontSize = newFontSize;
+                    // Only update DOM if this is still the most recently requested language
+                    if (this.lastRequestedLanguage === targetLang) {
+                        // Apply font size adjustment
+                        if (parent) {
+                            const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
+                            const newFontSize = this.calculateFontSize(translatedText, originalFontSize);
+                            parent.style.fontSize = newFontSize;
+                        }
+                        node.textContent = translatedText;
                     }
-                    
-                    node.textContent = translatedText;
                 } else if (parent && parent.getAttribute('data-translated-lang') === targetLang) {
                     // Already translated, use current text
                     fullTranslations[nodeIdx] = node.textContent || '';
@@ -457,11 +524,14 @@ export class TranslationWidget {
                 }
             });
 
-            // Save the full array in cache for this hash
+            // Always cache the translations, even if they're not the most recent
             cache.setItem(key, [fullTranslations]);
 
-            this.isTranslated = true;
-            this.updateResetButtonVisibility();
+            // Only update UI state if this is still the most recently requested language
+            if (this.lastRequestedLanguage === targetLang) {
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
+            }
         } finally {
             this.isTranslating = false;
             this.observeBody(); // Resume observing after translation
@@ -627,7 +697,6 @@ export class TranslationWidget {
 
         // Toggle dropdown
         trigger.addEventListener('click', () => {
-            if (this.isTranslating) return
             dropdown.classList.toggle('open')
             const isOpen = dropdown.classList.contains('open')
             trigger.setAttribute('aria-expanded', isOpen.toString())
@@ -713,7 +782,6 @@ export class TranslationWidget {
         // Language selection
         languageItems.forEach(item => {
             item.addEventListener('click', async () => {
-                if (this.isTranslating) return
                 // Remove selected class from all items
                 languageItems.forEach(i => {
                     i.classList.remove('selected')
@@ -764,13 +832,7 @@ export class TranslationWidget {
                     } catch (error) {
                         console.error('Translation error:', error)
                         alert('An error occurred during translation. Please try again.')
-                    } finally {
-                        // Hide loading state
-                        if (triggerContent && triggerLoading) {
-                            triggerLoading.style.display = 'none'
-                            triggerContent.style.display = 'flex'
-                        }
-                    }
+                    } 
                 } else if (triggerContent) {
                     // If original language is selected, remove the class
                     triggerContent.classList.remove('has-translation')
@@ -824,12 +886,6 @@ export class TranslationWidget {
                     })
                     .catch(error => {
                         console.error('Auto-translation error:', error)
-                    })
-                    .finally(() => {
-                        if (triggerContent && triggerLoading) {
-                            triggerLoading.style.display = 'none'
-                            triggerContent.style.display = 'flex'
-                        }
                     })
             }
         }, 200);

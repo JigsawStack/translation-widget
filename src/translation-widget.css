@@ -66,9 +66,9 @@
     display: flex;
     cursor: pointer;
     border-radius: 6px;
-    background: white;
     transition: all 0.2s ease;
 }
+
 
 .trigger-icon {
     display: flex;
@@ -90,6 +90,19 @@
     white-space: nowrap;
     transition: all 0.3s ease-in-out;
     display: inline-block;
+}
+
+.lang-code{
+    transition: all 0.3s ease-in-out;
+}
+.widget-trigger:hover .lang-code {
+    background: #e5e7eb;
+    border-radius: 50%;
+    padding: 0.1rem 0.3rem;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.3s ease-in-out;
 }
 
 .widget-trigger:hover .lang-name {

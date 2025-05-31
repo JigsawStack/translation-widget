@@ -14,6 +14,8 @@ export declare class TranslationWidget {
     private scheduleTimeout;
     private lastTranslated;
     private static instance;
+    private currentTranslationPromise;
+    private lastRequestedLanguage;
     constructor(publicKey: string, config?: Partial<TranslationConfig>);
     private initialize;
     private getUrlParameter;
@@ -29,7 +31,9 @@ export declare class TranslationWidget {
     private updateTriggerText;
     private getTextToTranslate;
     private calculateFontSize;
+    private updateLoadingState;
     private translatePage;
+    private _translatePage;
     private updateResetButtonVisibility;
     resetTranslations(): void;
     private adjustDropdownPosition;
