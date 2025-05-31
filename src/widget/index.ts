@@ -94,7 +94,10 @@ export class TranslationWidget {
         // Update icon if not default language
         const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
         if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
-            triggerIcon.innerHTML = `<span class=\"lang-code\">${this.currentLanguage.toUpperCase()}</span>`;
+            // Find the language name
+            const langObj = languages.find(lang => lang.code === this.currentLanguage);
+            const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
+            triggerIcon.innerHTML = `<span class=\"lang-code\">${this.currentLanguage.toUpperCase()}</span><span class=\"lang-name\">${langName}</span>`;
         }
         this.setupEventListeners()
         this.setupURLObserver()
@@ -682,10 +685,10 @@ export class TranslationWidget {
                     localStorage.setItem('jss-pref', langCode);
                 }
 
-                // Change icon to language code
+                // Change icon to language code and name
                 const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
-                if (triggerIcon && langCode) {
-                    triggerIcon.innerHTML = `<span class=\"lang-code\">${langCode.toUpperCase()}</span>`;
+                if (triggerIcon && langCode && langName) {
+                    triggerIcon.innerHTML = `<span class=\"lang-code\">${langCode.toUpperCase()}</span><span class=\"lang-name\">${langName}</span>`;
                 }
 
                 // Close dropdown
