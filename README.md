@@ -257,10 +257,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        {/* Add this div where you want the widget to appear */}
-        <div className="translation-widget"></div>
-        
-        <Script
+          <Script
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
@@ -290,37 +287,36 @@ export default function RootLayout({
 If you're using the Pages Router, add the widget to your `pages/_app.tsx`:
 
 ```tsx
+import type { AppProps } from "next/app";
 import Script from "next/script";
 
-function MyApp({ Component, pageProps }) {
+declare global {
+  interface Window {
+    TranslationWidget: (publicKey: string, options: {
+      pageLanguage:   string;
+      position: string;
+      autoDetectLanguage: boolean;
+    }) => void;
+  }
+}
+
+export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Component {...pageProps} />
-      <div className="translation-widget"></div>
       <Script
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              var script = document.createElement('script');
-              script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js";
-              script.onload = function() {
-                TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-                  pageLanguage: 'en',
-                  position: "top-right",
-                  autoDetectLanguage: false,
-                })
-              };
-              document.body.appendChild(script);
-            })();
-          `,
+        src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js"
+        onLoad={() => {
+          window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+            pageLanguage: 'en',
+            position: "top-right",
+            autoDetectLanguage: false,
+          });
         }}
       />
     </>
   );
 }
-
-export default MyApp;
 ```
 
 ### Configuration Options
