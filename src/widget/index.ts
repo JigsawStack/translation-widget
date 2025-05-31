@@ -313,7 +313,6 @@ export class TranslationWidget {
                         targetLang
                     );
                     textToTranslate = removeEmojis(textToTranslate || '')
-                    console.log('textToTranslate', textToTranslate)
                     if (textToTranslate.length === 0 || textToTranslate.length === 1) {
                         return;
                     }
@@ -367,6 +366,19 @@ export class TranslationWidget {
                 return;
             }
 
+            // Check if all batches failed (returned original texts)
+            const allBatchesFailed = allTranslatedTexts.every((translations, batchIndex) => {
+                const originalTexts = nonEmptyBatchTexts[batchIndex];
+                return translations.every((translation, index) => translation === originalTexts[index]);
+            });
+
+            if (allBatchesFailed) {
+                console.warn('All translations failed, not caching results');
+                this.isTranslated = true;
+                this.updateResetButtonVisibility();
+                return;
+            }
+
             // Build a full translation array for all nodes
             const fullTranslations: string[] = [];
             nodes.forEach((node, nodeIdx) => {
@@ -383,7 +395,6 @@ export class TranslationWidget {
                     // Already translated, use current text
                     fullTranslations[nodeIdx] = node.textContent || '';
                 } else {
-                    // Fallback: use original text
                     fullTranslations[nodeIdx] = node.textContent || '';
                 }
             });

@@ -6,6 +6,11 @@ declare global {
     interface Window {
         TranslationWidget: (
             publicKey: string,
+            options: {
+                pageLanguage: string;
+                position: string;
+                autoDetectLanguage: boolean;
+            },
             config?: TranslationConfig
         ) => TranslationWidget
     }

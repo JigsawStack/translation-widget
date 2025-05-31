@@ -225,9 +225,6 @@ You can customize the appearance by overriding CSS classes.
 | `@media (prefers-contrast: high)`         | High contrast mode | `@media (prefers-contrast: high) { .widget-trigger { border: 2px solid; } }` |
 | `@media (prefers-reduced-motion: reduce)` | Reduced motion     | `@media (prefers-reduced-motion: reduce) { * { transition: none; } }`        |
 
----
-
-To apply these customizations, place your CSS after the widget's script tag.
 
 ```html
 <style>
@@ -265,7 +262,7 @@ export default function RootLayout({
                 var script = document.createElement('script');
                 script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js";
                 script.onload = function() {
-                  TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                  TranslationWidget("sk_dkdks", {
                     pageLanguage: 'en',
                     position: "top-right",
                     autoDetectLanguage: false,
@@ -289,16 +286,6 @@ If you're using the Pages Router, add the widget to your `pages/_app.tsx`:
 ```tsx
 import type { AppProps } from "next/app";
 import Script from "next/script";
-
-declare global {
-  interface Window {
-    TranslationWidget: (publicKey: string, options: {
-      pageLanguage:   string;
-      position: string;
-      autoDetectLanguage: boolean;
-    }) => void;
-  }
-}
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
