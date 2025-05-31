@@ -278,6 +278,53 @@ export class TranslationWidget {
     }
 
 
+    private getTextToTranslate(
+        node: Text,
+        parent: HTMLElement,
+        targetLang: string
+    ): string | null {
+        if (!parent.hasAttribute('data-original-text')) {
+            const originalText = node.textContent?.trim()
+            if (originalText) {
+                parent.setAttribute('data-translated-lang', targetLang)
+                parent.setAttribute('data-original-text', originalText)
+                // Store original font size if not already stored
+                if (!parent.hasAttribute('data-original-font-size')) {
+                    const computedStyle = window.getComputedStyle(parent)
+                    parent.setAttribute('data-original-font-size', computedStyle.fontSize)
+                }
+                return originalText
+            }
+        } else {
+            const textToTranslate = node.textContent?.trim()
+            if (this.currentLanguage !== 'en' && targetLang !== 'en') {
+                parent.setAttribute('data-translated-lang', targetLang)
+                return parent.getAttribute('data-original-text')
+            }
+            return textToTranslate || null
+        }
+        return null
+    }
+
+    private calculateFontSize(text: string, originalFontSize: string): string {
+        const baseFontSize = 12; // Minimum font size in pixels
+        const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
+        const textLength = text.length;
+        
+        // Calculate font size based on text length
+        // The longer the text, the smaller the font size
+        // We use a logarithmic scale to make the reduction more gradual
+        const fontSize = Math.max(
+            baseFontSize,
+            Math.min(
+                maxFontSize,
+                maxFontSize * (1 - Math.log(textLength) / 10)
+            )
+        );
+        
+        return `${fontSize}px`;
+    }
+
     private async translatePage(targetLang: string): Promise<void> {
         this.isTranslating = true;
         this.observer?.disconnect(); // Pause observing during translation
@@ -336,15 +383,18 @@ export class TranslationWidget {
                 }
             });
 
-
-            // add a delay of 10min
-
             const key = cache.getKey(hash, window.location.href, targetLang)
             const cachedTranslations = cache.getItem(key)
             if (cachedTranslations && cachedTranslations[0]) {
                 const fullTranslations = cachedTranslations[0];
                 nodes.forEach((node, idx) => {
                     if (node.nodeType === Node.TEXT_NODE) {
+                        const parent = node.parentElement;
+                        if (parent) {
+                            const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
+                            const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize);
+                            parent.style.fontSize = newFontSize;
+                        }
                         node.textContent = fullTranslations[idx];
                     }
                 });
@@ -390,6 +440,14 @@ export class TranslationWidget {
                     const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
                     const translatedText = allTranslatedTexts[batchIdx][textIdx];
                     fullTranslations[nodeIdx] = translatedText;
+                    
+                    // Apply font size adjustment
+                    if (parent) {
+                        const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
+                        const newFontSize = this.calculateFontSize(translatedText, originalFontSize);
+                        parent.style.fontSize = newFontSize;
+                    }
+                    
                     node.textContent = translatedText;
                 } else if (parent && parent.getAttribute('data-translated-lang') === targetLang) {
                     // Already translated, use current text
@@ -408,29 +466,6 @@ export class TranslationWidget {
             this.isTranslating = false;
             this.observeBody(); // Resume observing after translation
         }
-    }
-
-    private getTextToTranslate(
-        node: Text,
-        parent: HTMLElement,
-        targetLang: string
-    ): string | null {
-        if (!parent.hasAttribute('data-original-text')) {
-            const originalText = node.textContent?.trim()
-            if (originalText) {
-                parent.setAttribute('data-translated-lang', targetLang)
-                parent.setAttribute('data-original-text', originalText)
-                return originalText
-            }
-        } else {
-            const textToTranslate = node.textContent?.trim()
-            if (this.currentLanguage !== 'en' && targetLang !== 'en') {
-                parent.setAttribute('data-translated-lang', targetLang)
-                return parent.getAttribute('data-original-text')
-            }
-            return textToTranslate || null
-        }
-        return null
     }
 
     private updateResetButtonVisibility(): void {
@@ -456,8 +491,14 @@ export class TranslationWidget {
                     textNodes[0].textContent = originalText
                 }
             }
-            element.removeAttribute('data-original-text');
-            element.removeAttribute('data-translated-lang');
+            // Restore original font size
+            const originalFontSize = element.getAttribute('data-original-font-size')
+            if (originalFontSize) {
+                element.style.fontSize = originalFontSize
+            }
+            element.removeAttribute('data-original-text')
+            element.removeAttribute('data-translated-lang')
+            element.removeAttribute('data-original-font-size')
         })
         this.isTranslated = false;
 
@@ -467,7 +508,7 @@ export class TranslationWidget {
         const hash = generateHashForContent(nodes);
         this.lastTranslated = {
             url: window.location.href,
-            lang: this.config.pageLanguage, // or 'en' if that's your default
+            lang: this.config.pageLanguage,
             hash
         };
 

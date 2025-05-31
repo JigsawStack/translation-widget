@@ -109,7 +109,18 @@ Benefits include:
 * Lightning-fast repeated loads
 
 
-### 5. 🚀 Faster and More Accurate than Google Translate
+### 5. Font Size Adjustment
+
+The translation widget automatically adjusts font sizes when translating text to prevent overflow issues. This is particularly useful when translating to languages that typically have longer text lengths. The font size adjustment works as follows:
+
+- Base font size: 12px (minimum)
+- Maximum font size: Original font size of the element
+- The font size scales logarithmically based on text length
+- Original font sizes are preserved and restored when resetting translations
+
+The font size adjustment is automatic and requires no additional configuration. It helps maintain readability while preventing text overflow in translated content.
+
+### 6. 🚀 Faster and More Accurate than Google Translate
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 

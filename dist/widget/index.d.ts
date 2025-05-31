@@ -27,8 +27,9 @@ export declare class TranslationWidget {
     private createWidgetHTML;
     private createLanguageOptions;
     private updateTriggerText;
-    private translatePage;
     private getTextToTranslate;
+    private calculateFontSize;
+    private translatePage;
     private updateResetButtonVisibility;
     resetTranslations(): void;
     private adjustDropdownPosition;
