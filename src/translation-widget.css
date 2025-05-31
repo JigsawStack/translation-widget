@@ -601,17 +601,13 @@
 .language-item:nth-child(10) { animation-delay: 0.38s; }
 
 /* Media Queries */
-@media (max-width: 640px) {
-    .translation-widget {
-        bottom: 1rem;
-        right: 1rem;
-    }
-
+@media (max-width: 400px) {
     .widget-dropdown {
-        width: calc(100vw - 2rem);
+        width: 100vw;
         right: auto;
         left: 50%;
-        transform: translateX(-50%) scale(0.95) translateY(10px);
+      
+        transform: translateX(-59%) scale(0.95) translateY(10px);
     }
 
     .widget-dropdown.open {
