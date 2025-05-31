@@ -35,6 +35,9 @@ export class TranslationWidget {
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config }
+        if ( ! publicKey) {
+            throw new Error('Public key is required to initialize the translation widget')
+        }
         this.translationService = new TranslationService(
             publicKey,
         )
@@ -59,15 +62,22 @@ export class TranslationWidget {
         
         // Get language from URL parameter
         const urlLang = this.getUrlParameter('lang')
+        let initialLang = this.config.pageLanguage;
         if (urlLang) {
             const supportedLang = languages.find(lang => lang.code === urlLang)
             if (supportedLang) {
-                this.currentLanguage = urlLang
+                initialLang = urlLang
             }
-        } else if (this.autoDetectLanguage) {
-            this.currentLanguage = this.userLanguage
+        } else {
+            // Check localStorage for preferred language
+            const prefLang = localStorage.getItem('jss-pref');
+            if (prefLang && languages.find(lang => lang.code === prefLang)) {
+                initialLang = prefLang;
+            } else if (this.autoDetectLanguage) {
+                initialLang = this.userLanguage
+            }
         }
-        
+        this.currentLanguage = initialLang;
         this.createWidget()
         this.setupEventListeners()
         this.setupURLObserver()
@@ -648,6 +658,11 @@ export class TranslationWidget {
 
                 if (langName) {
                     await this.updateTriggerText(langName)
+                }
+
+                // Save preference to localStorage
+                if (langCode) {
+                    localStorage.setItem('jss-pref', langCode);
                 }
 
                 // Close dropdown
