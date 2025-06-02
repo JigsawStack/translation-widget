@@ -317,6 +317,58 @@ export default function App({ Component, pageProps }: AppProps) {
 }
 ```
 
+Alternatively, if you prefer using script tags directly, you can add this to your `pages/_document.tsx`:
+
+```tsx
+import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html>
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+        <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js" defer></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('load', function () {
+                if (window.TranslationWidget) {
+                  window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                    pageLanguage: 'en',
+                    position: "top-right",
+                    autoDetectLanguage: false,
+                  });
+                }
+              });
+            `,
+          }}
+        />
+      </body>
+    </Html>
+  )
+}
+```
+
+### TypeScript Support
+
+If you're using TypeScript and encountering type errors with `window.TranslationWidget`, add the following type declaration to your project (typically in a `types.d.ts` file or at the top of your component file):
+
+```ts
+declare global {
+  interface Window {
+    TranslationWidget: (publicKey: string, options: {
+      pageLanguage: string;
+      position: string;
+      autoDetectLanguage: boolean;
+    }) => void;
+  }
+}
+```
+
+This will resolve any TypeScript errors related to the `TranslationWidget` global function.
+
 ### Configuration Options
 
 You can customize the widget by modifying the configuration object in the `TranslationWidget` initialization:
