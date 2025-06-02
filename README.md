@@ -136,116 +136,6 @@ Our engine offers **contextual accuracy** and **lower latency**, especially for 
 
 ---
 
-## 🎨 CSS Customization
-
-You can customize the appearance by overriding CSS classes.
-
----
-
-### Widget Container and Positioning
-
-| Selector                                    | Description           | Example Usage                                           |
-| ------------------------------------------- | --------------------- | ------------------------------------------------------- |
-| `.translation-widget`                       | Main widget container | `.translation-widget { z-index: 2000; }`                |
-| `.translation-widget.position-top-right`    | Top-right positioning | `.position-top-right { top: 1rem; right: 1rem; }`       |
-| `.translation-widget.position-top-left`     | Top-left positioning  | `.position-top-left { top: 1rem; left: 1rem; }`         |
-| `.translation-widget.position-bottom-right` | Bottom-right          | `.position-bottom-right { bottom: 1rem; right: 1rem; }` |
-| `.translation-widget.position-bottom-left`  | Bottom-left           | `.position-bottom-left { bottom: 1rem; left: 1rem; }`   |
-
----
-
-### Widget Trigger Button
-
-| Selector           | Description         | Example Usage                              |
-| ------------------ | ------------------- | ------------------------------------------ |
-| `.widget-trigger`  | Main trigger button | `.widget-trigger { background: #f0f0f0; }` |
-| `.trigger-content` | Inside trigger      | `.trigger-content { gap: 0.5rem; }`        |
-| `.lang-code`       | Language code text  | `.lang-code { font-size: 16px; }`          |
-| `.lang-name`       | Language name text  | `.lang-name { color: #666; }`              |
-
----
-
-### Dropdown Menu
-
-| Selector           | Description          | Example Usage                               |
-| ------------------ | -------------------- | ------------------------------------------- |
-| `.widget-dropdown` | Dropdown container   | `.widget-dropdown { width: 300px; }`        |
-| `.dropdown-header` | Header section       | `.dropdown-header { background: #f8f9fa; }` |
-| `.dropdown-title`  | Title area           | `.dropdown-title { padding: 1rem; }`        |
-| `.title-text`      | Title text           | `.title-text { font-weight: bold; }`        |
-| `.language-count`  | Language count badge | `.language-count { background: #e9ecef; }`  |
-
----
-
-### Search Section
-
-| Selector            | Description         | Example Usage                           |
-| ------------------- | ------------------- | --------------------------------------- |
-| `.search-container` | Container           | `.search-container { margin: 1rem; }`   |
-| `.search-input`     | Input field         | `.search-input { border-radius: 8px; }` |
-| `.search-icon`      | Search icon         | `.search-icon { color: #666; }`         |
-| `.clear-search`     | Clear search button | `.clear-search { color: #999; }`        |
-
----
-
-### Language List
-
-| Selector                  | Description    | Example Usage                              |
-| ------------------------- | -------------- | ------------------------------------------ |
-| `.language-list`          | List container | `.language-list { max-height: 400px; }`    |
-| `.language-item`          | Language item  | `.language-item { padding: 0.75rem; }`     |
-| `.language-item.selected` | Selected item  | `.selected { background: #e3f2fd; }`       |
-| `.language-item.focused`  | Focused item   | `.focused { background: #f5f5f5; }`        |
-| `.language-name`          | Name text      | `.language-name { font-weight: 500; }`     |
-| `.language-code`          | Code badge     | `.language-code { background: #f0f0f0; }`  |
-| `.language-details`       | Extra details  | `.language-details { font-size: 0.8rem; }` |
-
----
-
-### Icons and Visual Elements
-
-| Selector           | Description       | Example Usage                                 |
-| ------------------ | ----------------- | --------------------------------------------- |
-| `.globe-icon`      | Globe icon        | `.globe-icon { color: #2196f3; }`             |
-| `.check-icon`      | Check mark        | `.check-icon { color: #4caf50; }`             |
-| `.loading-spinner` | Spinner animation | `.loading-spinner { border-color: #2196f3; }` |
-
----
-
-### Footer
-
-| Selector           | Description    | Example Usage                               |
-| ------------------ | -------------- | ------------------------------------------- |
-| `.dropdown-footer` | Footer section | `.dropdown-footer { background: #f8f9fa; }` |
-| `.footer-text`     | Footer text    | `.footer-text { color: #666; }`             |
-
----
-
-### Responsive Design
-
-| Selector                    | Description   | Example Usage                                                     |
-| --------------------------- | ------------- | ----------------------------------------------------------------- |
-| `@media (max-width: 640px)` | Mobile styles | `@media (max-width: 640px) { .widget-dropdown { width: 90vw; } }` |
-
----
-
-### Accessibility
-
-| Selector                                  | Description        | Example Usage                                                                |
-| ----------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
-| `@media (prefers-contrast: high)`         | High contrast mode | `@media (prefers-contrast: high) { .widget-trigger { border: 2px solid; } }` |
-| `@media (prefers-reduced-motion: reduce)` | Reduced motion     | `@media (prefers-reduced-motion: reduce) { * { transition: none; } }`        |
-
-
-```html
-<style>
-  .widget-trigger {
-    background-color: #eee;
-    border-radius: 8px;
-  }
-</style>
-```
-
 
 ## 🚀 Next.js Integration
 
@@ -374,7 +264,7 @@ This will resolve any TypeScript errors related to the `TranslationWidget` globa
 For React applications, you can add the widget by including the script tags in your `index.html` file:
 
 ```html
-<script src="./dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget/dist/index.min.js"></script>
 <script defer type="module">
     TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
         pageLanguage: 'en',
@@ -399,6 +289,117 @@ TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
   autoDetectLanguage: false,   // Enable/disable auto-detection
   position: "top-right",       // Widget position
 });
+```
+
+
+## 🎨 CSS Customization
+
+You can customize the appearance by overriding CSS classes.
+
+---
+
+### Widget Container and Positioning
+
+| Selector                                    | Description           | Example Usage                                           |
+| ------------------------------------------- | --------------------- | ------------------------------------------------------- |
+| `.translation-widget`                       | Main widget container | `.translation-widget { z-index: 2000; }`                |
+| `.translation-widget.position-top-right`    | Top-right positioning | `.position-top-right { top: 1rem; right: 1rem; }`       |
+| `.translation-widget.position-top-left`     | Top-left positioning  | `.position-top-left { top: 1rem; left: 1rem; }`         |
+| `.translation-widget.position-bottom-right` | Bottom-right          | `.position-bottom-right { bottom: 1rem; right: 1rem; }` |
+| `.translation-widget.position-bottom-left`  | Bottom-left           | `.position-bottom-left { bottom: 1rem; left: 1rem; }`   |
+
+---
+
+### Widget Trigger Button
+
+| Selector           | Description         | Example Usage                              |
+| ------------------ | ------------------- | ------------------------------------------ |
+| `.widget-trigger`  | Main trigger button | `.widget-trigger { background: #f0f0f0; }` |
+| `.trigger-content` | Inside trigger      | `.trigger-content { gap: 0.5rem; }`        |
+| `.lang-code`       | Language code text  | `.lang-code { font-size: 16px; }`          |
+| `.lang-name`       | Language name text  | `.lang-name { color: #666; }`              |
+
+---
+
+### Dropdown Menu
+
+| Selector           | Description          | Example Usage                               |
+| ------------------ | -------------------- | ------------------------------------------- |
+| `.widget-dropdown` | Dropdown container   | `.widget-dropdown { width: 300px; }`        |
+| `.dropdown-header` | Header section       | `.dropdown-header { background: #f8f9fa; }` |
+| `.dropdown-title`  | Title area           | `.dropdown-title { padding: 1rem; }`        |
+| `.title-text`      | Title text           | `.title-text { font-weight: bold; }`        |
+| `.language-count`  | Language count badge | `.language-count { background: #e9ecef; }`  |
+
+---
+
+### Search Section
+
+| Selector            | Description         | Example Usage                           |
+| ------------------- | ------------------- | --------------------------------------- |
+| `.search-container` | Container           | `.search-container { margin: 1rem; }`   |
+| `.search-input`     | Input field         | `.search-input { border-radius: 8px; }` |
+| `.search-icon`      | Search icon         | `.search-icon { color: #666; }`         |
+| `.clear-search`     | Clear search button | `.clear-search { color: #999; }`        |
+
+---
+
+### Language List
+
+| Selector                  | Description    | Example Usage                              |
+| ------------------------- | -------------- | ------------------------------------------ |
+| `.language-list`          | List container | `.language-list { max-height: 400px; }`    |
+| `.language-item`          | Language item  | `.language-item { padding: 0.75rem; }`     |
+| `.language-item.selected` | Selected item  | `.selected { background: #e3f2fd; }`       |
+| `.language-item.focused`  | Focused item   | `.focused { background: #f5f5f5; }`        |
+| `.language-name`          | Name text      | `.language-name { font-weight: 500; }`     |
+| `.language-code`          | Code badge     | `.language-code { background: #f0f0f0; }`  |
+| `.language-details`       | Extra details  | `.language-details { font-size: 0.8rem; }` |
+
+---
+
+### Icons and Visual Elements
+
+| Selector           | Description       | Example Usage                                 |
+| ------------------ | ----------------- | --------------------------------------------- |
+| `.globe-icon`      | Globe icon        | `.globe-icon { color: #2196f3; }`             |
+| `.check-icon`      | Check mark        | `.check-icon { color: #4caf50; }`             |
+| `.loading-spinner` | Spinner animation | `.loading-spinner { border-color: #2196f3; }` |
+
+---
+
+### Footer
+
+| Selector           | Description    | Example Usage                               |
+| ------------------ | -------------- | ------------------------------------------- |
+| `.dropdown-footer` | Footer section | `.dropdown-footer { background: #f8f9fa; }` |
+| `.footer-text`     | Footer text    | `.footer-text { color: #666; }`             |
+
+---
+
+### Responsive Design
+
+| Selector                    | Description   | Example Usage                                                     |
+| --------------------------- | ------------- | ----------------------------------------------------------------- |
+| `@media (max-width: 640px)` | Mobile styles | `@media (max-width: 640px) { .widget-dropdown { width: 90vw; } }` |
+
+---
+
+### Accessibility
+
+| Selector                                  | Description        | Example Usage                                                                |
+| ----------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| `@media (prefers-contrast: high)`         | High contrast mode | `@media (prefers-contrast: high) { .widget-trigger { border: 2px solid; } }` |
+| `@media (prefers-reduced-motion: reduce)` | Reduced motion     | `@media (prefers-reduced-motion: reduce) { * { transition: none; } }`        |
+
+
+```html
+<style>
+  .widget-trigger {
+    background-color: #eee;
+    border-radius: 8px;
+  }
+</style>
 ```
 
 ## 🧪 Running Locally
