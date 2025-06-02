@@ -369,6 +369,26 @@ declare global {
 
 This will resolve any TypeScript errors related to the `TranslationWidget` global function.
 
+## 🎯 React Integration
+
+For React applications, you can add the widget by including the script tags in your `index.html` file:
+
+```html
+<script src="./dist/index.min.js"></script>
+<script defer type="module">
+    TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
+        pageLanguage: 'en',
+        autoDetectLanguage: false,
+        position: 'top-right',
+    })
+</script>
+```
+
+Make sure to:
+1. Place these scripts just before the closing `</body>` tag
+2. Set up your environment variable `VITE_TRANSLATION_WIDGET_PUBLIC_KEY` in your `.env` file
+3. If you're not using Vite, replace `import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY` with your public key directly
+
 ### Configuration Options
 
 You can customize the widget by modifying the configuration object in the `TranslationWidget` initialization:
