@@ -253,8 +253,6 @@ export class TranslationWidget {
                     </div>
                     <div class="jigts-language-details">
                         <span class="jigts-language-native">${lang.native}</span>
-                        <span class="jigts-language-separator">•</span>
-                        <span class="jigts-language-region">${lang.region}</span>
                     </div>
                 </div>
                 <svg class="jigts-check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,10 +321,16 @@ export class TranslationWidget {
         return null
     }
 
-    private calculateFontSize(text: string, originalFontSize: string): string {
+    private calculateFontSize(text: string, originalFontSize: string, originalText: string): string {
         const baseFontSize = 12; // Minimum font size in pixels
         const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
         const textLength = text.length;
+        const originalLength = originalText.length;
+        
+        // Only scale down if translated text is longer than original
+        if (textLength <= originalLength) {
+            return originalFontSize;
+        }
         
         // Calculate font size based on text length
         // The longer the text, the smaller the font size
@@ -377,6 +381,13 @@ export class TranslationWidget {
         // If there's already a translation in progress, wait for it
         if (this.currentTranslationPromise) {
             await this.currentTranslationPromise;
+        }
+
+        // If target language is the default page language, restore original text
+        if (targetLang === this.config.pageLanguage) {
+            this.resetTranslations();
+            this.updateLoadingState(false);
+            return;
         }
         
         // Create a new promise for this translation
@@ -462,8 +473,9 @@ export class TranslationWidget {
                         if (node.nodeType === Node.TEXT_NODE) {
                             const parent = node.parentElement;
                             if (parent) {
+                                const originalText = parent.getAttribute('data-original-text') || '';
                                 const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
-                                const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize);
+                                const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
                                 parent.style.fontSize = newFontSize;
                             }
                             node.textContent = fullTranslations[idx];
@@ -521,8 +533,9 @@ export class TranslationWidget {
                     if (this.lastRequestedLanguage === targetLang) {
                         // Apply font size adjustment
                         if (parent) {
+                            const originalText = parent.getAttribute('data-original-text') || '';
                             const originalFontSize = parent.getAttribute('data-original-font-size') || '16px';
-                            const newFontSize = this.calculateFontSize(translatedText, originalFontSize);
+                            const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                             parent.style.fontSize = newFontSize;
                         }
                         node.textContent = translatedText;

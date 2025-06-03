@@ -4,711 +4,988 @@ export const languages: Language[] = [
         code: 'af',
         name: 'Afrikaans',
         native: 'Afrikaans',
-        region: 'South Africa'
+        writing_system: 'Latin'
     },
     {
         code: 'am',
         name: 'Amharic',
         native: 'አማርኛ',
-        region: 'Ethiopia'
+        writing_system: 'Ethiopic'
     },
     {
         code: 'ar',
         name: 'Arabic',
         native: 'العربية',
         rtl: 1,
-        region: 'Saudi Arabia'
+        writing_system: 'Arabic'
     },
     {
         code: 'as',
         name: 'Assamese',
         native: 'অসমীয়া',
-        region: 'India'
+        writing_system: 'Bengali'
     },
     {
         code: 'az',
         name: 'Azerbaijani',
         native: 'Azərbaycanca / آذربايجان',
-        region: 'Azerbaijan'
+        writing_system: 'Latin'
     },
     {
         code: 'ba',
         name: 'Bashkir',
         native: 'Башҡорт',
-        region: 'Russia'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'be',
         name: 'Belarusian',
         native: 'Беларуская',
-        region: 'Belarus'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'bg',
         name: 'Bulgarian',
         native: 'Български',
-        region: 'Bulgaria'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'bn',
         name: 'Bengali',
         native: 'বাংলা',
-        region: 'Bangladesh'
+        writing_system: 'Bengali'
     },
     {
         code: 'bo',
         name: 'Tibetan',
         native: 'བོད་ཡིག / Bod skad',
-        region: 'Tibet'
+        writing_system: 'Tibetan'
     },
     {
         code: 'br',
         name: 'Breton',
         native: 'Brezhoneg',
-        region: 'France'
+        writing_system: 'Latin'
     },
     {
         code: 'bs',
         name: 'Bosnian',
         native: 'Bosanski',
-        region: 'Bosnia'
+        writing_system: 'Latin'
     },
     {
         code: 'ca',
         name: 'Catalan',
         native: 'Català',
-        region: 'Spain'
+        writing_system: 'Latin'
     },
     {
         code: 'ch',
         name: 'Chamorro',
         native: 'Chamoru',
-        region: 'Guam'
+        writing_system: 'Latin'
     },
     {
         code: 'co',
         name: 'Corsican',
         native: 'Corsu',
-        region: 'France'
+        writing_system: 'Latin'
     },
     {
         code: 'cs',
         name: 'Czech',
         native: 'Česky',
-        region: 'Czech Republic'
+        writing_system: 'Latin'
     },
     {
         code: 'cy',
         name: 'Welsh',
         native: 'Cymraeg',
-        region: 'Wales'
+        writing_system: 'Latin'
     },
     {
         code: 'da',
         name: 'Danish',
         native: 'Dansk',
-        region: 'Denmark'
+        writing_system: 'Latin'
     },
     {
         code: 'de',
         name: 'German',
         native: 'Deutsch',
-        region: 'Germany'
+        writing_system: 'Latin'
     },
     {
         code: 'dv',
         name: 'Divehi',
         native: 'ދިވެހިބަސް',
         rtl: 1,
-        region: 'Maldives'
+        writing_system: 'Thaana'
     },
     {
         code: 'dz',
         name: 'Dzongkha',
         native: 'ཇོང་ཁ',
-        region: 'Bhutan'
+        writing_system: 'Tibetan'
     },
     {
         code: 'el',
         name: 'Greek',
         native: 'Ελληνικά',
-        region: 'Greece'
+        writing_system: 'Greek'
     },
     {
         code: 'en',
         name: 'English',
         native: 'English',
-        region: 'United Kingdom'
+        writing_system: 'Latin'
     },
     {
         code: 'eo',
         name: 'Esperanto',
         native: 'Esperanto',
-        region: 'International'
+        writing_system: 'Latin'
     },
     {
         code: 'es',
         name: 'Spanish',
         native: 'Español',
-        region: 'Spain'
+        writing_system: 'Latin'
     },
     {
         code: 'et',
         name: 'Estonian',
         native: 'Eesti',
-        region: 'Estonia'
+        writing_system: 'Latin'
     },
     {
         code: 'eu',
         name: 'Basque',
         native: 'Euskara',
-        region: 'Spain'
+        writing_system: 'Latin'
     },
     {
         code: 'fa',
         name: 'Persian',
         native: 'فارسی',
         rtl: 1,
-        region: 'Iran'
+        writing_system: 'Arabic'
     },
     {
         code: 'ff',
         name: 'Peul',
         native: 'Fulfulde',
-        region: 'Nigeria'
+        writing_system: 'Latin'
     },
     {
         code: 'fi',
         name: 'Finnish',
         native: 'Suomi',
-        region: 'Finland'
+        writing_system: 'Latin'
     },
     {
         code: 'fj',
         name: 'Fijian',
         native: 'Na Vosa Vakaviti',
-        region: 'Fiji'
+        writing_system: 'Latin'
     },
     {
         code: 'fo',
         name: 'Faroese',
         native: 'Føroyskt',
-        region: 'Faroe Islands'
+        writing_system: 'Latin'
     },
     {
         code: 'fr',
         name: 'French',
         native: 'Français',
-        region: 'France'
+        writing_system: 'Latin'
     },
     {
         code: 'fy',
         name: 'West Frisian',
         native: 'Frysk',
-        region: 'Netherlands'
+        writing_system: 'Latin'
     },
     {
         code: 'ga',
         name: 'Irish',
         native: 'Gaeilge',
-        region: 'Ireland'
+        writing_system: 'Latin'
     },
     {
         code: 'gd',
         name: 'Scottish Gaelic',
         native: 'Gàidhlig',
-        region: 'Scotland'
+        writing_system: 'Latin'
     },
     {
         code: 'gl',
         name: 'Galician',
         native: 'Galego',
-        region: 'Spain'
+        writing_system: 'Latin'
     },
     {
         code: 'gn',
         name: 'Guarani',
         native: "Avañe'ẽ",
-        region: 'Paraguay'
+        writing_system: 'Latin'
     },
     {
         code: 'gu',
         name: 'Gujarati',
         native: 'ગુજરાતી',
-        region: 'India'
+        writing_system: 'Gujarati'
     },
     {
         code: 'gv',
         name: 'Manx',
         native: 'Gaelg',
-        region: 'Isle of Man'
+        writing_system: 'Latin'
     },
     {
         code: 'ha',
         name: 'Hausa',
         native: 'هَوُسَ',
         rtl: 1,
-        region: 'Nigeria'
+        writing_system: 'Latin'
     },
     {
         code: 'he',
         name: 'Hebrew',
         native: 'עברית',
         rtl: 1,
-        region: 'Israel'
+        writing_system: 'Hebrew'
     },
     {
         code: 'hi',
         name: 'Hindi',
         native: 'हिन्दी',
-        region: 'India'
+        writing_system: 'Devanagari'
     },
     {
         code: 'hr',
         name: 'Croatian',
         native: 'Hrvatski',
-        region: 'Croatia'
+        writing_system: 'Latin'
     },
     {
         code: 'ht',
         name: 'Haitian',
         native: 'Krèyol ayisyen',
-        region: 'Haiti'
+        writing_system: 'Latin'
     },
     {
         code: 'hu',
         name: 'Hungarian',
         native: 'Magyar',
-        region: 'Hungary'
+        writing_system: 'Latin'
     },
     {
         code: 'hy',
         name: 'Armenian',
         native: 'Հայերեն',
-        region: 'Armenia'
+        writing_system: 'Armenian'
     },
     {
         code: 'id',
         name: 'Indonesian',
         native: 'Bahasa Indonesia',
-        region: 'Indonesia'
+        writing_system: 'Latin'
     },
     {
         code: 'ig',
         name: 'Igbo',
         native: 'Igbo',
-        region: 'Nigeria'
+        writing_system: 'Latin'
     },
     {
         code: 'is',
         name: 'Icelandic',
         native: 'Íslenska',
-        region: 'Iceland'
+        writing_system: 'Latin'
     },
     {
         code: 'it',
         name: 'Italian',
         native: 'Italiano',
-        region: 'Italy'
+        writing_system: 'Latin'
     },
     {
         code: 'iu',
         name: 'Inuktitut',
         native: 'ᐃᓄᒃᑎᑐᑦ',
-        region: 'Canada'
+        writing_system: 'Unified Canadian Aboriginal Syllabics'
     },
     {
         code: 'ja',
         name: 'Japanese',
         native: '日本語',
-        region: 'Japan'
+        writing_system: 'Japanese'
     },
     {
         code: 'jv',
         name: 'Javanese',
         native: 'Basa Jawa',
-        region: 'Indonesia'
+        writing_system: 'Javanese'
     },
     {
         code: 'ka',
         name: 'Georgian',
         native: 'ქართული',
-        region: 'Georgia'
+        writing_system: 'Georgian'
     },
     {
         code: 'kg',
         name: 'Kongo',
         native: 'KiKongo',
-        region: 'Congo'
+        writing_system: 'Latin'
     },
     {
         code: 'ki',
         name: 'Kikuyu',
         native: 'Gĩkũyũ',
-        region: 'Kenya'
+        writing_system: 'Latin'
     },
     {
         code: 'kj',
         name: 'Kuanyama',
         native: 'Kuanyama',
-        region: 'Namibia'
+        writing_system: 'Latin'
     },
     {
         code: 'kk',
         name: 'Kazakh',
         native: 'Қазақша',
-        region: 'Kazakhstan'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'kl',
         name: 'Greenlandic',
         native: 'Kalaallisut',
-        region: 'Greenland'
+        writing_system: 'Latin'
     },
     {
         code: 'km',
         name: 'Cambodian',
         native: 'ភាសាខ្មែរ',
-        region: 'Cambodia'
+        writing_system: 'Khmer'
     },
     {
         code: 'kn',
         name: 'Kannada',
         native: 'ಕನ್ನಡ',
-        region: 'India'
+        writing_system: 'Kannada'
     },
     {
         code: 'ko',
         name: 'Korean',
         native: '한국어',
-        region: 'South Korea'
+        writing_system: 'Korean'
     },
     {
         code: 'kr',
         name: 'Kanuri',
         native: 'Kanuri',
-        region: 'Nigeria'
+        writing_system: 'Latin'
     },
     {
         code: 'ks',
         name: 'Kashmiri',
         native: 'कश्मीरी / كشميري',
         rtl: 1,
-        region: 'India'
+        writing_system: 'Arabic'
     },
     {
         code: 'ku',
         name: 'Kurdish',
         native: 'Kurdî / كوردی',
         rtl: 1,
-        region: 'Iraq'
+        writing_system: 'Arabic'
     },
     {
         code: 'kv',
         name: 'Komi',
         native: 'Коми',
-        region: 'Russia'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'kw',
         name: 'Cornish',
         native: 'Kernewek',
-        region: 'United Kingdom'
+        writing_system: 'Latin'
     },
     {
         code: 'ky',
         name: 'Kirghiz',
         native: 'Kırgızca / Кыргызча',
-        region: 'Kyrgyzstan'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'la',
         name: 'Latin',
         native: 'Latina',
-        region: 'Vatican'
+        writing_system: 'Latin'
     },
     {
         code: 'lb',
         name: 'Luxembourgish',
         native: 'Lëtzebuergesch',
-        region: 'Luxembourg'
+        writing_system: 'Latin'
     },
     {
         code: 'lg',
         name: 'Ganda',
         native: 'Luganda',
-        region: 'Uganda'
+        writing_system: 'Latin'
     },
     {
         code: 'li',
         name: 'Limburgian',
         native: 'Limburgs',
-        region: 'Netherlands'
+        writing_system: 'Latin'
     },
     {
         code: 'ln',
         name: 'Lingala',
         native: 'Lingála',
-        region: 'Congo'
+        writing_system: 'Latin'
     },
     {
         code: 'lo',
         name: 'Laotian',
         native: 'ລາວ / Pha xa lao',
-        region: 'Laos'
+        writing_system: 'Lao'
     },
     {
         code: 'lt',
         name: 'Lithuanian',
         native: 'Lietuvių',
-        region: 'Lithuania'
+        writing_system: 'Latin'
     },
     {
         code: 'lu',
         name: 'Luba-Katanga',
         native: 'Tshiluba',
-        region: 'Congo'
+        writing_system: 'Latin'
     },
     {
         code: 'lv',
         name: 'Latvian',
         native: 'Latviešu',
-        region: 'Latvia'
+        writing_system: 'Latin'
     },
     {
         code: 'mg',
         name: 'Malagasy',
         native: 'Malagasy',
-        region: 'Madagascar'
+        writing_system: 'Latin'
     },
     {
         code: 'mh',
         name: 'Marshallese',
         native: 'Kajin Majel / Ebon',
-        region: 'Marshall Islands'
+        writing_system: 'Latin'
     },
     {
         code: 'mi',
         name: 'Maori',
         native: 'Māori',
-        region: 'New Zealand'
+        writing_system: 'Latin'
     },
     {
         code: 'mk',
         name: 'Macedonian',
         native: 'Македонски',
-        region: 'North Macedonia'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'ml',
         name: 'Malayalam',
         native: 'മലയാളം',
-        region: 'India'
+        writing_system: 'Malayalam'
     },
     {
         code: 'mn',
         name: 'Mongolian',
         native: 'Монгол',
-        region: 'Mongolia'
+        writing_system: 'Mongolian'
     },
     {
         code: 'mo',
         name: 'Moldovan',
         native: 'Moldovenească',
-        region: 'Moldova'
+        writing_system: 'Latin'
     },
     {
         code: 'mr',
         name: 'Marathi',
         native: 'मराठी',
-        region: 'India'
+        writing_system: 'Devanagari'
     },
     {
         code: 'ms',
         name: 'Malay',
         native: 'Bahasa Melayu',
-        region: 'Malaysia'
+        writing_system: 'Latin'
     },
     {
         code: 'mt',
         name: 'Maltese',
         native: 'bil-Malti',
-        region: 'Malta'
+        writing_system: 'Latin'
+    },
+    {
+        code: 'my',
+        name: 'Burmese',
+        native: 'မြန်မာစာ',
+        writing_system: 'Myanmar'
+    },
+    {
+        code: 'na',
+        name: 'Nauruan',
+        native: 'Dorerin Naoero',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nb',
+        name: 'Norwegian Bokmål',
+        native: 'Norsk bokmål',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nd',
+        name: 'North Ndebele',
+        native: 'Sindebele',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'ne',
+        name: 'Nepali',
+        native: 'नेपाली',
+        writing_system: 'Devanagari'
+    },
+    {
+        code: 'ng',
+        name: 'Ndonga',
+        native: 'Oshiwambo',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nl',
+        name: 'Dutch',
+        native: 'Nederlands',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nn',
+        name: 'Norwegian Nynorsk',
+        native: 'Norsk nynorsk',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'no',
+        name: 'Norwegian',
+        native: 'Norsk',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nr',
+        name: 'South Ndebele',
+        native: 'isiNdebele',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'nv',
+        name: 'Navajo',
+        native: 'Diné bizaad',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'ny',
+        name: 'Chichewa',
+        native: 'Chi-Chewa',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'oc',
+        name: 'Occitan',
+        native: 'Occitan',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'oj',
+        name: 'Ojibwa',
+        native: 'ᐊᓂᔑᓈᐯᒧᐎᓐ / Anishinaabemowin',
+        writing_system: 'Unified Canadian Aboriginal Syllabics'
+    },
+    {
+        code: 'om',
+        name: 'Oromo',
+        native: 'Oromoo',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'or',
+        name: 'Oriya',
+        native: 'ଓଡ଼ିଆ',
+        writing_system: 'Odia'
+    },
+    {
+        code: 'os',
+        name: 'Ossetian / Ossetic',
+        native: 'Иронау',
+        writing_system: 'Cyrillic'
+    },
+    {
+        code: 'pa',
+        name: 'Panjabi / Punjabi',
+        native: 'ਪੰਜਾਬੀ / पंजाबी / پنجابي',
+        writing_system: 'Gurmukhi'
+    },
+    {
+        code: 'pi',
+        name: 'Pali',
+        native: 'Pāli / पाऴि',
+        writing_system: 'Devanagari'
+    },
+    {
+        code: 'pl',
+        name: 'Polish',
+        native: 'Polski',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'ps',
+        name: 'Pashto',
+        native: 'پښتو',
+        rtl: 1,
+        writing_system: 'Arabic'
+    },
+    {
+        code: 'pt',
+        name: 'Portuguese',
+        native: 'Português',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'qu',
+        name: 'Quechua',
+        native: 'Runa Simi',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'rm',
+        name: 'Raeto Romance',
+        native: 'Rumantsch',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'rn',
+        name: 'Kirundi',
+        native: 'Kirundi',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'ro',
+        name: 'Romanian',
+        native: 'Română',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'ru',
+        name: 'Russian',
+        native: 'Русский',
+        writing_system: 'Cyrillic'
+    },
+    {
+        code: 'rw',
+        name: 'Rwandi',
+        native: 'Kinyarwandi',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sa',
+        name: 'Sanskrit',
+        native: 'संस्कृतम्',
+        writing_system: 'Devanagari'
+    },
+    {
+        code: 'sc',
+        name: 'Sardinian',
+        native: 'Sardu',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sd',
+        name: 'Sindhi',
+        native: 'सिनधि',
+        writing_system: 'Arabic'
+    },
+    {
+        code: 'se',
+        name: 'Northern Sami',
+        native: 'Sámegiella',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sg',
+        name: 'Sango',
+        native: 'Sängö',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sh',
+        name: 'Serbo-Croatian',
+        native: 'Srpskohrvatski / Српскохрватски',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'si',
+        name: 'Sinhalese',
+        native: 'සිංහල',
+        writing_system: 'Sinhala'
+    },
+    {
+        code: 'sk',
+        name: 'Slovak',
+        native: 'Slovenčina',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sl',
+        name: 'Slovenian',
+        native: 'Slovenščina',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sm',
+        name: 'Samoan',
+        native: 'Gagana Samoa',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sn',
+        name: 'Shona',
+        native: 'chiShona',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'so',
+        name: 'Somalia',
+        native: 'Soomaaliga',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sq',
+        name: 'Albanian',
+        native: 'Shqip',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'sr',
+        name: 'Serbian',
+        native: 'Српски',
+        writing_system: 'Cyrillic'
+    },
+    {
+        code: 'ss',
+        name: 'Swati',
+        native: 'SiSwati',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'st',
+        name: 'Southern Sotho',
+        native: 'Sesotho',
+        writing_system: 'Latin'
+    },
+    {
+        code: 'su',
+        name: 'Sundanese',
+        native: 'Basa Sunda',
+        writing_system: 'Sundanese'
     },
     {
         code: 'sv',
         name: 'Swedish',
         native: 'Svenska',
-        region: 'Sweden'
+        writing_system: 'Latin'
     },
     {
         code: 'sw',
         name: 'Swahili',
         native: 'Kiswahili',
-        region: 'Tanzania'
+        writing_system: 'Latin'
     },
     {
         code: 'ta',
         name: 'Tamil',
         native: 'தமிழ்',
-        region: 'India'
+        writing_system: 'Tamil'
     },
     {
         code: 'te',
         name: 'Telugu',
         native: 'తెలుగు',
-        region: 'India'
+        writing_system: 'Telugu'
     },
     {
         code: 'tg',
         name: 'Tajik',
         native: 'Тоҷикӣ',
-        region: 'Tajikistan'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'th',
         name: 'Thai',
         native: 'ไทย / Phasa Thai',
-        region: 'Thailand'
+        writing_system: 'Thai'
     },
     {
         code: 'ti',
         name: 'Tigrinya',
         native: 'ትግርኛ',
-        region: 'Eritrea'
+        writing_system: 'Ethiopic'
     },
     {
         code: 'tk',
         name: 'Turkmen',
         native: 'Туркмен / تركمن',
-        region: 'Turkmenistan'
+        writing_system: 'Latin'
     },
     {
         code: 'tl',
-        name: 'Tagalog',
+        name: 'Tagalog / Filipino',
         native: 'Tagalog',
-        region: 'Philippines'
+        writing_system: 'Latin'
     },
     {
         code: 'tn',
         name: 'Tswana',
         native: 'Setswana',
-        region: 'Botswana'
+        writing_system: 'Latin'
     },
     {
         code: 'to',
         name: 'Tonga',
         native: 'Lea Faka-Tonga',
-        region: 'Tonga'
+        writing_system: 'Latin'
     },
     {
         code: 'tr',
         name: 'Turkish',
         native: 'Türkçe',
-        region: 'Turkey'
+        writing_system: 'Latin'
     },
     {
         code: 'ts',
         name: 'Tsonga',
         native: 'Xitsonga',
-        region: 'South Africa'
+        writing_system: 'Latin'
     },
     {
         code: 'tt',
         name: 'Tatar',
         native: 'Tatarça',
-        region: 'Russia'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'tw',
         name: 'Twi',
         native: 'Twi',
-        region: 'Ghana'
+        writing_system: 'Latin'
     },
     {
         code: 'ty',
         name: 'Tahitian',
         native: 'Reo Mā`ohi',
-        region: 'French Polynesia'
+        writing_system: 'Latin'
     },
     {
         code: 'ug',
         name: 'Uyghur',
         native: 'Uyƣurqə / ئۇيغۇرچە',
-        region: 'China'
+        writing_system: 'Arabic'
     },
     {
         code: 'uk',
         name: 'Ukrainian',
         native: 'Українська',
-        region: 'Ukraine'
+        writing_system: 'Cyrillic'
     },
     {
         code: 'ur',
         name: 'Urdu',
         native: 'اردو',
         rtl: 1,
-        region: 'Pakistan'
+        writing_system: 'Arabic'
     },
     {
         code: 'uz',
         name: 'Uzbek',
         native: 'Ўзбек',
-        region: 'Uzbekistan'
+        writing_system: 'Latin'
     },
     {
         code: 've',
         name: 'Venda',
         native: 'Tshivenḓa',
-        region: 'South Africa'
+        writing_system: 'Latin'
     },
     {
         code: 'vi',
         name: 'Vietnamese',
         native: 'Tiếng Việt',
-        region: 'Vietnam'
+        writing_system: 'Latin'
     },
     {
         code: 'vo',
         name: 'Volapük',
         native: 'Volapük',
-        region: 'International'
+        writing_system: 'Latin'
     },
     {
         code: 'wo',
         name: 'Wolof',
         native: 'Wollof',
-        region: 'Senegal'
+        writing_system: 'Latin'
     },
     {
         code: 'xh',
         name: 'Xhosa',
         native: 'isiXhosa',
-        region: 'South Africa'
+        writing_system: 'Latin'
     },
     {
         code: 'yi',
         name: 'Yiddish',
         native: 'ייִדיש',
         rtl: 1,
-        region: 'Israel'
+        writing_system: 'Hebrew'
     },
     {
         code: 'yo',
         name: 'Yoruba',
         native: 'Yorùbá',
-        region: 'Nigeria'
+        writing_system: 'Latin'
     },
     {
         code: 'zh',
-        name: 'Chinese',
-        native: '中文',
-        region: 'China'
+        name: 'Chinese (Simplified)',
+        native: '简体中文',
+        writing_system: 'Simplied Han'
+    },
+    {
+        code: 'zh-TW',
+        name: 'Chinese (Traditional)',
+        native: '繁體中文',
+        writing_system: 'Traditional Han'
     },
     {
         code: 'zu',
         name: 'Zulu',
         native: 'isiZulu',
-        region: 'South Africa'
+        writing_system: 'Latin'
     }
 ]
