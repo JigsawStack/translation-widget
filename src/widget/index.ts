@@ -182,6 +182,17 @@ export class TranslationWidget {
         // Create widget element
         this.widget = document.createElement('div')
         this.widget.className = `jigts-translation-widget jigts-position-${this.config.position || 'top-right'}`
+        
+        // Apply theme colors if provided
+        if (this.config.theme) {
+            if (this.config.theme.baseColor) {
+                this.widget.style.setProperty('--jigts-custom-base-color', this.config.theme.baseColor);
+            }
+            if (this.config.theme.textColor) {
+                this.widget.style.setProperty('--jigts-custom-text-color', this.config.theme.textColor);
+            }
+        }
+        
         document.body.appendChild(this.widget)
         
         this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel)

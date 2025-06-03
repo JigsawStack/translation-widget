@@ -7,9 +7,13 @@ export interface Language {
 }
 
 export interface TranslationConfig {
-    pageLanguage?: string
-    autoDetectLanguage?: boolean
-    position?: 'top-right' | 'top-left' | 'bottom-left' | 'bottom-right'
+    pageLanguage: string
+    position: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+    autoDetectLanguage: boolean
+    theme?: {
+        baseColor?: string
+        textColor?: string
+    }
 }
 
 export interface CacheEntry {

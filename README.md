@@ -50,9 +50,13 @@ Right after the widget script, initialize it with your configuration:
 ```html
 <script defer type="module">
   TranslationWidget('YOUR_PUBLIC_KEY_HERE', {
-    pageLanguage: 'en',          // Language of your page content
-    position: "top-right",       // Position the widget 
-    autoDetectLanguage: false,   // Set true to enable auto-detection
+    pageLanguage: 'en',          // Language of your page content ( optional )
+    position: "top-right",       // Position the widget ( optional )
+    autoDetectLanguage: false,   // Set true to enable auto-detection ( optional )
+    theme:{
+      baseColor: '',  //( optional )
+      textColor: '',  //( optional )
+    }
   });
 </script>
 ```
@@ -237,6 +241,23 @@ Make sure to:
 | `pageLanguage`       | string  | `'en'`  | Yes       | Language of the main page content                                   |
 | `autoDetectLanguage` | boolean | `false` | Yes      | Automatically detect and translate based on user's browser language |
 | `position`           | string  | `top-right` | Yes   | Automatically Set the position of the widget in the screen, supported `top-right`, `top-left`, `bottom-left`, `bottom-right`. |
+| `theme`              | object  | `{}`    | Yes      | Theme configuration for customizing widget appearance               |
+| `theme.baseColor`    | string  | `white` | Yes      | Base color for the widget background and accents                    |
+| `theme.textColor`    | string  | `black` | Yes      | Text color for all text elements in the widget                      |
+
+## Theme Configuration Example
+
+```javascript
+const widget = new TranslationWidget(publicKey, {
+    pageLanguage: 'en',
+    position: 'top-right',
+    autoDetectLanguage: true,
+    theme: {
+        baseColor: '#2563eb',  // Custom base color
+        textColor: '#1f2937'   // Custom text color
+    }
+});
+```
 
 ## ✨ Key Features
 

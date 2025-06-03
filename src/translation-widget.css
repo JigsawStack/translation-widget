@@ -14,6 +14,11 @@
 }
 
 .jigts-translation-widget {
+    --jigts-base-color: var(--jigts-custom-base-color, white);
+    --jigts-text-color: var(--jigts-custom-text-color, black);
+    --jigts-bg-color: color-mix(in srgb, var(--jigts-base-color) 10%, white);
+    --jigts-bg-hover: color-mix(in srgb, var(--jigts-text-color) 10%, white);
+    --jigts-bg-active: color-mix(in srgb, var(--jigts-base-color) 30%, white);
     position: fixed;
     z-index: 1000;
     color: var(--jigts-text-color);

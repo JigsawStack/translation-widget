@@ -6,6 +6,10 @@ declare global {
             pageLanguage: string;
             position: string;
             autoDetectLanguage: boolean;
+            theme?: {
+                baseColor?: string;
+                textColor?: string;
+            };
         }, config?: TranslationConfig) => TranslationWidget;
     }
 }
