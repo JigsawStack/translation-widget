@@ -296,7 +296,32 @@ The font size adjustment is automatic and requires no additional configuration. 
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 
+# 🎨 CSS Customization
+
+You can easily customize the appearance of the JigsawStack Translation Widget by overriding its CSS classes in your own stylesheet. This allows you to match the widget to your site's branding and user experience.
+
+## Quick Demo: Change the Widget Trigger Button
+
+> **Note:** You may need to use `!important` in your CSS rules to ensure your custom styles override the widget's default styles.
+
+Here's a simple example of how to change the background color and border radius of the widget's trigger button:
+
+```html
+<style>
+  .widget-trigger {
+    background-color: #eee !important;
+    border-radius: 8px !important;
+  }
+</style>
+```
+
+Just add this `<style>` block to your site's HTML, or include the rules in your main CSS file. The widget will automatically pick up your custom styles.
+
+For a comprehensive list of all available CSS selectors and their descriptions, [see the Styling Guide](./STYLING.md).
+
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 
