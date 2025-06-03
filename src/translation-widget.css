@@ -7,11 +7,6 @@
     --jigts-bg-active: color-mix(in srgb, var(--jigts-base-color) 30%, white);
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
 .jigts-translation-widget {
     --jigts-base-color: var(--jigts-custom-base-color, white);

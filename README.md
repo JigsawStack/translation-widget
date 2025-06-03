@@ -126,7 +126,7 @@ export default function RootLayout({
                 var script = document.createElement('script');
                 script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js";
                 script.onload = function() {
-                  TranslationWidget("sk_dkdks", {
+                  TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
                     pageLanguage: 'en',
                     position: "top-right",
                     autoDetectLanguage: false,
