@@ -2,16 +2,27 @@
 
 JigsawStack Translation Widget is a powerful, drop-in translation solution that brings enterprise-grade translation capabilities to any website. It's designed to be the last translation widget you'll ever need, combining speed, accuracy, and context-aware translations in one seamless package.
 
+
 ⭐ Lightning-fast translations with smart caching
+
 🌍 Automatic language detection and URL-based switching
+
 🧠 Contextual accuracy beyond literal translations
+
 🔗 Simple integration with just two lines of code
+
 🎨 Fully customizable UI and positioning
+
 📱 Responsive design with automatic font scaling
+
 ⚡ Built-in performance optimizations
+
 🔒 Secure API key-based authentication
+
 🔄 Programmatic translation control
+
 🎯 Perfect for product teams, documentation, and global businesses
+
 
 Powered by JigsawStack's advanced translation engine for superior accuracy and performance.
 
@@ -32,7 +43,7 @@ https://github.com/user-attachments/assets/b182020b-8990-4d7a-8280-6e751e8c0d5f
 
 
 # Integrations
-> ### Basic Integration
+ ## Basic Integration
 
 ### 1. Add the Widget Script
 
@@ -90,7 +101,7 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
 </html>
 ```
 
-> ### Next.Js Integration
+## Next.Js Integration
 ### App Router (Next.js 13+)
 
 Add the widget container and script to your root layout (`app/layout.tsx`):
@@ -212,7 +223,7 @@ declare global {
 This will resolve any TypeScript errors related to the `TranslationWidget` global function.
 
 
-> ### React Integration
+## React Integration
 
 For React applications, you can add the widget by including the script tags in your `index.html` file:
 
