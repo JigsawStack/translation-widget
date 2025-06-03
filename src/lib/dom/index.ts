@@ -38,9 +38,9 @@ export class DocumentNavigator {
                 const shouldSkip =
                     container.closest('script, style, code') !== null ||
                     container.closest('next-route-announcer') !== null ||
-                    container.closest('.translate-widget') !== null ||
-                    container.closest('.widget-trigger') !== null ||
-                    container.closest('.widget-dropdown') !== null ||
+                    container.closest('.translation-widget') !== null ||
+                    container.closest('.jigts-widget-trigger') !== null ||
+                    container.closest('.jigts-widget-dropdown') !== null ||
                     container.closest('.notranslate') !== null ||
                     !node.textContent?.trim()
                 return shouldSkip

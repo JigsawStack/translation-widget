@@ -22,6 +22,10 @@ Powered by JigsawStack's advanced translation engine for superior accuracy and p
 To use the widget, you'll need a **public key** from your [JigsawStack dashboard](https://jigsawstack.com).
 This key ensures secure usage and links translations to your account.
 
+### Here a quick demo :
+
+https://github.com/user-attachments/assets/b182020b-8990-4d7a-8280-6e751e8c0d5f
+
 > ⚠️ **Important**: Make sure to use a **public key** from your JigsawStack dashboard with translation capabilities enabled. This ensures secure usage and proper access to translation features.
 
 <br>
