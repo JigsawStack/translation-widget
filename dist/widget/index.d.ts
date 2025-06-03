@@ -33,6 +33,7 @@ export declare class TranslationWidget {
     private calculateFontSize;
     private updateLoadingState;
     private translatePage;
+    private resetToDefaultLanguage;
     private _translatePage;
     private updateResetButtonVisibility;
     resetTranslations(): void;

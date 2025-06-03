@@ -356,17 +356,6 @@ export class TranslationWidget {
             } else {
                 triggerLoading.style.display = 'none'
                 triggerContent.style.display = 'flex'
-                
-                // Update trigger content with language code and name
-                if (this.lastRequestedLanguage) {
-                    const langObj = languages.find(lang => lang.code === this.lastRequestedLanguage);
-                    if (langObj) {
-                        const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
-                        if (triggerIcon) {
-                            triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.lastRequestedLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langObj.name}</span>`;
-                        }
-                    }
-                }
             }
         }
     }
@@ -395,14 +384,46 @@ export class TranslationWidget {
         
         try {
             await this.currentTranslationPromise;
+        } catch (error) {
+            console.error('Translation failed:', error);
+            // If translation fails, reset to default language
+            this.resetToDefaultLanguage();
         } finally {
             if (this.currentTranslationPromise === this.currentTranslationPromise) {
                 this.currentTranslationPromise = null;
             }
-            if(this.lastRequestedLanguage === targetLang) {
-                this.updateLoadingState(false);
-            }
+            this.updateLoadingState(false);
         }
+    }
+
+    private resetToDefaultLanguage(): void {
+        // Reset translations
+        this.resetTranslations();
+        
+        // Update language states
+        this.lastRequestedLanguage = this.config.pageLanguage;
+        this.currentLanguage = this.config.pageLanguage;
+        
+        // Update UI
+        const languageItems = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item');
+        languageItems.forEach(item => {
+            const isSelected = item.getAttribute('data-language-code') === this.config.pageLanguage;
+            item.classList.toggle('jigts-selected', isSelected);
+            item.setAttribute('aria-selected', isSelected.toString());
+        });
+
+        // Update localStorage preference
+        localStorage.setItem('jss-pref', this.config.pageLanguage);
+        
+        // Update trigger icon
+        const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
+        if (triggerIcon) {
+            triggerIcon.innerHTML = this.getLanguageSVG();
+        }
+
+        // Update translation state
+        this.isTranslated = false;
+        this.updateResetButtonVisibility();
     }
 
     private async _translatePage(targetLang: string): Promise<void> {
@@ -510,11 +531,7 @@ export class TranslationWidget {
 
             if (allBatchesFailed) {
                 console.warn('All translations failed, not caching results');
-                if (this.lastRequestedLanguage === targetLang) {
-                    this.isTranslated = true;
-                    this.updateResetButtonVisibility();
-                }
-                return;
+                throw new Error('All translation batches failed');
             }
 
             // Build a full translation array for all nodes
