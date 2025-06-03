@@ -1,4 +1,12 @@
 /* Base Styles */
+:root {
+    --jigts-base-color: white;
+    --jigts-text-color: black;
+    --jigts-bg-color: color-mix(in srgb, var(--jigts-base-color) 10%, white);
+    --jigts-bg-hover: color-mix(in srgb, var(--jigts-text-color) 10%, white);
+    --jigts-bg-active: color-mix(in srgb, var(--jigts-base-color) 30%, white);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,6 +16,7 @@
 .jigts-translation-widget {
     position: fixed;
     z-index: 1000;
+    color: var(--jigts-text-color);
 }
 
 /* Position Configurations */
@@ -77,12 +86,12 @@
 
 .jigts-lang-code {
     font-weight: 500;
-    color: #333;
+    color: var(--jigts-text-color);
     font-size: 14px;
 }
 
 .jigts-lang-name {
-    color: #666;
+    color: var(--jigts-text-color);
     font-size: 14px;
     opacity: 0;
     max-width: 0;
@@ -99,7 +108,7 @@
     background: #e5e7eb;
     border-radius: 50%;
     padding: 0.1rem 0.3rem;
-    color: #2563eb;
+    color: var(--jigts-text-color);
     font-weight: 600;
     font-size: 12px;
     transition: all 0.3s ease-in-out;
@@ -112,9 +121,9 @@
 }
 
 .jigts-widget-trigger {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--jigts-bg-color);
     backdrop-filter: blur(10px);
-    border: 1px solid #e5e7eb;
+    border: 1px solid color-mix(in srgb, var(--jigts-base-color) 30%, white);
     border-radius: 0.75rem;
     padding: 0.3rem 0.6rem;
     cursor: pointer;
@@ -123,7 +132,7 @@
     gap: 0.2rem;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--jigts-text-color);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -148,7 +157,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--jigts-base-color), 0.1), transparent);
     transition: left 0.6s ease;
 }
 
@@ -160,9 +169,9 @@
 .jigts-widget-dropdown {
     position: absolute;
     width: 20rem;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--jigts-bg-color);
     backdrop-filter: blur(10px);
-    border: 1px solid #e5e7eb;
+    border: 1px solid color-mix(in srgb, var(--jigts-base-color) 30%, white);
     border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     opacity: 0;
@@ -192,8 +201,8 @@
 /* Dropdown Header */
 .jigts-dropdown-header {
     padding: 1rem;
-    border-bottom: 1px solid #f3f4f6;
-    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+    border-bottom: 1px solid color-mix(in srgb, var(--jigts-base-color) 20%, white);
+    background: var(--jigts-bg-hover);
     border-radius: 0.75rem 0.75rem 0 0;
     animation: headerSlideDown 0.4s ease 0.1s both;
 }
@@ -214,19 +223,19 @@
 .jigts-languages-icon {
     width: 1rem;
     height: 1rem;
-    color: #2563eb;
+    color: var(--jigts-text-color);
 }
 
 .jigts-title-text {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--jigts-text-color);
 }
 
 .jigts-language-count {
-    background: white;
-    border: 1px solid #d1d5db;
-    color: #6b7280;
+    background: var(--jigts-bg-hover);
+    border: 1px solid color-mix(in srgb, var(--jigts-base-color) 30%, white);
+    color: var(--jigts-text-color);
     padding: 0.125rem 0.5rem;
     border-radius: 0.375rem;
     font-size: 0.75rem;
@@ -245,7 +254,7 @@
     border-radius: 0.5rem;
     outline: none;
     font-size: 0.875rem;
-    color: black;
+    color: var(--jigts-text-color);
     background: white;
     transition: all 0.2s ease;
 }
@@ -257,7 +266,8 @@
     transform: translateY(-50%);
     width: 1rem;
     height: 1rem;
-    color: #9ca3af;
+    color: var(--jigts-text-color);
+    opacity: 0.7;
 }
 
 .jigts-clear-search {
@@ -267,41 +277,42 @@
     transform: translateY(-50%);
     width: 1rem;
     height: 1rem;
-    color: #9ca3af;
+    color: var(--jigts-text-color);
     cursor: pointer;
     opacity: 0;
     transition: all 0.2s ease;
 }
 
 .jigts-clear-search.jigts-visible {
-    opacity: 1;
+    opacity: 0.7;
 }
 
 .jigts-clear-search:hover {
-    color: #6b7280;
+    opacity: 1;
     transform: translateY(-50%) scale(1.1);
 }
 
 /* Reset Option */
 .jigts-reset-option {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid color-mix(in srgb, var(--jigts-base-color) 20%, white);
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     transition: background-color 0.2s ease;
     animation: resetSlideIn 0.4s ease 0.15s both;
+    background: var(--jigts-bg-color);
 }
 
 .jigts-reset-option:hover {
-    background: #f9fafb;
+    background: var(--jigts-bg-hover);
 }
 
 .jigts-reset-icon {
     width: 1rem;
     height: 1rem;
-    color: #6b7280;
+    color: var(--jigts-text-color);
     transition: transform 0.3s ease;
 }
 
@@ -316,13 +327,14 @@
 
 .jigts-reset-title {
     font-weight: 500;
-    color: #111827;
+    color: var(--jigts-text-color);
     font-size: 0.875rem;
 }
 
 .jigts-reset-subtitle {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--jigts-text-color);
+    opacity: 0.7;
 }
 
 /* Language List */
@@ -347,15 +359,20 @@
     transition: all 0.2s ease;
     border: 1px solid transparent;
     animation: languageSlideIn 0.4s ease both;
+    background: var(--jigts-bg-color);
 }
 
 .jigts-language-item.jigts-focused {
-    background: #dbeafe;
-    border-color: #93c5fd;
+    background: var(--jigts-bg-hover);
+    border-color: color-mix(in srgb, var(--jigts-base-color) 40%, white);
 }
 
 .jigts-language-item.jigts-selected {
-    background: #eff6ff;
+    background: var(--jigts-bg-active);
+}
+
+.jigts-language-item:hover {
+    background: var(--jigts-bg-hover);
 }
 
 .jigts-language-info {
@@ -375,7 +392,7 @@
 
 .jigts-language-name {
     font-weight: 500;
-    color: #111827;
+    color: var(--jigts-text-color);
     font-size: 0.875rem;
     transition: color 0.2s ease;
     white-space: nowrap;
@@ -384,12 +401,13 @@
 }
 
 .jigts-language-item:hover .jigts-language-name {
-    color: #2563eb;
+    color: var(--jigts-text-color);
+    opacity: 0.8;
 }
 
 .jigts-language-code {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: var(--jigts-bg-hover);
+    color: var(--jigts-text-color);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-size: 0.75rem;
@@ -402,7 +420,8 @@
     align-items: center;
     gap: 0.25rem;
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--jigts-text-color);
+    opacity: 0.7;
     width: 100%;
     margin-top: 0.125rem;
 }
@@ -425,7 +444,7 @@
 .jigts-globe-icon {
     width: 1rem;
     height: 1rem;
-    color: #2563eb;
+    color: var(--jigts-text-color);
     transition: transform 0.5s ease;
 }
 
@@ -436,7 +455,7 @@
 .jigts-check-icon {
     width: 1rem;
     height: 1rem;
-    color: #2563eb;
+    color: var(--jigts-text-color);
     opacity: 0;
     transform: scale(0);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -452,7 +471,7 @@
     width: 1rem;
     height: 1rem;
     border: 2px solid #e5e7eb;
-    border-top: 2px solid #2563eb;
+    border-top: 2px solid var(--jigts-base-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -471,7 +490,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #6B7280;
+    color: var(--jigts-text-color);
     text-align: center;
     padding: 24px;
     animation: fadeIn 0.4s ease;
@@ -481,6 +500,7 @@
     width: 2rem;
     height: 2rem;
     margin-bottom: 0.5rem;
+    color: var(--jigts-text-color);
     opacity: 0.5;
 }
 
@@ -496,16 +516,17 @@
 /* Footer */
 .jigts-dropdown-footer {
     padding: 0.5rem 1rem;
-    border-top: 1px solid #f3f4f6;
-    background: rgba(249, 250, 251, 0.5);
+    border-top: 1px solid color-mix(in srgb, var(--jigts-base-color) 20%, white);
+    background: var(--jigts-bg-hover);
     border-radius: 0 0 0.75rem 0.75rem;
     animation: footerSlideUp 0.4s ease 0.2s both;
 }
 
 .jigts-footer-text {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: var(--jigts-text-color);
     text-align: center;
+    opacity: 0.7;
 }
 
 /* Scrollbar Styling */
