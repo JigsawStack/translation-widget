@@ -9,8 +9,6 @@
 
 *{
     box-sizing: border-box; 
-    margin: 0;
-    padding: 0;
 }
 .jigts-translation-widget {
     --jigts-base-color: var(--jigts-custom-base-color, white);
@@ -121,7 +119,7 @@
 .jigts-widget-trigger:hover .jigts-lang-name {
     opacity: 1;
     margin-left: 0.5rem;
-    max-width: 100px;
+    max-width: 150px;
 }
 
 .jigts-widget-trigger {
