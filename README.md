@@ -296,3 +296,7 @@ The font size adjustment is automatic and requires no additional configuration. 
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 
+## 🤝 Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+

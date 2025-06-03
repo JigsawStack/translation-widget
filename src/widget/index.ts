@@ -94,12 +94,12 @@ export class TranslationWidget {
         this.currentLanguage = initialLang;
         this.createWidget()
         // Update icon if not default language
-        const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+        const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
         if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
             // Find the language name
             const langObj = languages.find(lang => lang.code === this.currentLanguage);
             const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
-            triggerIcon.innerHTML = `<span class=\"lang-code\">${this.currentLanguage.toUpperCase()}</span><span class=\"lang-name\">${langName}</span>`;
+            triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${this.currentLanguage.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
         }
         this.setupEventListeners()
         this.setupURLObserver()
@@ -177,25 +177,25 @@ export class TranslationWidget {
         
         // Create widget element
         this.widget = document.createElement('div')
-        this.widget.className = `translation-widget position-${this.config.position || 'top-right'}`
+        this.widget.className = `jigts-translation-widget jigts-position-${this.config.position || 'top-right'}`
         document.body.appendChild(this.widget)
         
         this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel)
 
         // Cache element references
         this.elements = {
-            trigger: this.widget.querySelector<HTMLDivElement>('.widget-trigger'),
-            dropdown: this.widget.querySelector<HTMLDivElement>('.widget-dropdown'),
-            searchInput: this.widget.querySelector<HTMLInputElement>('.search-input'),
-            clearSearch: this.widget.querySelector<HTMLDivElement>('.clear-search'),
-            languageItems: this.widget.querySelectorAll<HTMLDivElement>('.language-item'),
-            loadingIndicator: this.widget.querySelector<HTMLDivElement>('.loading-spinner')
+            trigger: this.widget.querySelector<HTMLDivElement>('.jigts-widget-trigger'),
+            dropdown: this.widget.querySelector<HTMLDivElement>('.jigts-widget-dropdown'),
+            searchInput: this.widget.querySelector<HTMLInputElement>('.jigts-search-input'),
+            clearSearch: this.widget.querySelector<HTMLDivElement>('.jigts-clear-search'),
+            languageItems: this.widget.querySelectorAll<HTMLDivElement>('.jigts-language-item'),
+            loadingIndicator: this.widget.querySelector<HTMLDivElement>('.jigts-loading-spinner')
         }
 
         // Initialize trigger text with fade-in class
         const triggerSpan = this.elements.trigger?.querySelector('span')
         if (triggerSpan) {
-            triggerSpan.classList.add('fade-in')
+            triggerSpan.classList.add('jigts-fade-in')
         }
     }
 
@@ -230,19 +230,19 @@ export class TranslationWidget {
         if (!currentLanguage) return ''
 
         const createLanguageItem = (lang: Language, isSelected: boolean = false) => `
-            <div class="language-item ${isSelected ? 'selected' : ''}" tabindex="0" role="option" aria-selected="${isSelected}" data-language-code="${lang.code}">
-                <div class="language-info">
-                    <div class="language-main">
-                        <span class="language-name">${lang.name}</span>
-                        <div class="language-code">${lang.code}</div>
+            <div class="jigts-language-item ${isSelected ? 'jigts-selected' : ''}" tabindex="0" role="option" aria-selected="${isSelected}" data-language-code="${lang.code}">
+                <div class="jigts-language-info">
+                    <div class="jigts-language-main">
+                        <span class="jigts-language-name">${lang.name}</span>
+                        <div class="jigts-language-code">${lang.code}</div>
                     </div>
-                    <div class="language-details">
-                        <span class="language-native">${lang.native}</span>
-                        <span class="language-separator">•</span>
-                        <span class="language-region">${lang.region}</span>
+                    <div class="jigts-language-details">
+                        <span class="jigts-language-native">${lang.native}</span>
+                        <span class="jigts-language-separator">•</span>
+                        <span class="jigts-language-region">${lang.region}</span>
                     </div>
                 </div>
-                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="jigts-check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
@@ -262,8 +262,8 @@ export class TranslationWidget {
         triggerSpan.offsetHeight
 
         // Start fade out
-        triggerSpan.classList.remove('fade-in')
-        triggerSpan.classList.add('fade-out')
+        triggerSpan.classList.remove('jigts-fade-in')
+        triggerSpan.classList.add('jigts-fade-out')
 
         // Wait for fade out
         await new Promise(resolve => setTimeout(resolve, 300))
@@ -275,8 +275,8 @@ export class TranslationWidget {
         triggerSpan.offsetHeight
 
         // Start fade in
-        triggerSpan.classList.remove('fade-out')
-        triggerSpan.classList.add('fade-in')
+        triggerSpan.classList.remove('jigts-fade-out')
+        triggerSpan.classList.add('jigts-fade-in')
     }
 
 
@@ -328,8 +328,8 @@ export class TranslationWidget {
     }
 
     private updateLoadingState(isLoading: boolean): void {
-        const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
-        const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
+        const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-content')
+        const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-loading')
         if (triggerContent && triggerLoading) {
             if (isLoading) {
                 triggerContent.style.display = 'none'
@@ -342,9 +342,9 @@ export class TranslationWidget {
                 if (this.lastRequestedLanguage) {
                     const langObj = languages.find(lang => lang.code === this.lastRequestedLanguage);
                     if (langObj) {
-                        const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                        const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
                         if (triggerIcon) {
-                            triggerIcon.innerHTML = `<span class="lang-code">${this.lastRequestedLanguage.toUpperCase()}</span><span class="lang-name">${langObj.name}</span>`;
+                            triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.lastRequestedLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langObj.name}</span>`;
                         }
                     }
                 }
@@ -535,7 +535,7 @@ export class TranslationWidget {
     }
 
     private updateResetButtonVisibility(): void {
-        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
+        const resetButton = this.widget.querySelector<HTMLElement>('.jigts-reset-option')
         if (resetButton) {
             resetButton.style.display = this.isTranslated ? 'flex' : 'none'
         }
@@ -659,32 +659,32 @@ export class TranslationWidget {
         }
 
         // Reset button functionality
-        const resetButton = this.widget.querySelector<HTMLElement>('.reset-option')
+        const resetButton = this.widget.querySelector<HTMLElement>('.jigts-reset-option')
         if (resetButton) {
             resetButton.addEventListener('click', () => {
                 if (this.isTranslating) return
                 this.resetTranslations()
-                resetButton.classList.remove('active')
+                resetButton.classList.remove('jigts-active')
                 this.isTranslated = false
                 this.updateResetButtonVisibility()
                 // Reset language selector to page language
-                const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+                const languageItems = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
                 languageItems.forEach(item => {
                     const isSelected = item.getAttribute('data-language-code') === this.config.pageLanguage
-                    item.classList.toggle('selected', isSelected)
+                    item.classList.toggle('jigts-selected', isSelected)
                     item.setAttribute('aria-selected', isSelected.toString())
                 })
                 // Restore SVG icon
-                const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
                 if (triggerIcon) {
                     triggerIcon.innerHTML = this.getLanguageSVG();
                 }
                 // Close dropdown
-                dropdown.classList.remove('open')
+                dropdown.classList.remove('jigts-open')
                 trigger.setAttribute('aria-expanded', 'false')
                 // Remove has-translation class
-                const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
-                if (triggerContent) triggerContent.classList.remove('has-translation')
+                const triggerContent = trigger.querySelector<HTMLDivElement>('.jigts-trigger-content')
+                if (triggerContent) triggerContent.classList.remove('jigts-has-translation')
             })
         }
 
@@ -693,8 +693,8 @@ export class TranslationWidget {
 
         // Toggle dropdown
         trigger.addEventListener('click', () => {
-            dropdown.classList.toggle('open')
-            const isOpen = dropdown.classList.contains('open')
+            dropdown.classList.toggle('jigts-open')
+            const isOpen = dropdown.classList.contains('jigts-open')
             trigger.setAttribute('aria-expanded', isOpen.toString())
             if (isOpen) {
                 this.adjustDropdownPosition()
@@ -704,18 +704,18 @@ export class TranslationWidget {
 
         // Adjust position on window resize
         window.addEventListener('resize', () => {
-            if (dropdown.classList.contains('open')) {
+            if (dropdown.classList.contains('jigts-open')) {
                 this.adjustDropdownPosition()
             }
         })
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e: MouseEvent) => {
-            if (!(e.target as Element).closest('.translation-widget')) {
-                if (dropdown.classList.contains('open')) {
-                    dropdown.classList.add('closing')
+            if (!(e.target as Element).closest('.jigts-translation-widget')) {
+                if (dropdown.classList.contains('jigts-open')) {
+                    dropdown.classList.add('jigts-closing')
                     setTimeout(() => {
-                        dropdown.classList.remove('open', 'closing')
+                        dropdown.classList.remove('jigts-open', 'jigts-closing')
                         trigger.setAttribute('aria-expanded', 'false')
                     }, 300)
                 }
@@ -726,21 +726,21 @@ export class TranslationWidget {
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase()
             const hasValue = searchTerm.length > 0
-            clearSearch.classList.toggle('visible', hasValue)
+            clearSearch.classList.toggle('jigts-visible', hasValue)
 
             // Filter language items
-            const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
-            const noResults = this.widget.querySelector<HTMLElement>('.no-results')
+            const items = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
+            const noResults = this.widget.querySelector<HTMLElement>('.jigts-no-results')
             let visibleCount = 0
 
             /**
              * Feature - User can actually search for languages by name, native, code, and region.
              */
             items.forEach(item => {
-                const name = item.querySelector('.language-name')?.textContent?.toLowerCase() || ''
-                const native = item.querySelector('.language-native')?.textContent?.toLowerCase() || ''
-                const code = item.querySelector('.language-code')?.textContent?.toLowerCase() || ''
-                const region = item.querySelector('.language-region')?.textContent?.toLowerCase() || ''
+                const name = item.querySelector('.jigts-language-name')?.textContent?.toLowerCase() || ''
+                const native = item.querySelector('.jigts-language-native')?.textContent?.toLowerCase() || ''
+                const code = item.querySelector('.jigts-language-code')?.textContent?.toLowerCase() || ''
+                const region = item.querySelector('.jigts-language-region')?.textContent?.toLowerCase() || ''
 
                 const matches = name.includes(searchTerm) ||
                     native.includes(searchTerm) ||
@@ -759,12 +759,12 @@ export class TranslationWidget {
 
         clearSearch.addEventListener('click', () => {
             searchInput.value = ''
-            clearSearch.classList.remove('visible')
+            clearSearch.classList.remove('jigts-visible')
             searchInput.focus()
 
             // Show all language items and hide no results
-            const items = this.widget.querySelectorAll<HTMLElement>('.language-item')
-            const noResults = this.widget.querySelector<HTMLElement>('.no-results')
+            const items = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
+            const noResults = this.widget.querySelector<HTMLElement>('.jigts-no-results')
 
             items.forEach(item => {
                 item.style.display = ''
@@ -780,16 +780,16 @@ export class TranslationWidget {
             item.addEventListener('click', async () => {
                 // Remove selected class from all items
                 languageItems.forEach(i => {
-                    i.classList.remove('selected')
+                    i.classList.remove('jigts-selected')
                     i.setAttribute('aria-selected', 'false')
                 })
 
                 // Add selected class to clicked item
-                item.classList.add('selected')
+                item.classList.add('jigts-selected')
                 item.setAttribute('aria-selected', 'true')
 
                 // Update trigger text
-                const langName = item.querySelector('.language-name')?.textContent
+                const langName = item.querySelector('.jigts-language-name')?.textContent
                 const langCode = item.getAttribute('data-language-code')
 
                 if (langName) {
@@ -802,21 +802,21 @@ export class TranslationWidget {
                 }
 
                 // Change icon to language code and name
-                const triggerIcon = this.elements.trigger?.querySelector('.trigger-icon');
+                const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
                 if (triggerIcon && langCode && langName) {
-                    triggerIcon.innerHTML = `<span class=\"lang-code\">${langCode.toUpperCase()}</span><span class=\"lang-name\">${langName}</span>`;
+                    triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${langCode.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
                 }
 
                 // Close dropdown
-                dropdown.classList.remove('open')
+                dropdown.classList.remove('jigts-open')
                 trigger.setAttribute('aria-expanded', 'false')
 
                 // Handle translation
-                const triggerContent = trigger.querySelector<HTMLDivElement>('.trigger-content')
+                const triggerContent = trigger.querySelector<HTMLDivElement>('.jigts-trigger-content')
                 if (langCode && langCode !== this.currentLanguage) {
-                    if (triggerContent) triggerContent.classList.add('has-translation')
+                    if (triggerContent) triggerContent.classList.add('jigts-has-translation')
                     // Show loading state
-                    const triggerLoading = trigger.querySelector<HTMLDivElement>('.trigger-loading')
+                    const triggerLoading = trigger.querySelector<HTMLDivElement>('.jigts-trigger-loading')
                     if (triggerContent && triggerLoading) {
                         triggerContent.style.display = 'none'
                         triggerLoading.style.display = 'flex'
@@ -831,17 +831,17 @@ export class TranslationWidget {
                     } 
                 } else if (triggerContent) {
                     // If original language is selected, remove the class
-                    triggerContent.classList.remove('has-translation')
+                    triggerContent.classList.remove('jigts-has-translation')
                 }
             })
         })
 
         // Keyboard navigation
         document.addEventListener('keydown', (e: KeyboardEvent) => {
-            if (!dropdown.classList.contains('open')) return
+            if (!dropdown.classList.contains('jigts-open')) return
 
             if (e.key === 'Escape') {
-                dropdown.classList.remove('open')
+                dropdown.classList.remove('jigts-open')
                 trigger.setAttribute('aria-expanded', 'false')
                 trigger.focus()
             }
@@ -864,8 +864,8 @@ export class TranslationWidget {
             if (this.currentLanguage !== this.config.pageLanguage) {
                 this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
                 // Show loading state
-                const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
-                const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-loading')
+                const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-content')
+                const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-loading')
                 if (triggerContent && triggerLoading) {
                     triggerContent.style.display = 'none'
                     triggerLoading.style.display = 'flex'
@@ -873,10 +873,10 @@ export class TranslationWidget {
                 this.translatePage(this.currentLanguage)
                     .then(() => {
                         // Update UI to reflect the selected language
-                        const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+                        const languageItems = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
                         languageItems.forEach(item => {
                             const isSelected = item.getAttribute('data-language-code') === this.currentLanguage
-                            item.classList.toggle('selected', isSelected)
+                            item.classList.toggle('jigts-selected', isSelected)
                             item.setAttribute('aria-selected', isSelected.toString())
                         })
                     })
@@ -914,17 +914,17 @@ export class TranslationWidget {
             this.currentLanguage = langCode
             
             // Update UI to reflect the selected language
-            const languageItems = this.widget.querySelectorAll<HTMLElement>('.language-item')
+            const languageItems = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
             languageItems.forEach(item => {
                 const isSelected = item.getAttribute('data-language-code') === langCode
-                item.classList.toggle('selected', isSelected)
+                item.classList.toggle('jigts-selected', isSelected)
                 item.setAttribute('aria-selected', isSelected.toString())
             })
 
             // Update trigger text
-            const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.trigger-content')
+            const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-content')
             if (triggerContent) {
-                triggerContent.classList.add('has-translation')
+                triggerContent.classList.add('jigts-has-translation')
                 const triggerSpan = triggerContent.querySelector('span')
                 if (triggerSpan) {
                     this.updateTriggerText(supportedLang.name)
@@ -946,7 +946,7 @@ export class TranslationWidget {
 
     // Add this helper method to the class
     private getLanguageSVG(): string {
-        return `\n            <svg class=\"languages-icon\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"\n                    d=\"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129\">\n                </path>\n            </svg>\n        `;
+        return `\n            <svg class=\"jigts-languages-icon\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"\n                    d=\"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129\">\n                </path>\n            </svg>\n        `;
     }
 }
 
