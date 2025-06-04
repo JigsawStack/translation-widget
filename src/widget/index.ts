@@ -49,13 +49,13 @@ export class TranslationWidget {
             throw new Error('Public key is required to initialize the translation widget')
         }
 
-        // if ( publicKey.startsWith('sk_')) {
-        //     throw new Error('Please use public api key for security reasons. You can get one from https://jigsawstack.com')
-        // }
+        if ( publicKey.startsWith('sk_')) {
+            throw new Error('Please use public api key for security reasons. You can get one from https://jigsawstack.com')
+        }
 
-        // if( !publicKey.startsWith('pk_')) {
-        //     throw new Error('Please use proper api key. You can get one from https://jigsawstack.com')
-        // }
+        if( !publicKey.startsWith('pk_')) {
+            throw new Error('Please use proper api key. You can get one from https://jigsawstack.com')
+        }
 
         this.translationService = new TranslationService(
             publicKey,
