@@ -10,8 +10,11 @@ export class LocalStorageWrapper {
     }
   
     getKey(hash: string, url: string, targetLang: string): string {
-        // Only encode the URL, not the whole key
-        return `${hash}-${encodeURIComponent(url)}-${targetLang}`;
+
+      // get rid of query params
+      const urlWithoutQuery = url.split('?')[0];
+      // Only encode the URL, not the whole key
+      return `${hash}-${encodeURIComponent(urlWithoutQuery)}-${targetLang}`;
     }
 
     private shouldCompress(value: string): boolean {

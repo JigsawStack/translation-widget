@@ -4,7 +4,7 @@
 
 | Selector                      | Description           |
 | ----------------------------- | --------------------- |
-| `.translation-widget`         | Main container        |
+| `.jigts-translation-widget`         | Main container        |
 | `.jigts-widget-trigger`       | Main widget trigger button |
 | `.jigts-widget-dropdown`      | Dropdown menu container |
 

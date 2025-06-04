@@ -344,7 +344,7 @@ Here's a simple example of how to change the background color and border radius 
 
 ```html
 <style>
-  .widget-trigger {
+  .jigts-widget-trigger {
     background-color: #eee !important;
     border-radius: 8px !important;
   }

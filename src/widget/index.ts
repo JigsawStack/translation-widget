@@ -109,6 +109,13 @@ export class TranslationWidget {
         this.setupEventListeners()
         this.setupURLObserver()
         this.setupContentObserver()
+
+        // Trigger translation immediately if language is different from page language
+        if (this.currentLanguage !== this.config.pageLanguage) {
+            this.translatePage(this.currentLanguage).catch(error => {
+                console.error('Initial translation error:', error);
+            });
+        }
     }
 
     private getUrlParameter(name: string): string | null {
