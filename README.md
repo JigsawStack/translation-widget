@@ -118,25 +118,26 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-          <Script
+        <Script
+          src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var script = document.createElement('script');
-                script.src = "https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js";
-                script.onload = function() {
-                  TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-                    pageLanguage: 'en',
-                    position: "top-right",
-                    autoDetectLanguage: false,
-                  })
-                };
-                document.body.appendChild(script);
-              })();
-            `,
-          }}
         />
+        <Script
+          id="jigts-translation-widget-init"
+          strategy="afterInteractive"
+        >
+          {`
+            window.addEventListener('load', function () {
+              if (window.TranslationWidget) {
+                window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+                  pageLanguage: 'en',
+                  position: "top-right",
+                  autoDetectLanguage: false,
+                });
+              }
+            });
+          `}
+        </Script>
       </body>
     </html>
   );
@@ -215,6 +216,10 @@ declare global {
       pageLanguage: string;
       position: string;
       autoDetectLanguage: boolean;
+      theme:{
+        baseColor: string,
+        textColor: string,
+      }
     }) => void;
   }
 }
