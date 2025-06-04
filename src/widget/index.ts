@@ -34,6 +34,7 @@ export class TranslationWidget {
     private static instance: TranslationWidget | null = null
     private currentTranslationPromise: Promise<void> | null = null
     private lastRequestedLanguage: string | null = null
+    private translationRequestId: number = 0
 
     constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
         const allowedPositions = ['top-right', 'top-left', 'bottom-left', 'bottom-right'] as const;
@@ -48,13 +49,13 @@ export class TranslationWidget {
             throw new Error('Public key is required to initialize the translation widget')
         }
 
-        if ( publicKey.startsWith('sk_')) {
-            throw new Error('Please use public api key for security reasons. You can get one from https://jigsawstack.com')
-        }
+        // if ( publicKey.startsWith('sk_')) {
+        //     throw new Error('Please use public api key for security reasons. You can get one from https://jigsawstack.com')
+        // }
 
-        if( !publicKey.startsWith('pk_')) {
-            throw new Error('Please use proper api key. You can get one from https://jigsawstack.com')
-        }
+        // if( !publicKey.startsWith('pk_')) {
+        //     throw new Error('Please use proper api key. You can get one from https://jigsawstack.com')
+        // }
 
         this.translationService = new TranslationService(
             publicKey,
@@ -361,27 +362,25 @@ export class TranslationWidget {
     }
 
     private async translatePage(targetLang: string): Promise<void> {
-        // Store the most recently requested language
+        // Increment the request ID for each new translation
+        const requestId = ++this.translationRequestId;
         this.lastRequestedLanguage = targetLang;
-        
-        // Show loading state
         this.updateLoadingState(true);
-        
         // If there's already a translation in progress, wait for it
         if (this.currentTranslationPromise) {
             await this.currentTranslationPromise;
         }
-
         // If target language is the default page language, restore original text
         if (targetLang === this.config.pageLanguage) {
             this.resetTranslations();
-            this.updateLoadingState(false);
+            // Only hide loader if this is the latest request
+            if (requestId === this.translationRequestId) {
+                this.updateLoadingState(false);
+            }
             return;
         }
-        
         // Create a new promise for this translation
         this.currentTranslationPromise = this._translatePage(targetLang);
-        
         try {
             await this.currentTranslationPromise;
         } catch (error) {
@@ -389,10 +388,11 @@ export class TranslationWidget {
             // If translation fails, reset to default language
             this.resetToDefaultLanguage();
         } finally {
-            if (this.currentTranslationPromise === this.currentTranslationPromise) {
+            // Only hide loader if this is the latest request
+            if (requestId === this.translationRequestId) {
                 this.currentTranslationPromise = null;
+                this.updateLoadingState(false);
             }
-            this.updateLoadingState(false);
         }
     }
 
@@ -546,6 +546,8 @@ export class TranslationWidget {
                     const translatedText = allTranslatedTexts[batchIdx][textIdx];
                     fullTranslations[nodeIdx] = translatedText;
                     
+
+                    console.log(this.lastRequestedLanguage, targetLang)
                     // Only update DOM if this is still the most recently requested language
                     if (this.lastRequestedLanguage === targetLang) {
                         // Apply font size adjustment
@@ -555,8 +557,8 @@ export class TranslationWidget {
                             const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                             parent.style.fontSize = newFontSize;
                         }
-                        node.textContent = translatedText;
-                    }
+                            node.textContent = translatedText;
+                        }
                 } else if (parent && parent.getAttribute('data-translated-lang') === targetLang) {
                     // Already translated, use current text
                     fullTranslations[nodeIdx] = node.textContent || '';
@@ -636,14 +638,12 @@ export class TranslationWidget {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        // Reset any previous positioning
         dropdown.style.top = '';
         dropdown.style.bottom = '';
         dropdown.style.left = '';
         dropdown.style.right = '';
         dropdown.style.transform = '';
 
-        // Calculate available space
         const spaceBelow = viewportHeight - triggerRect.bottom;
         const spaceAbove = triggerRect.top;
         const spaceRight = viewportWidth - triggerRect.right;
@@ -651,13 +651,11 @@ export class TranslationWidget {
 
         // Determine vertical position
         if (spaceBelow < dropdownRect.height && spaceAbove > spaceBelow) {
-            // Position above if there's more space above
             dropdown.style.bottom = '100%';
             dropdown.style.top = 'auto';
             dropdown.style.marginBottom = '0.5rem';
             dropdown.style.marginTop = '0';
         } else {
-            // Position below (default)
             dropdown.style.top = '100%';
             dropdown.style.bottom = 'auto';
             dropdown.style.marginTop = '0.5rem';
@@ -666,16 +664,13 @@ export class TranslationWidget {
 
         // Determine horizontal position
         if (spaceRight < dropdownRect.width && spaceLeft > spaceRight) {
-            // Position to the left if there's more space on the left
             dropdown.style.right = '0';
             dropdown.style.left = 'auto';
         } else {
-            // Position to the right (default)
             dropdown.style.left = '0';
             dropdown.style.right = 'auto';
         }
 
-        // Adjust if dropdown would overflow viewport
         const finalRect = dropdown.getBoundingClientRect();
         
         if (finalRect.right > viewportWidth) {
@@ -733,10 +728,8 @@ export class TranslationWidget {
             })
         }
 
-        // Initialize reset button visibility
         this.updateResetButtonVisibility()
 
-        // Toggle dropdown
         trigger.addEventListener('click', () => {
             dropdown.classList.toggle('jigts-open')
             const isOpen = dropdown.classList.contains('jigts-open')
@@ -747,14 +740,12 @@ export class TranslationWidget {
             }
         })
 
-        // Adjust position on window resize
         window.addEventListener('resize', () => {
             if (dropdown.classList.contains('jigts-open')) {
                 this.adjustDropdownPosition()
             }
         })
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e: MouseEvent) => {
             if (!(e.target as Element).closest('.jigts-translation-widget')) {
                 if (dropdown.classList.contains('jigts-open')) {
@@ -767,20 +758,15 @@ export class TranslationWidget {
             }
         })
 
-        // Search functionality
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase()
             const hasValue = searchTerm.length > 0
             clearSearch.classList.toggle('jigts-visible', hasValue)
 
-            // Filter language items
             const items = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
             const noResults = this.widget.querySelector<HTMLElement>('.jigts-no-results')
             let visibleCount = 0
 
-            /**
-             * Feature - User can actually search for languages by name, native, code, and region.
-             */
             items.forEach(item => {
                 const name = item.querySelector('.jigts-language-name')?.textContent?.toLowerCase() || ''
                 const native = item.querySelector('.jigts-language-native')?.textContent?.toLowerCase() || ''
@@ -796,7 +782,6 @@ export class TranslationWidget {
                 if (matches) visibleCount++
             })
 
-            // Show/hide no results message
             if (noResults) {
                 noResults.style.display = visibleCount === 0 ? 'flex' : 'none'
             }
@@ -807,7 +792,6 @@ export class TranslationWidget {
             clearSearch.classList.remove('jigts-visible')
             searchInput.focus()
 
-            // Show all language items and hide no results
             const items = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
             const noResults = this.widget.querySelector<HTMLElement>('.jigts-no-results')
 
@@ -820,20 +804,16 @@ export class TranslationWidget {
             }
         })
 
-        // Language selection
         languageItems.forEach(item => {
             item.addEventListener('click', async () => {
-                // Remove selected class from all items
                 languageItems.forEach(i => {
                     i.classList.remove('jigts-selected')
                     i.setAttribute('aria-selected', 'false')
                 })
 
-                // Add selected class to clicked item
                 item.classList.add('jigts-selected')
                 item.setAttribute('aria-selected', 'true')
 
-                // Update trigger text
                 const langName = item.querySelector('.jigts-language-name')?.textContent
                 const langCode = item.getAttribute('data-language-code')
 
@@ -841,26 +821,21 @@ export class TranslationWidget {
                     await this.updateTriggerText(langName)
                 }
 
-                // Save preference to localStorage
                 if (langCode) {
                     localStorage.setItem('jss-pref', langCode);
                 }
 
-                // Change icon to language code and name
                 const triggerIcon = this.elements.trigger?.querySelector('.jigts-trigger-icon');
                 if (triggerIcon && langCode && langName) {
                     triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${langCode.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
                 }
 
-                // Close dropdown
                 dropdown.classList.remove('jigts-open')
                 trigger.setAttribute('aria-expanded', 'false')
 
-                // Handle translation
                 const triggerContent = trigger.querySelector<HTMLDivElement>('.jigts-trigger-content')
                 if (langCode && langCode !== this.currentLanguage) {
                     if (triggerContent) triggerContent.classList.add('jigts-has-translation')
-                    // Show loading state
                     const triggerLoading = trigger.querySelector<HTMLDivElement>('.jigts-trigger-loading')
                     if (triggerContent && triggerLoading) {
                         triggerContent.style.display = 'none'
@@ -875,13 +850,11 @@ export class TranslationWidget {
                         alert('An error occurred during translation. Please try again.')
                     } 
                 } else if (triggerContent) {
-                    // If original language is selected, remove the class
                     triggerContent.classList.remove('jigts-has-translation')
                 }
             })
         })
 
-        // Keyboard navigation
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             if (!dropdown.classList.contains('jigts-open')) return
 
@@ -908,7 +881,6 @@ export class TranslationWidget {
             this.translationScheduled = false;
             if (this.currentLanguage !== this.config.pageLanguage) {
                 this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
-                // Show loading state
                 const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-content')
                 const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>('.jigts-trigger-loading')
                 if (triggerContent && triggerLoading) {
@@ -917,7 +889,6 @@ export class TranslationWidget {
                 }
                 this.translatePage(this.currentLanguage)
                     .then(() => {
-                        // Update UI to reflect the selected language
                         const languageItems = this.widget.querySelectorAll<HTMLElement>('.jigts-language-item')
                         languageItems.forEach(item => {
                             const isSelected = item.getAttribute('data-language-code') === this.currentLanguage

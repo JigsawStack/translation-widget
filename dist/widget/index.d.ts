@@ -16,6 +16,7 @@ export declare class TranslationWidget {
     private static instance;
     private currentTranslationPromise;
     private lastRequestedLanguage;
+    private translationRequestId;
     constructor(publicKey: string, config?: Partial<TranslationConfig>);
     private initialize;
     private getUrlParameter;
