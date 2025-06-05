@@ -3,9 +3,9 @@ import { TranslationConfig } from './types';
 declare global {
     interface Window {
         TranslationWidget: (publicKey: string, options: {
-            pageLanguage: string;
-            position: string;
-            autoDetectLanguage: boolean;
+            pageLanguage?: string;
+            position?: string;
+            autoDetectLanguage?: boolean;
             theme?: {
                 baseColor?: string;
                 textColor?: string;

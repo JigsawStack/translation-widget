@@ -60,7 +60,14 @@ export class DocumentNavigator {
 
         while ((currentNode = navigator.nextNode())) {
             if (currentNode.nodeType === Node.TEXT_NODE) {
-                const text = currentNode.textContent?.trim() || ''
+                let text = currentNode.textContent?.trim() || ''
+                const parentElement = currentNode.parentElement;
+                if( parentElement){
+                    const originalText = parentElement.getAttribute('data-original-text')
+                    if (originalText) {
+                        text = originalText
+                    }
+                }
                 /**
                  * Skip the content if 
                  * 1. the content if empty 

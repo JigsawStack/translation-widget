@@ -254,9 +254,9 @@ Make sure to:
 
 | Parameter            | Type    | Default | Optional | Description                                                         |
 | -------------------- | ------- | ------- | -------- | ------------------------------------------------------------------- |
-| `pageLanguage`       | string  | `'en'`  | No       | Language of the main page content                                   |
-| `autoDetectLanguage` | boolean | `false` | No      | Automatically detect and translate based on user's browser language |
-| `position`           | string  | `top-right` | No   | Automatically Set the position of the widget in the screen, supported `top-right`, `top-left`, `bottom-left`, `bottom-right`. |
+| `pageLanguage`       | string  | `'en'`  | Yes       | Language of the main page content                                   |
+| `autoDetectLanguage` | boolean | `false` | Yes      | Automatically detect and translate based on user's browser language |
+| `position`           | string  | `top-right` | Yes   | Automatically Set the position of the widget in the screen, supported `top-right`, `top-left`, `bottom-left`, `bottom-right`. |
 | `theme`              | object  | `{}`    | Yes      | Theme configuration for customizing widget appearance               |
 | `theme.baseColor`    | string  | `white` | Yes      | Base color for the widget background and accents                    |
 | `theme.textColor`    | string  | `black` | Yes      | Text color for all text elements in the widget                      |
@@ -265,10 +265,10 @@ Make sure to:
 
 ```javascript
 const widget = new TranslationWidget(publicKey, {
-    pageLanguage: 'en',
-    position: 'top-right',
-    autoDetectLanguage: true,
-    theme: {
+    pageLanguage?: 'en',
+    position?: 'top-right',
+    autoDetectLanguage?: true,
+    theme?: {
         baseColor: '#2563eb',  // Custom base color
         textColor: '#1f2937'   // Custom text color
     }
