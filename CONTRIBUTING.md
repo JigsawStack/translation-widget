@@ -60,8 +60,15 @@ Go to your fork on GitHub and click "Compare & pull request".
    ```bash
    yarn install
    ```
+2. **Add Env**
+   Create a `.env` file in the root directory with the following variables:
+   ```bash
+   # Required: Your JigsawStack Public API key
+   VITE_TRANSLATION_WIDGET_PUBLIC_KEY=your_api_key_here
+   ```
+   You can get your Public API key from the [JigsawStack Dashboard](https://jigsawstack.com).
 
-2. **Start the development server:**
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
