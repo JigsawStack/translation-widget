@@ -9,8 +9,6 @@ JigsawStack Translation Widget is a powerful, drop-in translation solution that 
 
 🧠 Contextual accuracy beyond literal translations
 
-🔗 Simple integration with just two lines of code
-
 🎨 Fully customizable UI and positioning
 
 📱 Responsive design with automatic font scaling
@@ -37,7 +35,7 @@ This key ensures secure usage and links translations to your account.
 
 https://github.com/user-attachments/assets/b182020b-8990-4d7a-8280-6e751e8c0d5f
 
-> ⚠️ **Important**: Make sure to use a **public key** from your JigsawStack dashboard with translation capabilities enabled. This ensures secure usage and proper access to translation features.
+> ⚠️ **Important**: Make sure to use a **public key** from your JigsawStack dashboard with translation capabilities enabled. This ensures secure usage and proper access to translation features only.
 
 <br>
 
@@ -237,12 +235,12 @@ If you're using TypeScript and encountering type errors with `window.Translation
 declare global {
   interface Window {
     TranslationWidget: (publicKey: string, options: {
-      pageLanguage: string;
-      position: string;
-      autoDetectLanguage: boolean;
-      theme:{
-        baseColor: string,
-        textColor: string,
+      pageLanguage?: string;
+      position?: string;
+      autoDetectLanguage?: boolean;
+      theme?:{
+        baseColor?: string,
+        textColor?: string,
       }
     }) => void;
   }
@@ -289,10 +287,10 @@ Make sure to:
 
 ```javascript
 const widget = new TranslationWidget(publicKey, {
-    pageLanguage?: 'en',
-    position?: 'top-right',
-    autoDetectLanguage?: true,
-    theme?: {
+    pageLanguage: 'en',
+    position: 'top-right',
+    autoDetectLanguage: true,
+    theme: {
         baseColor: '#2563eb',  // Custom base color
         textColor: '#1f2937'   // Custom text color
     }
