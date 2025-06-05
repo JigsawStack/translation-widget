@@ -104,40 +104,64 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
 ## Next.Js Integration
 ### App Router (Next.js 13+)
 
-Add the widget container and script to your root layout (`app/layout.tsx`):
+Add the TranslationWidget Component with `use client` directive inside your components folder.
 
 ```tsx
+
+"use client";
 import Script from "next/script";
+
+export default function TranslationWidget() {
+  return (
+    <Script
+       src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
+      strategy="afterInteractive"
+      onLoad={() => {
+        if (window.TranslationWidget) {
+          window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+            pageLanguage: 'en',
+            position: "top-right",
+            autoDetectLanguage: false,
+          });
+        }
+      }}
+    />
+  );
+}
+```
+
+Then import it in your layout.tsx
+
+```tsx
+import TranslationWidget from "@/components";
+
+declare global {
+  interface Window {
+    TranslationWidget: (publicKey: string, options: {
+      pageLanguage?: string;
+      position?: string;
+      autoDetectLanguage?: boolean;
+      theme?: {
+        baseColor: string;
+        textColor: string;
+      }
+    }) => void;
+  }
+}
+
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body>
+      <body
+        className={`antialiased`}
+      >
         {children}
-        <Script
-          src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="jigts-translation-widget-init"
-          strategy="afterInteractive"
-        >
-          {`
-            window.addEventListener('load', function () {
-              if (window.TranslationWidget) {
-                window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-                  pageLanguage: 'en',
-                  position: "top-right",
-                  autoDetectLanguage: false,
-                });
-              }
-            });
-          `}
-        </Script>
+        <TranslationWidget />
       </body>
     </html>
   );
