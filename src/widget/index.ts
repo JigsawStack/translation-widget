@@ -419,7 +419,8 @@ export class TranslationWidget {
             item.setAttribute('aria-selected', isSelected.toString());
         });
 
-        // Update localStorage preference
+        // Update localStorage preference to original language
+        console.log('resetToDefaultLanguage', this.config.pageLanguage)
         localStorage.setItem('jss-pref', this.config.pageLanguage);
         
         // Update trigger icon
@@ -710,7 +711,7 @@ export class TranslationWidget {
         if (resetButton) {
             resetButton.addEventListener('click', () => {
                 if (this.isTranslating) return
-                this.resetTranslations()
+                this.resetToDefaultLanguage()
                 resetButton.classList.remove('jigts-active')
                 this.isTranslated = false
                 this.updateResetButtonVisibility()
@@ -824,6 +825,10 @@ export class TranslationWidget {
                 const langName = item.querySelector('.jigts-language-name')?.textContent
                 const langCode = item.getAttribute('data-language-code')
 
+                // Close dropdown immediately
+                dropdown.classList.remove('jigts-open')
+                trigger.setAttribute('aria-expanded', 'false')
+
                 if (langName) {
                     await this.updateTriggerText(langName)
                 }
@@ -836,9 +841,6 @@ export class TranslationWidget {
                 if (triggerIcon && langCode && langName) {
                     triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${langCode.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
                 }
-
-                dropdown.classList.remove('jigts-open')
-                trigger.setAttribute('aria-expanded', 'false')
 
                 const triggerContent = trigger.querySelector<HTMLDivElement>('.jigts-trigger-content')
                 if (langCode && langCode !== this.currentLanguage) {
