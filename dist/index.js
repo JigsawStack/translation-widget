@@ -2429,22 +2429,44 @@ const _TranslationWidget = class _TranslationWidget {
    */
   async translateTo(langCode) {
     var _a;
+    const startTime = Date.now();
     if (this.isTranslating) {
       console.warn("Translation already in progress");
-      return;
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: "Translation already in progress",
+        duration: 0
+      };
     }
     const supportedLang = languages.find((lang) => lang.code === langCode);
     if (!supportedLang) {
       console.error(`Unsupported language code: ${langCode}`);
-      return;
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: `Unsupported language code: ${langCode}`,
+        duration: 0
+      };
     }
     if (langCode === this.currentLanguage) {
       console.log("Page is already in the requested language");
-      return;
+      return {
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        duration: 0
+      };
     }
     try {
       await this.translatePage(langCode);
-      this.currentLanguage = langCode;
+      const language = languages.find((lang) => lang.code === langCode);
+      console.log("language", language);
+      if (language) {
+        this.currentLanguage = langCode;
+      }
       const languageItems = this.widget.querySelectorAll(".jigts-language-item");
       for (const item of languageItems) {
         const isSelected = item.getAttribute("data-language-code") === langCode;
@@ -2454,14 +2476,28 @@ const _TranslationWidget = class _TranslationWidget {
       const triggerContent = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(".jigts-trigger-content");
       if (triggerContent) {
         triggerContent.classList.add("jigts-has-translation");
-        const triggerSpan = triggerContent.querySelector("span");
-        if (triggerSpan) {
-          this.updateTriggerText(supportedLang.name);
+        const triggerIcon = triggerContent.querySelector(".jigts-trigger-icon");
+        if (triggerIcon && supportedLang) {
+          triggerIcon.innerHTML = `<span class="jigts-lang-code">${supportedLang.code.toUpperCase()}</span><span class="jigts-lang-name">${supportedLang.name}</span>`;
         }
       }
+      const endTime = Date.now();
+      const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+      return {
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes,
+        duration: endTime - startTime
+      };
     } catch (error) {
       console.error("Translation error:", error);
-      throw error;
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 0
+      };
     }
   }
   /**
@@ -2484,9 +2520,10 @@ const _TranslationWidget = class _TranslationWidget {
 };
 __publicField(_TranslationWidget, "instance", null);
 let TranslationWidget = _TranslationWidget;
-window.translate = async (langCode, onComplete) => {
+window.translate = async (langCode, onComplete, onError) => {
   const instance = TranslationWidget.getInstance();
   if (!instance) {
+    onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
     return {
       success: false,
       targetLanguage: langCode,
@@ -2497,17 +2534,11 @@ window.translate = async (langCode, onComplete) => {
   }
   const startTime = Date.now();
   try {
-    await instance.translateTo(langCode);
-    const endTime = Date.now();
-    const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+    const result = await instance.translateTo(langCode);
     onComplete == null ? void 0 : onComplete();
-    return {
-      success: true,
-      targetLanguage: langCode,
-      translatedNodes,
-      duration: endTime - startTime
-    };
+    return result;
   } catch (error) {
+    onError == null ? void 0 : onError(error);
     return {
       success: false,
       targetLanguage: langCode,

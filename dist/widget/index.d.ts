@@ -53,7 +53,7 @@ export declare class TranslationWidget {
      * @param langCode The language code to translate to
      * @returns Promise that resolves when translation is complete
      */
-    translateTo(langCode: string): Promise<void>;
+    translateTo(langCode: string): Promise<TranslationResult>;
     /**
      * Get the current instance of TranslationWidget
      * @returns The current TranslationWidget instance or null if not initialized
@@ -63,7 +63,7 @@ export declare class TranslationWidget {
 }
 declare global {
     interface Window {
-        translate: (langCode: string, onComplete?: () => void) => Promise<TranslationResult>;
+        translate: (langCode: string, onComplete?: () => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
     }
 }
 export {};
