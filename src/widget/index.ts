@@ -944,7 +944,7 @@ export class TranslationWidget {
 // Expose the translate function globally
 declare global {
   interface Window {
-    translate: (langCode: string) => Promise<TranslationResult>;
+    translate: (langCode: string, onComplete?: () => void) => Promise<TranslationResult>;
   }
 }
 

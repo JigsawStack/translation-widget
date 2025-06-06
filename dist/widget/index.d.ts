@@ -63,7 +63,7 @@ export declare class TranslationWidget {
 }
 declare global {
     interface Window {
-        translate: (langCode: string) => Promise<TranslationResult>;
+        translate: (langCode: string, onComplete?: () => void) => Promise<TranslationResult>;
     }
 }
 export {};

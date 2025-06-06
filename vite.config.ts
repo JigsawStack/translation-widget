@@ -12,20 +12,23 @@ export default defineConfig({
       entry: resolve(__dirname, "src/index.ts"),
       name: "TranslationWidget",
       fileName: "translation-widget",
-      formats: ["es", "umd"],
     },
     minify: "terser",
     sourcemap: true,
     rollupOptions: {
-      output: {
-        // Ensure the UMD build is minified
-        format: "umd",
-        entryFileNames: "[name].min.js",
-        // Clean up the output directory on each build
+      output: [{
+        format: "es",
+        entryFileNames: "[name].js",
         chunkFileNames: "[name]-[hash].js",
-        // Ensure CSS is bundled with the JavaScript
         assetFileNames: "[name][extname]",
       },
+      {
+        format: "umd",
+        name: "TranslationWidget",
+        entryFileNames: "[name].min.js",
+        chunkFileNames: "[name]-[hash].min.js",
+        assetFileNames: "[name][extname]",
+      },]
     },
     // Ensure CSS is injected into the JavaScript bundle
     cssCodeSplit: false,
