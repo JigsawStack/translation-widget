@@ -24,6 +24,7 @@ export declare class TranslationWidget {
     private currentTranslationPromise;
     private lastRequestedLanguage;
     private translationRequestId;
+    private showUI;
     constructor(publicKey: string, config?: Partial<TranslationConfig>);
     private initialize;
     private getUrlParameter;
@@ -53,7 +54,7 @@ export declare class TranslationWidget {
      * @param langCode The language code to translate to
      * @returns Promise that resolves when translation is complete
      */
-    translateTo(langCode: string): Promise<TranslationResult>;
+    translateTo(langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void): Promise<TranslationResult>;
     /**
      * Get the current instance of TranslationWidget
      * @returns The current TranslationWidget instance or null if not initialized
@@ -64,6 +65,7 @@ export declare class TranslationWidget {
 declare global {
     interface Window {
         translate: (langCode: string, onComplete?: () => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
+        resetTranslation: (defaultLang: string) => void;
     }
 }
 export {};

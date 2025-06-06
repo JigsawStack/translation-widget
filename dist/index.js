@@ -1759,6 +1759,7 @@ const _TranslationWidget = class _TranslationWidget {
     __publicField(this, "currentTranslationPromise", null);
     __publicField(this, "lastRequestedLanguage", null);
     __publicField(this, "translationRequestId", 0);
+    __publicField(this, "showUI");
     __publicField(this, "onUrlChange", () => {
       this.scheduleTranslation();
     });
@@ -1782,6 +1783,7 @@ const _TranslationWidget = class _TranslationWidget {
     this.autoDetectLanguage = this.config.autoDetectLanguage || false;
     this.currentLanguage = this.config.pageLanguage || "en";
     this.userLanguage = getUserLanguage();
+    this.showUI = this.config.showUI ?? true;
     this.widget = document.createElement("div");
     this.elements = {
       trigger: null,
@@ -1813,14 +1815,16 @@ const _TranslationWidget = class _TranslationWidget {
       }
     }
     this.currentLanguage = initialLang;
-    this.createWidget();
-    const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(".jigts-trigger-icon");
-    if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
-      const langObj = languages.find((lang) => lang.code === this.currentLanguage);
-      const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
-      triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.currentLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langName}</span>`;
+    if (this.showUI) {
+      this.createWidget();
+      const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(".jigts-trigger-icon");
+      if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
+        const langObj = languages.find((lang) => lang.code === this.currentLanguage);
+        const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
+        triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.currentLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langName}</span>`;
+      }
+      this.setupEventListeners();
     }
-    this.setupEventListeners();
     this.setupURLObserver();
     this.setupContentObserver();
     if (this.currentLanguage !== this.config.pageLanguage) {
@@ -2037,7 +2041,6 @@ const _TranslationWidget = class _TranslationWidget {
       item.classList.toggle("jigts-selected", isSelected);
       item.setAttribute("aria-selected", isSelected.toString());
     }
-    console.log("resetToDefaultLanguage", this.config.pageLanguage);
     localStorage.setItem("jss-pref", this.config.pageLanguage);
     const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(".jigts-trigger-icon");
     if (triggerIcon) {
@@ -2135,7 +2138,6 @@ const _TranslationWidget = class _TranslationWidget {
           const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
           const translatedText = allTranslatedTexts[batchIdx][textIdx];
           fullTranslations[nodeIdx] = translatedText;
-          console.log(this.lastRequestedLanguage, targetLang);
           if (this.lastRequestedLanguage === targetLang) {
             if (parent) {
               const originalText = parent.getAttribute("data-original-text") || "";
@@ -2168,39 +2170,43 @@ const _TranslationWidget = class _TranslationWidget {
     }
   }
   resetTranslations() {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
-    const elements = document.querySelectorAll("[data-original-text]");
-    for (const element of elements) {
-      const textNodes = Array.from(element.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE);
-      if (textNodes.length > 0) {
-        const originalText = element.getAttribute("data-original-text");
-        if (originalText) {
-          textNodes[0].textContent = originalText;
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
+      const elements = document.querySelectorAll("[data-original-text]");
+      for (const element of elements) {
+        const textNodes = Array.from(element.childNodes).filter((node) => node.nodeType === Node.TEXT_NODE);
+        if (textNodes.length > 0) {
+          const originalText = element.getAttribute("data-original-text");
+          if (originalText) {
+            textNodes[0].textContent = originalText;
+          }
         }
+        const originalFontSize = element.getAttribute("data-original-font-size");
+        if (originalFontSize) {
+          element.style.fontSize = originalFontSize;
+        }
+        element.removeAttribute("data-original-text");
+        element.removeAttribute("data-translated-lang");
+        element.removeAttribute("data-original-font-size");
       }
-      const originalFontSize = element.getAttribute("data-original-font-size");
-      if (originalFontSize) {
-        element.style.fontSize = originalFontSize;
-      }
-      element.removeAttribute("data-original-text");
-      element.removeAttribute("data-translated-lang");
-      element.removeAttribute("data-original-font-size");
+      this.isTranslated = false;
+      localStorage.setItem("jss-pref", this.config.pageLanguage);
+      this.currentLanguage = this.config.pageLanguage;
+      const nodes = DocumentNavigator.findTranslatableContent();
+      const hash = generateHashForContent(nodes);
+      this.lastTranslated = {
+        url: window.location.href,
+        lang: this.config.pageLanguage,
+        hash
+      };
+      this.updateResetButtonVisibility();
+      this.observeBody();
     }
-    this.isTranslated = false;
-    this.currentLanguage = this.config.pageLanguage;
-    const nodes = DocumentNavigator.findTranslatableContent();
-    const hash = generateHashForContent(nodes);
-    this.lastTranslated = {
-      url: window.location.href,
-      lang: this.config.pageLanguage,
-      hash
-    };
-    this.updateResetButtonVisibility();
-    this.observeBody();
   }
   adjustDropdownPosition() {
+    if (!this.showUI) return;
     const { dropdown, trigger } = this.elements;
     if (!dropdown || !trigger) return;
     const triggerRect = trigger.getBoundingClientRect();
@@ -2427,11 +2433,12 @@ const _TranslationWidget = class _TranslationWidget {
    * @param langCode The language code to translate to
    * @returns Promise that resolves when translation is complete
    */
-  async translateTo(langCode) {
+  async translateTo(langCode, onComplete, onError) {
     var _a;
     const startTime = Date.now();
     if (this.isTranslating) {
       console.warn("Translation already in progress");
+      onError == null ? void 0 : onError(new Error("Translation already in progress"));
       return {
         success: false,
         targetLanguage: langCode,
@@ -2442,7 +2449,7 @@ const _TranslationWidget = class _TranslationWidget {
     }
     const supportedLang = languages.find((lang) => lang.code === langCode);
     if (!supportedLang) {
-      console.error(`Unsupported language code: ${langCode}`);
+      onError == null ? void 0 : onError(new Error(`Unsupported language code: ${langCode}`));
       return {
         success: false,
         targetLanguage: langCode,
@@ -2452,7 +2459,12 @@ const _TranslationWidget = class _TranslationWidget {
       };
     }
     if (langCode === this.currentLanguage) {
-      console.log("Page is already in the requested language");
+      onComplete == null ? void 0 : onComplete({
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        duration: 0
+      });
       return {
         success: true,
         targetLanguage: langCode,
@@ -2463,7 +2475,6 @@ const _TranslationWidget = class _TranslationWidget {
     try {
       await this.translatePage(langCode);
       const language = languages.find((lang) => lang.code === langCode);
-      console.log("language", language);
       if (language) {
         this.currentLanguage = langCode;
       }
@@ -2483,6 +2494,13 @@ const _TranslationWidget = class _TranslationWidget {
       }
       const endTime = Date.now();
       const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+      onComplete == null ? void 0 : onComplete({
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes,
+        duration: endTime - startTime
+      });
+      localStorage.setItem("jss-pref", langCode);
       return {
         success: true,
         targetLanguage: langCode,
@@ -2490,7 +2508,7 @@ const _TranslationWidget = class _TranslationWidget {
         duration: endTime - startTime
       };
     } catch (error) {
-      console.error("Translation error:", error);
+      onError == null ? void 0 : onError(error);
       return {
         success: false,
         targetLanguage: langCode,
@@ -2520,38 +2538,52 @@ const _TranslationWidget = class _TranslationWidget {
 };
 __publicField(_TranslationWidget, "instance", null);
 let TranslationWidget = _TranslationWidget;
-window.translate = async (langCode, onComplete, onError) => {
-  const instance = TranslationWidget.getInstance();
-  if (!instance) {
-    onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
-    return {
-      success: false,
-      targetLanguage: langCode,
-      translatedNodes: 0,
-      error: "Translation widget not initialized",
-      duration: 0
-    };
-  }
-  const startTime = Date.now();
-  try {
-    const result = await instance.translateTo(langCode);
-    onComplete == null ? void 0 : onComplete();
-    return result;
-  } catch (error) {
-    onError == null ? void 0 : onError(error);
-    return {
-      success: false,
-      targetLanguage: langCode,
-      translatedNodes: 0,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      duration: Date.now() - startTime
-    };
-  }
-};
+if (typeof window !== "undefined") {
+  window.resetTranslation = (defaultLang) => {
+    const instance = TranslationWidget.getInstance();
+    if (!instance) {
+      return;
+    }
+    try {
+      instance.resetTranslations();
+      localStorage.setItem("jss-pref", defaultLang);
+    } catch (error) {
+      console.error("Error resetting translation:", error);
+    }
+  };
+  window.translate = async (langCode, onComplete, onError) => {
+    const instance = TranslationWidget.getInstance();
+    if (!instance) {
+      onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: "Translation widget not initialized",
+        duration: 0
+      };
+    }
+    const startTime = Date.now();
+    try {
+      const result = await instance.translateTo(langCode, onComplete, onError);
+      onComplete == null ? void 0 : onComplete(result);
+      return result;
+    } catch (error) {
+      onError == null ? void 0 : onError(error);
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: Date.now() - startTime
+      };
+    }
+  };
+}
 let widgetInstance;
 const initializeTranslationWidget = (publicKey, config) => {
   if (typeof window === "undefined") {
-    throw new Error("Translation widget can only be used in browser environment");
+    return void 0;
   }
   const initWidget = () => {
     if (!widgetInstance) {
@@ -2572,6 +2604,7 @@ const initializeTranslationWidget = (publicKey, config) => {
   return initWidget();
 };
 export {
+  TranslationWidget,
   initializeTranslationWidget as default
 };
 //# sourceMappingURL=index.js.map

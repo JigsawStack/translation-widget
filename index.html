@@ -130,7 +130,7 @@
                 </div>
                 <div>
                     <h3>Benefits</h3>
-                    <button onclick="window.translate('hi', () => {
+                    <button onclick="window.resetTranslation('hi', () => {
                         console.log('Translation complete');
                     }).then((res) => {
                         console.log(res);
@@ -161,10 +161,21 @@
         <p>© 2024 Your Company Name. All rights reserved.</p>
     </footer>
 
-    <script defer src="./dist/index.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script> -->
-    <script defer type="module">
-        TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY)
+    <!-- Load the main script -->
+    <script src="./dist/index.min.js"></script>
+    <!-- Initialize the widget -->
+    <script>
+        // Initialize the translation widget
+        window.initializeTranslationWidget = function(publicKey) {
+            if (typeof TranslationWidget !== 'undefined') {
+                initializeTranslationWidget(publicKey);
+            } else {
+                console.error('Translation widget not loaded properly');
+            }
+        };
+
+        // Initialize with the public key
+        initializeTranslationWidget("public-key");
     </script>
 </body>
 

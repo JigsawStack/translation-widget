@@ -6,15 +6,6 @@ declare global {
   interface Window {
     TranslationWidget: (
       publicKey: string,
-      options: {
-        pageLanguage?: string;
-        position?: string;
-        autoDetectLanguage?: boolean;
-        theme?: {
-          baseColor?: string;
-          textColor?: string;
-        };
-      },
       config?: TranslationConfig
     ) => TranslationWidget;
   }
@@ -24,7 +15,7 @@ let widgetInstance: TranslationWidget | undefined;
 
 const initializeTranslationWidget = (publicKey: string, config?: TranslationConfig): TranslationWidget => {
   if (typeof window === "undefined") {
-    throw new Error("Translation widget can only be used in browser environment");
+    return undefined as unknown as TranslationWidget;
   }
 
   const initWidget = () => {
@@ -48,4 +39,5 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
   return initWidget();
 };
 
+export { TranslationWidget };
 export default initializeTranslationWidget;
