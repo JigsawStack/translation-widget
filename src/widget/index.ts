@@ -17,6 +17,14 @@ interface WidgetElements {
     loadingIndicator: HTMLDivElement | null
 }
 
+interface TranslationResult {
+    success: boolean;
+    targetLanguage: string;
+    translatedNodes: number;
+    error?: string;
+    duration?: number;
+}
+
 export class TranslationWidget {
     private config: Required<TranslationConfig>
     private translationService: TranslationService
@@ -978,16 +986,46 @@ export class TranslationWidget {
 // Expose the translate function globally
 declare global {
     interface Window {
-        translate: (langCode: string) => Promise<void>
+        translate: (langCode: string) => Promise<TranslationResult>
     }
 }
 
 // Add the global translate function
-window.translate = async (langCode: string): Promise<void> => {
+window.translate = async (langCode: string, onComplete?: () => void): Promise<TranslationResult> => {
     const instance = TranslationWidget.getInstance()
     if (!instance) {
-        console.error('Translation widget not initialized')
-        return
+        return {
+            success: false, 
+            targetLanguage: langCode,
+            translatedNodes: 0,
+            error: 'Translation widget not initialized',
+            duration: 0
+        }
     }
-    await instance.translateTo(langCode)
+
+    const startTime = Date.now()
+    try {
+        await instance.translateTo(langCode)
+        const endTime = Date.now()
+        
+        // Count translated nodes
+        const translatedNodes = document.querySelectorAll('[data-translated-lang]').length
+        
+        // Call the onComplete callback
+        onComplete?.()
+        return {
+            success: true,
+            targetLanguage: langCode,
+            translatedNodes,
+            duration: endTime - startTime
+        }
+    } catch (error) {
+        return {
+            success: false,
+            targetLanguage: langCode,
+            translatedNodes: 0,
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            duration: Date.now() - startTime
+        }
+    }
 }

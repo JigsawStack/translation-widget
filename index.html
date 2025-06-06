@@ -130,7 +130,11 @@
                 </div>
                 <div>
                     <h3>Benefits</h3>
-                    <button onclick="window.translate('hi')" class="translate-hindi-btn">Translate to Hindi</button>
+                    <button onclick="window.translate('hi', () => {
+                        console.log('Translation complete');
+                    }).then((res) => {
+                        console.log(res);
+                    })" class="translate-hindi-btn">Translate to Hindi</button>
                     <ul>
                         <li>Increased Productivity</li>
                         <li>Cost Effective</li>
