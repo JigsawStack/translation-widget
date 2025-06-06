@@ -1,4 +1,11 @@
 import { TranslationConfig } from '../types';
+interface TranslationResult {
+    success: boolean;
+    targetLanguage: string;
+    translatedNodes: number;
+    error?: string;
+    duration?: number;
+}
 export declare class TranslationWidget {
     private config;
     private translationService;
@@ -56,6 +63,7 @@ export declare class TranslationWidget {
 }
 declare global {
     interface Window {
-        translate: (langCode: string) => Promise<void>;
+        translate: (langCode: string) => Promise<TranslationResult>;
     }
 }
+export {};

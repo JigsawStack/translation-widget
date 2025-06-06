@@ -12,6 +12,11 @@ export class DocumentNavigator {
      * @returns Collection of text nodes ready for translation
      */
     static findTranslatableContent(): Text[] {
+        // Skip during server-side rendering
+        if (typeof window === 'undefined') {
+            return [];
+        }
+
         const validator: NodeProcessor = {
             acceptNode(node: Node): number {
                 if (node.nodeType !== Node.TEXT_NODE) {
@@ -33,7 +38,6 @@ export class DocumentNavigator {
                 if (container.classList.contains('sr-only')) {
                     return NodeFilter.FILTER_REJECT
                 }
-
 
                 const shouldSkip =
                     container.closest('script, style, code') !== null ||
