@@ -363,7 +363,7 @@ Our engine offers **contextual accuracy** and **lower latency**, especially for 
 
 You can easily customize the appearance of the JigsawStack Translation Widget by overriding its CSS classes in your own stylesheet. This allows you to match the widget to your site's branding and user experience.
 
-## Quick Demo: Change the Widget Trigger Button
+### Quick Demo: Change the Widget Trigger Button
 
 > **Note:** You may need to use `!important` in your CSS rules to ensure your custom styles override the widget's default styles.
 
@@ -383,7 +383,7 @@ Just add this `<style>` block to your site's HTML, or include the rules in your 
 For a comprehensive list of all available CSS selectors and their descriptions, [see the Styling Guide](./STYLING.md).
 
 
-## 🤝 Contributing
+# 🤝 Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
