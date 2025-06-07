@@ -290,6 +290,68 @@ Make sure to:
 1. Place these scripts just before the closing `</body>` tag
 2. Set up your environment variable `YOUR_PUBLIC_KEY_HERE` in your `.env` file
 
+## NPM Package Integration
+
+You can also install and use the translation widget as an npm package. This is particularly useful for modern JavaScript frameworks and TypeScript projects.
+
+### Installation
+
+```bash
+npm install translation-widget
+# or
+yarn add translation-widget
+# or
+pnpm add translation-widget
+```
+
+### Usage
+
+Import and use the widget in your React component:
+
+```tsx
+"use client"
+import { useEffect } from "react";  
+import TranslationWidget from "translation-widget";
+
+export default function Translation() {
+  useEffect(() => {
+    TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+      showUI: true,
+      pageLanguage: 'en',
+      position: "top-right",
+      autoDetectLanguage: false,
+      theme: {
+        baseColor: '#2563eb',
+        textColor: '#ffffff'
+      }
+    })
+  }, [])
+  
+  return null;
+}
+```
+
+Then import and use this component in your layout or app:
+
+```tsx
+import Translation from './components/Translation'
+
+export default function Layout({ children }) {
+  return (
+    <>
+      {children}
+      <Translation />
+    </>
+  )
+}
+```
+
+The npm package provides the same functionality as the CDN version, with the added benefits of:
+- TypeScript support out of the box
+- Better integration with build tools
+- Tree-shaking support
+- Version control through package manager
+
 <br>
 
 
