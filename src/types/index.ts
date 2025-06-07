@@ -32,3 +32,4 @@ export interface TranslationWidgetOptions {
 	publicKey: string;
 	config?: TranslationConfig;
 }
+
