@@ -1,6 +1,19 @@
 {
   "name": "translation-widget",
   "version": "0.0.1",
+  "description": "Open source translation widget to translate any website in to any language",
+  "homepage": "https://github.com/JigsawStack/translation-widget",
+  "author": "JigsawStack",
+  "license": "Apache-2.0",
+  "keywords": ["translation", "widget", "translation-widget", "google-translate"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JigsawStack/translation-widget.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JigsawStack/translation-widget/issues"
+  },
+  "packageManager": "yarn@1.22.22",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
