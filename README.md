@@ -66,6 +66,7 @@ Right after the widget script, initialize it with your configuration:
       baseColor: '',  //( optional )
       textColor: '',  //( optional )
     }
+    showUI: "true", // (optional)
   });
 </script>
 ```
@@ -113,7 +114,7 @@ declare global {
   interface Window {
     TranslationWidget: (
       publicKey: string,
-      options: {
+      config?: {
         pageLanguage?: string;
         position?: string;
         autoDetectLanguage?: boolean;
@@ -121,6 +122,7 @@ declare global {
           baseColor: string;
           textColor: string;
         };
+        showUI?: boolean;
       }
     ) => void;
   }
@@ -300,6 +302,7 @@ Make sure to:
 | `theme`              | object  | `{}`    | Yes      | Theme configuration for customizing widget appearance               |
 | `theme.baseColor`    | string  | `white` | Yes      | Base color for the widget background and accents                    |
 | `theme.textColor`    | string  | `black` | Yes      | Text color for all text elements in the widget                      |
+| `showUI`             | boolean |  `true` | Yes      | Toggle on/off the default widget UI                                 |
 
 ## Theme Configuration Example
 
@@ -347,8 +350,27 @@ This automatically translates the page to French (`fr`).
 Use it manually in your app:
 
 ```js
-window.translate('hi');  // translates page to Hindi
+window.translate('hi', (res)=>{
+  console.log(res)
+}, (err)=>{
+  console.log(err)
+});  // translates page to Hindi
 ```
+if you wish to disable the UI use  `showUI: false` in the configs.
+
+### 4. 🧠 Programmatic Translation with `window.resetTranslations()`
+
+Use it manually in your app:
+
+```js
+window.resetTranslation('en', (res)=>{
+  console.log(res)
+}, (err)=>{
+  console.log(err)
+});  // translates page to Hindi
+```
+if you wish to disable the UI use  `showUI: false` in the configs.
+
 
 ## 🏆 Language Selection Priority
 
@@ -362,7 +384,7 @@ The widget determines which language to display using the following priority ord
 
 ---
 
-### 4. Font Size Adjustment
+### 5. Font Size Adjustment
 
 The translation widget automatically adjusts font sizes when translating text to prevent overflow issues. This is particularly useful when translating to languages that typically have longer text lengths. The font size adjustment works as follows:
 
@@ -373,7 +395,7 @@ The translation widget automatically adjusts font sizes when translating text to
 
 The font size adjustment is automatic and requires no additional configuration. It helps maintain readability while preventing text overflow in translated content.
 
-### 5. 🚀 Faster and More Accurate than Google Translate
+### 6. 🚀 Faster and More Accurate than Google Translate
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 
