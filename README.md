@@ -49,7 +49,7 @@ Insert the following just before the closing `</body>` tag in your HTML file:
 
 ```html
 <!-- JigsawStack Translation Widget -->
-<script defer src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+<script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
 ```
 
 ### 2. Initialize the Widget
@@ -66,6 +66,7 @@ Right after the widget script, initialize it with your configuration:
       baseColor: '',  //( optional )
       textColor: '',  //( optional )
     }
+    showUI: true, // (optional)
   });
 </script>
 ```
@@ -87,7 +88,7 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
   <div class="translation-widget"></div>
 
   <!-- JigsawStack Translation Widget -->
-  <script defer src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+  <script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
   <script defer type="module">
     TranslationWidget('YOUR_PUBLIC_KEY_HERE', {
       pageLanguage: 'en',
@@ -113,7 +114,7 @@ declare global {
   interface Window {
     TranslationWidget: (
       publicKey: string,
-      options: {
+      config?: {
         pageLanguage?: string;
         position?: string;
         autoDetectLanguage?: boolean;
@@ -121,6 +122,7 @@ declare global {
           baseColor: string;
           textColor: string;
         };
+        showUI?: boolean;
       }
     ) => void;
   }
@@ -129,7 +131,7 @@ declare global {
 export default function TranslationWidget() {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js';
+    script.src = 'https://unpkg.com/translation-widget@latest/dist/index.min.js';
     script.defer = true;
     
     function initWidget() {
@@ -197,7 +199,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Component {...pageProps} />
       <Script
-        src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
+        src="https://unpkg.com/translation-widget@latest/dist/index.min.js"
         onLoad={() => {
           window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
             pageLanguage: 'en',
@@ -223,7 +225,7 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
-        <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js" defer></script>
+        <script src="https://unpkg.com/translation-widget@latest/dist/index.min.js" defer></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -260,6 +262,7 @@ declare global {
         baseColor?: string,
         textColor?: string,
       }
+      showUI?: boolean
     }) => void;
   }
 }
@@ -273,7 +276,7 @@ This will resolve any TypeScript errors related to the `TranslationWidget` globa
 For React applications, you can add the widget by including the script tags in your `index.html` file:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+<script src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
 <script defer type="module">
     TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
         pageLanguage: 'en',
@@ -286,6 +289,68 @@ For React applications, you can add the widget by including the script tags in y
 Make sure to:
 1. Place these scripts just before the closing `</body>` tag
 2. Set up your environment variable `YOUR_PUBLIC_KEY_HERE` in your `.env` file
+
+## NPM Package Integration
+
+You can also install and use the translation widget as an npm package. This is particularly useful for modern JavaScript frameworks and TypeScript projects.
+
+### Installation
+
+```bash
+npm install translation-widget
+# or
+yarn add translation-widget
+# or
+pnpm add translation-widget
+```
+
+### Usage
+
+Import and use the widget in your React component:
+
+```tsx
+"use client"
+import { useEffect } from "react";  
+import TranslationWidget from "translation-widget";
+
+export default function Translation() {
+  useEffect(() => {
+    TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+      showUI: true,
+      pageLanguage: 'en',
+      position: "top-right",
+      autoDetectLanguage: false,
+      theme: {
+        baseColor: '#2563eb',
+        textColor: '#ffffff'
+      }
+    })
+  }, [])
+  
+  return null;
+}
+```
+
+Then import and use this component in your layout or app:
+
+```tsx
+import Translation from './components/Translation'
+
+export default function Layout({ children }) {
+  return (
+    <>
+      {children}
+      <Translation />
+    </>
+  )
+}
+```
+
+The npm package provides the same functionality as the CDN version, with the added benefits of:
+- TypeScript support out of the box
+- Better integration with build tools
+- Tree-shaking support
+- Version control through package manager
 
 <br>
 
@@ -300,6 +365,7 @@ Make sure to:
 | `theme`              | object  | `{}`    | Yes      | Theme configuration for customizing widget appearance               |
 | `theme.baseColor`    | string  | `white` | Yes      | Base color for the widget background and accents                    |
 | `theme.textColor`    | string  | `black` | Yes      | Text color for all text elements in the widget                      |
+| `showUI`             | boolean |  `true` | Yes      | Toggle on/off the default widget UI                                 |
 
 ## Theme Configuration Example
 
@@ -347,8 +413,27 @@ This automatically translates the page to French (`fr`).
 Use it manually in your app:
 
 ```js
-window.translate('hi');  // translates page to Hindi
+window.translate('hi', (res)=>{
+  console.log(res)
+}, (err)=>{
+  console.log(err)
+});  // translates page to Hindi
 ```
+if you wish to disable the UI use  `showUI: false` in the configs.
+
+### 4. 🧠 Programmatic Translation with `window.resetTranslations()`
+
+Use it manually in your app:
+
+```js
+window.resetTranslation('en', (res)=>{
+  console.log(res)
+}, (err)=>{
+  console.log(err)
+});  // translates page to Hindi
+```
+if you wish to disable the default translation widget ui use  `showUI: false` in the configs.
+
 
 ## 🏆 Language Selection Priority
 
@@ -362,7 +447,7 @@ The widget determines which language to display using the following priority ord
 
 ---
 
-### 4. Font Size Adjustment
+### 5. Font Size Adjustment
 
 The translation widget automatically adjusts font sizes when translating text to prevent overflow issues. This is particularly useful when translating to languages that typically have longer text lengths. The font size adjustment works as follows:
 
@@ -373,7 +458,7 @@ The translation widget automatically adjusts font sizes when translating text to
 
 The font size adjustment is automatic and requires no additional configuration. It helps maintain readability while preventing text overflow in translated content.
 
-### 5. 🚀 Faster and More Accurate than Google Translate
+### 6. 🚀 Faster and More Accurate than Google Translate
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 

@@ -45,4 +45,6 @@ yarn.lock
 app/
 scripts.js
 new-language.json
-examples
+example
+bun.lock
+*.tgz
