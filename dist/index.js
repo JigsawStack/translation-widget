@@ -1835,22 +1835,23 @@ const _TranslationWidget = class _TranslationWidget {
         initialLang = "en";
       }
     }
-    console.log("initialLang", initialLang, this.showUI);
     this.currentLanguage = initialLang;
-    this.createWidget();
-    const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(
-      ".jigts-trigger-icon"
-    );
-    if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
-      const langObj = languages.find(
-        (lang) => lang.code === this.currentLanguage
+    if (this.showUI) {
+      this.createWidget();
+      const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(
+        ".jigts-trigger-icon"
       );
-      const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
-      triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.currentLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langName}</span>`;
+      if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
+        const langObj = languages.find(
+          (lang) => lang.code === this.currentLanguage
+        );
+        const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
+        triggerIcon.innerHTML = `<span class="jigts-lang-code">${this.currentLanguage.toUpperCase()}</span><span class="jigts-lang-name">${langName}</span>`;
+      }
+      this.setupEventListeners();
+      this.setupURLObserver();
+      this.setupContentObserver();
     }
-    this.setupEventListeners();
-    this.setupURLObserver();
-    this.setupContentObserver();
     if (this.currentLanguage !== this.config.pageLanguage) {
       this.translatePage(this.currentLanguage).catch((error) => {
         console.error("Initial translation error:", error);
@@ -2551,45 +2552,86 @@ const _TranslationWidget = class _TranslationWidget {
    * @param langCode The language code to translate to
    * @returns Promise that resolves when translation is complete
    */
-  async translateTo(langCode) {
+  async translateTo(langCode, onComplete, onError) {
     var _a;
+    const startTime = Date.now();
     if (this.isTranslating) {
       console.warn("Translation already in progress");
-      return;
+      onError == null ? void 0 : onError(new Error("Translation already in progress"));
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: "Translation already in progress",
+        duration: 0
+      };
     }
     const supportedLang = languages.find((lang) => lang.code === langCode);
     if (!supportedLang) {
-      console.error(`Unsupported language code: ${langCode}`);
-      return;
+      onError == null ? void 0 : onError(new Error(`Unsupported language code: ${langCode}`));
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: `Unsupported language code: ${langCode}`,
+        duration: 0
+      };
     }
     if (langCode === this.currentLanguage) {
-      console.log("Page is already in the requested language");
-      return;
+      onComplete == null ? void 0 : onComplete({
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        duration: 0
+      });
+      return {
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        duration: 0
+      };
     }
     try {
+      localStorage.setItem("jss-pref", langCode);
       await this.translatePage(langCode);
       this.currentLanguage = langCode;
-      const languageItems = this.widget.querySelectorAll(
-        ".jigts-language-item"
-      );
-      languageItems.forEach((item) => {
+      const languageItems = this.widget.querySelectorAll(".jigts-language-item");
+      for (const item of languageItems) {
         const isSelected = item.getAttribute("data-language-code") === langCode;
         item.classList.toggle("jigts-selected", isSelected);
         item.setAttribute("aria-selected", isSelected.toString());
-      });
-      const triggerContent = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(
-        ".jigts-trigger-content"
-      );
+      }
+      const triggerContent = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(".jigts-trigger-content");
       if (triggerContent) {
         triggerContent.classList.add("jigts-has-translation");
-        const triggerSpan = triggerContent.querySelector("span");
-        if (triggerSpan) {
-          this.updateTriggerText(supportedLang.name);
+        const triggerIcon = triggerContent.querySelector(".jigts-trigger-icon");
+        if (triggerIcon && supportedLang) {
+          triggerIcon.innerHTML = `<span class="jigts-lang-code">${supportedLang.code.toUpperCase()}</span><span class="jigts-lang-name">${supportedLang.name}</span>`;
         }
       }
+      const endTime = Date.now();
+      const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+      onComplete == null ? void 0 : onComplete({
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes,
+        duration: endTime - startTime
+      });
+      return {
+        success: true,
+        targetLanguage: langCode,
+        translatedNodes,
+        duration: endTime - startTime
+      };
     } catch (error) {
-      console.error("Translation error:", error);
-      throw error;
+      onError == null ? void 0 : onError(error);
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 0
+      };
     }
   }
   /**
@@ -2612,9 +2654,10 @@ const _TranslationWidget = class _TranslationWidget {
 };
 __publicField(_TranslationWidget, "instance", null);
 let TranslationWidget = _TranslationWidget;
-window.translate = async (langCode, onComplete) => {
+window.translate = async (langCode, onComplete, onError) => {
   const instance = TranslationWidget.getInstance();
   if (!instance) {
+    onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
     return {
       success: false,
       targetLanguage: langCode,
@@ -2625,19 +2668,11 @@ window.translate = async (langCode, onComplete) => {
   }
   const startTime = Date.now();
   try {
-    await instance.translateTo(langCode);
-    const endTime = Date.now();
-    const translatedNodes = document.querySelectorAll(
-      "[data-translated-lang]"
-    ).length;
-    onComplete == null ? void 0 : onComplete();
-    return {
-      success: true,
-      targetLanguage: langCode,
-      translatedNodes,
-      duration: endTime - startTime
-    };
+    const result = await instance.translateTo(langCode, onComplete, onError);
+    onComplete == null ? void 0 : onComplete(result);
+    return result;
   } catch (error) {
+    onError == null ? void 0 : onError(error);
     return {
       success: false,
       targetLanguage: langCode,

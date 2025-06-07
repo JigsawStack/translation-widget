@@ -109,6 +109,8 @@
             </article>
         </section>
 
+        <button onclick="window.translate('hi')" class="tw-button notranslate">Translate to hindi</button>
+
         <!-- <section class="product">
             <h2>Featured Product</h2>
             <p>
@@ -164,7 +166,8 @@
     <!-- <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script> -->
     <script defer type="module">
         TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
-            pageLanguage: "de",
+            pageLanguage: "en",
+            showUI: true,
         })
     </script>
 </body>
