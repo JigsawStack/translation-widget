@@ -481,7 +481,7 @@ export class TranslationWidget {
 		}
 	}
 
-	private resetToDefaultLanguage(): void {
+	 resetToDefaultLanguage(): void {
 		// Reset translations
 		this.resetTranslations();
 
@@ -704,7 +704,8 @@ export class TranslationWidget {
 		}
 	}
 
-	resetTranslations(): void {
+	private resetTranslations(): void {
+		
 		if (this.observer) {
 			this.observer.disconnect();
 		}
@@ -1192,36 +1193,58 @@ export class TranslationWidget {
 // Expose the translate function globally
 declare global {
 	interface Window {
+		resetTranslation: (defaultLang: string, onComplete?: (result: Pick<TranslationResult, "success" | "targetLanguage">) => void, onError?: (error: Error) => void) => void;
 		translate: (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
 	}
 }
 
-// Add the global translate function
-window.translate = async (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void): Promise<TranslationResult> => {
-	const instance = TranslationWidget.getInstance();
-	if (!instance) {
-		onError?.(new Error("Translation widget not initialized"));
-		return {
-			success: false,
-			targetLanguage: langCode,
-			translatedNodes: 0,
-			error: "Translation widget not initialized",
-			duration: 0,
-		};
-	}
-	const startTime = Date.now();
-	try {
-		const result = await instance.translateTo(langCode, onComplete, onError);
-		onComplete?.(result);
-		return result;
-	} catch (error) {
-		onError?.(error as Error);
-		return {
-			success: false,
-			targetLanguage: langCode,
-			translatedNodes: 0,
-			error: error instanceof Error ? error.message : "Unknown error occurred",
-			duration: Date.now() - startTime,
-		};
-	}
-};
+
+if (typeof window !== "undefined") {
+
+	window.resetTranslation = (defaultLang: string, onComplete?: (result: Pick<TranslationResult, "success" | "targetLanguage">) => void, onError?: (error: Error) => void) => {
+		const instance = TranslationWidget.getInstance();
+		if (!instance) {
+		  return;
+		}	
+		try {
+		  instance.resetToDefaultLanguage	();
+		  onComplete?.({
+			success: true,
+			targetLanguage: defaultLang,
+		  });
+		} catch (error) {
+		  onError?.(error as Error);
+		}
+	  };
+
+
+	// Add the global translate function
+	window.translate = async (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void): Promise<TranslationResult> => {
+		const instance = TranslationWidget.getInstance();
+		if (!instance) {
+			onError?.(new Error("Translation widget not initialized"));
+			return {
+				success: false,
+				targetLanguage: langCode,
+				translatedNodes: 0,
+				error: "Translation widget not initialized",
+				duration: 0,
+			};
+		}
+		const startTime = Date.now();
+		try {
+			const result = await instance.translateTo(langCode, onComplete, onError);
+			onComplete?.(result);
+			return result;
+		} catch (error) {
+			onError?.(error as Error);
+			return {
+				success: false,
+				targetLanguage: langCode,
+				translatedNodes: 0,
+				error: error instanceof Error ? error.message : "Unknown error occurred",
+				duration: Date.now() - startTime,
+			};
+		}
+	};
+}

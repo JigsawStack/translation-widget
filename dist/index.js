@@ -2654,34 +2654,51 @@ const _TranslationWidget = class _TranslationWidget {
 };
 __publicField(_TranslationWidget, "instance", null);
 let TranslationWidget = _TranslationWidget;
-window.translate = async (langCode, onComplete, onError) => {
-  const instance = TranslationWidget.getInstance();
-  if (!instance) {
-    onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
-    return {
-      success: false,
-      targetLanguage: langCode,
-      translatedNodes: 0,
-      error: "Translation widget not initialized",
-      duration: 0
-    };
-  }
-  const startTime = Date.now();
-  try {
-    const result = await instance.translateTo(langCode, onComplete, onError);
-    onComplete == null ? void 0 : onComplete(result);
-    return result;
-  } catch (error) {
-    onError == null ? void 0 : onError(error);
-    return {
-      success: false,
-      targetLanguage: langCode,
-      translatedNodes: 0,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      duration: Date.now() - startTime
-    };
-  }
-};
+if (typeof window !== "undefined") {
+  window.resetTranslation = (defaultLang, onComplete, onError) => {
+    const instance = TranslationWidget.getInstance();
+    if (!instance) {
+      return;
+    }
+    try {
+      instance.resetToDefaultLanguage();
+      onComplete == null ? void 0 : onComplete({
+        success: true,
+        targetLanguage: defaultLang
+      });
+    } catch (error) {
+      onError == null ? void 0 : onError(error);
+    }
+  };
+  window.translate = async (langCode, onComplete, onError) => {
+    const instance = TranslationWidget.getInstance();
+    if (!instance) {
+      onError == null ? void 0 : onError(new Error("Translation widget not initialized"));
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: "Translation widget not initialized",
+        duration: 0
+      };
+    }
+    const startTime = Date.now();
+    try {
+      const result = await instance.translateTo(langCode, onComplete, onError);
+      onComplete == null ? void 0 : onComplete(result);
+      return result;
+    } catch (error) {
+      onError == null ? void 0 : onError(error);
+      return {
+        success: false,
+        targetLanguage: langCode,
+        translatedNodes: 0,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: Date.now() - startTime
+      };
+    }
+  };
+}
 let widgetInstance;
 const initializeTranslationWidget = (publicKey, config) => {
   if (typeof window === "undefined") {

@@ -109,7 +109,15 @@
             </article>
         </section>
 
-        <button onclick="window.translate('hi')" class="tw-button notranslate">Translate to hindi</button>
+        <button onclick="window.translate('hi', (res)=>{
+            console.log(res);
+        }, (err)=>{
+            console.log(err);
+        })" class="tw-button notranslate">Translate to hindi</button>
+
+        <button onclick="window.resetTranslation('en', (res)=>{
+            console.log(res);
+        })">Reset Translation</button>  
 
         <!-- <section class="product">
             <h2>Featured Product</h2>
@@ -167,7 +175,7 @@
     <script defer type="module">
         TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
             pageLanguage: "en",
-            showUI: true,
+            showUI: false,
         })
     </script>
 </body>

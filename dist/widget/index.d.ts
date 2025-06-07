@@ -42,7 +42,7 @@ export declare class TranslationWidget {
     private calculateFontSize;
     private updateLoadingState;
     private translatePage;
-    private resetToDefaultLanguage;
+    resetToDefaultLanguage(): void;
     private _translatePage;
     private updateResetButtonVisibility;
     resetTranslations(): void;
@@ -64,6 +64,7 @@ export declare class TranslationWidget {
 }
 declare global {
     interface Window {
+        resetTranslation: (defaultLang: string, onComplete?: (result: Pick<TranslationResult, "success" | "targetLanguage">) => void, onError?: (error: Error) => void) => void;
         translate: (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
     }
 }
