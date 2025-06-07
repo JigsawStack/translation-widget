@@ -262,6 +262,7 @@ declare global {
         baseColor?: string,
         textColor?: string,
       }
+      showUI?: boolean
     }) => void;
   }
 }
@@ -369,7 +370,7 @@ window.resetTranslation('en', (res)=>{
   console.log(err)
 });  // translates page to Hindi
 ```
-if you wish to disable the UI use  `showUI: false` in the configs.
+if you wish to disable the default translation widget ui use  `showUI: false` in the configs.
 
 
 ## 🏆 Language Selection Priority
