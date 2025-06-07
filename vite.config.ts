@@ -1,34 +1,42 @@
-import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
-import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
-    build: {
-        lib: {
-            entry: resolve(__dirname, 'src/index.ts'),
-            name: 'TranslationWidget',
-            fileName: 'translation-widget',
-            formats: ['es', 'umd'],
-        },
-        minify: 'terser',
-        sourcemap: true,
-        rollupOptions: {
-            output: {
-                format: 'umd',
-                entryFileNames: '[name].min.js',
-            },
-        },
-        cssCodeSplit: false,
-        cssMinify: true,
+  build: {
+    lib: {
+      entry: resolve(__dirname, "src/index.ts"),
+      name: "TranslationWidget",
+      fileName: "translation-widget",
     },
-    plugins: [
-        dts({
-            insertTypesEntry: true,
-            include: ['src'],
-        }),
-    ]
-})
+    minify: "terser",
+    sourcemap: true,
+    rollupOptions: {
+      output: [{
+        format: "es",
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name]-[hash].js",
+        assetFileNames: "[name][extname]",
+      },
+      {
+        format: "umd",
+        name: "TranslationWidget",
+        entryFileNames: "[name].min.js",
+        chunkFileNames: "[name]-[hash].min.js",
+        assetFileNames: "[name][extname]",
+      },]
+    },
+    cssCodeSplit: false,
+    cssMinify: true,
+  },
+  plugins: [
+    dts({
+      insertTypesEntry: true,
+      include: ["src"],
+    }),
+  ],
+});
