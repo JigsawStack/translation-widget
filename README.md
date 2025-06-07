@@ -105,48 +105,66 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
 Add the TranslationWidget Component with `use client` directive inside your components folder.
 
 ```tsx
+'use client';
 
-"use client";
-import Script from "next/script";
+import { useEffect } from 'react';
+
+declare global {
+  interface Window {
+    TranslationWidget: (
+      publicKey: string,
+      options: {
+        pageLanguage?: string;
+        position?: string;
+        autoDetectLanguage?: boolean;
+        theme?: {
+          baseColor: string;
+          textColor: string;
+        };
+      }
+    ) => void;
+  }
+}
 
 export default function TranslationWidget() {
-  return (
-    <Script
-       src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
-      strategy="afterInteractive"
-      onLoad={() => {
-        if (window.TranslationWidget) {
-          window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-            pageLanguage: 'en',
-            position: "top-right",
-            autoDetectLanguage: false,
-          });
-        }
-      }}
-    />
-  );
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js';
+    script.defer = true;
+    
+    function initWidget() {
+      if (window.TranslationWidget) {
+        window.TranslationWidget("YOUR_PUBLIC_KEY", {
+          // options here
+        });
+      }
+    }
+    script.onload = () => {
+      if (document.readyState === 'complete') {
+        initWidget();
+      } else {
+        window.addEventListener('load', initWidget);
+      }
+    };
+  
+    document.body.appendChild(script);
+  
+    return () => {
+      window.removeEventListener('load', initWidget);
+      document.body.removeChild(script);
+    };
+  }, []);
+
+
+  return null;
 }
+
 ```
 
 Then import it in your layout.tsx
 
 ```tsx
 import TranslationWidget from "@/components";
-
-declare global {
-  interface Window {
-    TranslationWidget: (publicKey: string, options: {
-      pageLanguage?: string;
-      position?: string;
-      autoDetectLanguage?: boolean;
-      theme?: {
-        baseColor: string;
-        textColor: string;
-      }
-    }) => void;
-  }
-}
-
 
 export default function RootLayout({
   children,
