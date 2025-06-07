@@ -49,7 +49,7 @@ Insert the following just before the closing `</body>` tag in your HTML file:
 
 ```html
 <!-- JigsawStack Translation Widget -->
-<script defer src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+<script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
 ```
 
 ### 2. Initialize the Widget
@@ -88,7 +88,7 @@ Replace `YOUR_PUBLIC_KEY_HERE` with your actual public key from the dashboard.
   <div class="translation-widget"></div>
 
   <!-- JigsawStack Translation Widget -->
-  <script defer src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+  <script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
   <script defer type="module">
     TranslationWidget('YOUR_PUBLIC_KEY_HERE', {
       pageLanguage: 'en',
@@ -131,7 +131,7 @@ declare global {
 export default function TranslationWidget() {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js';
+    script.src = 'https://unpkg.com/translation-widget@latest/dist/index.min.js';
     script.defer = true;
     
     function initWidget() {
@@ -199,7 +199,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Component {...pageProps} />
       <Script
-        src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"
+        src="https://unpkg.com/translation-widget@latest/dist/index.min.js"
         onLoad={() => {
           window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
             pageLanguage: 'en',
@@ -225,7 +225,7 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
-        <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js" defer></script>
+        <script src="https://unpkg.com/translation-widget@latest/dist/index.min.js" defer></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -276,7 +276,7 @@ This will resolve any TypeScript errors related to the `TranslationWidget` globa
 For React applications, you can add the widget by including the script tags in your `index.html` file:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script>
+<script src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
 <script defer type="module">
     TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
         pageLanguage: 'en',
