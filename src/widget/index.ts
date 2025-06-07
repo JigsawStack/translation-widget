@@ -482,6 +482,9 @@ export class TranslationWidget {
 	}
 
 	 resetToDefaultLanguage(): void {
+		if( this.isTranslating){
+			return;
+		}
 		// Reset translations
 		this.resetTranslations();
 

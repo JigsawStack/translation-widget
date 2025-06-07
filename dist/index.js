@@ -2093,6 +2093,9 @@ const _TranslationWidget = class _TranslationWidget {
   }
   resetToDefaultLanguage() {
     var _a;
+    if (this.isTranslating) {
+      return;
+    }
     this.resetTranslations();
     this.lastRequestedLanguage = this.config.pageLanguage;
     this.currentLanguage = this.config.pageLanguage;

@@ -45,7 +45,7 @@ export declare class TranslationWidget {
     resetToDefaultLanguage(): void;
     private _translatePage;
     private updateResetButtonVisibility;
-    resetTranslations(): void;
+    private resetTranslations;
     private adjustDropdownPosition;
     private setupEventListeners;
     private scheduleTranslation;
