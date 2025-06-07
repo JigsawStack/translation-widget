@@ -66,7 +66,7 @@ Right after the widget script, initialize it with your configuration:
       baseColor: '',  //( optional )
       textColor: '',  //( optional )
     }
-    showUI: "true", // (optional)
+    showUI: true, // (optional)
   });
 </script>
 ```
