@@ -1198,7 +1198,6 @@ class DocumentNavigator {
 const BATCH_SIZE = 10;
 const CACHE_PREFIX = "jss-";
 const DEFAULT_CONFIG = {
-  primaryColor: "#2563eb",
   pageLanguage: "en",
   autoDetectLanguage: false,
   position: "top-right"
@@ -1760,6 +1759,7 @@ const _TranslationWidget = class _TranslationWidget {
     __publicField(this, "observer", null);
     __publicField(this, "translationScheduled", false);
     __publicField(this, "scheduleTimeout", null);
+    __publicField(this, "showUI", true);
     __publicField(this, "lastTranslated", null);
     __publicField(this, "currentTranslationPromise", null);
     __publicField(this, "lastRequestedLanguage", null);
@@ -1798,9 +1798,10 @@ const _TranslationWidget = class _TranslationWidget {
     }
     this.translationService = new TranslationService(publicKey);
     this.autoDetectLanguage = this.config.autoDetectLanguage || false;
-    this.currentLanguage = this.config.pageLanguage || "en";
+    this.currentLanguage = this.config.pageLanguage;
     this.userLanguage = getUserLanguage();
     this.widget = document.createElement("div");
+    this.showUI = this.config.showUI ?? true;
     this.elements = {
       trigger: null,
       dropdown: null,
@@ -1822,14 +1823,19 @@ const _TranslationWidget = class _TranslationWidget {
       if (supportedLang) {
         initialLang = urlLang;
       }
-    } else {
-      const prefLang = localStorage.getItem("jss-pref");
-      if (prefLang && languages.find((lang) => lang.code === prefLang)) {
-        initialLang = prefLang;
-      } else if (this.autoDetectLanguage) {
-        initialLang = this.userLanguage;
+    } else if (localStorage.getItem("jss-pref")) {
+      initialLang = localStorage.getItem("jss-pref");
+    } else if (this.autoDetectLanguage) {
+      initialLang = this.userLanguage;
+    } else if (!this.config.pageLanguage) {
+      const htmlTag = document.querySelector("html");
+      if (htmlTag && htmlTag.getAttribute("lang")) {
+        initialLang = htmlTag.getAttribute("lang");
+      } else {
+        initialLang = "en";
       }
     }
+    console.log("initialLang", initialLang, this.showUI);
     this.currentLanguage = initialLang;
     this.createWidget();
     const triggerIcon = (_a = this.elements.trigger) == null ? void 0 : _a.querySelector(

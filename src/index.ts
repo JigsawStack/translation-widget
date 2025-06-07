@@ -6,23 +6,12 @@ declare global {
     interface Window {
         TranslationWidget: (
             publicKey: string,
-            options: {
-                pageLanguage?: string;
-                position?: string;
-                autoDetectLanguage?: boolean;
-                theme?: {
-                    baseColor?: string;
-                    textColor?: string;
-                };
-            },
             config?: TranslationConfig
         ) => TranslationWidget
     }
 }
 
 let widgetInstance: TranslationWidget | undefined;
-
-
 
 const initializeTranslationWidget = (
     publicKey: string,
@@ -36,7 +25,6 @@ const initializeTranslationWidget = (
 
     const initWidget = () => {
         if (!widgetInstance) {
-            // Ensure styles are injected
             if (!document.querySelector('style[data-translation-widget]')) {
                 const style = document.createElement('style')
                 style.setAttribute('data-translation-widget', '')
@@ -50,7 +38,7 @@ const initializeTranslationWidget = (
 
     if (document.readyState === 'loading') {
         window.addEventListener('DOMContentLoaded', initWidget)
-        return undefined as any; // Widget will be created after DOMContentLoaded
+        return undefined as any;
     } else {
         return initWidget()
     }

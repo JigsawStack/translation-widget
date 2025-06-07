@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8" />
@@ -109,7 +109,7 @@
             </article>
         </section>
 
-        <section class="product">
+        <!-- <section class="product">
             <h2>Featured Product</h2>
             <p>
                 Experience the next generation of innovation with our latest
@@ -154,16 +154,18 @@
                 <li>Phone: +1 (555) 123-4567</li>
                 <li>Address: 123 Business Street, Tech City, TC 12345</li>
             </ul>
-        </section>
+        </section> -->
     </main>
-    <footer class="tw-footer">
+    <!-- <footer class="tw-footer">
         <p>© 2024 Your Company Name. All rights reserved.</p>
-    </footer>
+    </footer> -->
 
     <script defer src="./dist/index.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/gh/JigsawStack/translation-widget@main/dist/index.min.js"></script> -->
     <script defer type="module">
-        TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY)
+        TranslationWidget(import.meta.env.VITE_TRANSLATION_WIDGET_PUBLIC_KEY, {
+            pageLanguage: "de",
+        })
     </script>
 </body>
 

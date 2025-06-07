@@ -3,7 +3,6 @@ export const BATCH_SIZE = 10;
 export const CACHE_PREFIX = "jss-";
 
 export const DEFAULT_CONFIG = {
-	primaryColor: "#2563eb",
 	pageLanguage: "en",
 	autoDetectLanguage: false,
 	position: "top-right" as const,

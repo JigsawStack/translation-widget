@@ -42,8 +42,8 @@ export class TranslationWidget {
 	private observer: MutationObserver | null = null;
 	private translationScheduled: boolean = false;
 	private scheduleTimeout: number | null = null;
-	private lastTranslated: { url: string; lang: string; hash: string } | null =
-		null;
+	private showUI = true;
+	private lastTranslated: { url: string; lang: string; hash: string } | null = null;
 	private static instance: TranslationWidget | null = null;
 	private currentTranslationPromise: Promise<void> | null = null;
 	private lastRequestedLanguage: string | null = null;
@@ -88,9 +88,10 @@ export class TranslationWidget {
 
 		this.translationService = new TranslationService(publicKey);
 		this.autoDetectLanguage = this.config.autoDetectLanguage || false;
-		this.currentLanguage = this.config.pageLanguage || "en";
+		this.currentLanguage = this.config.pageLanguage;
 		this.userLanguage = getUserLanguage();
 		this.widget = document.createElement("div");
+		this.showUI = this.config.showUI ?? true;
 		this.elements = {
 			trigger: null,
 			dropdown: null,
@@ -107,22 +108,36 @@ export class TranslationWidget {
 		if (!this.validateConfig()) return;
 
 		// Get language from URL parameter
+
+		// Translation Language Preference Checks 
+
+		// CASE 1: URL Parameter
 		const urlLang = this.getUrlParameter("lang");
+
+
 		let initialLang = this.config.pageLanguage;
+
+		// Priority 1: URL Parameter
 		if (urlLang) {
 			const supportedLang = languages.find((lang) => lang.code === urlLang);
 			if (supportedLang) {
 				initialLang = urlLang;
 			}
-		} else {
-			// Check localStorage for preferred language
-			const prefLang = localStorage.getItem("jss-pref");
-			if (prefLang && languages.find((lang) => lang.code === prefLang)) {
-				initialLang = prefLang;
-			} else if (this.autoDetectLanguage) {
-				initialLang = this.userLanguage;
+		} else if (localStorage.getItem("jss-pref")) {
+			initialLang = localStorage.getItem("jss-pref") as string;
+		} else if (this.autoDetectLanguage) {
+			initialLang = this.userLanguage;
+		} else if (!this.config.pageLanguage) {
+			const htmlTag = document.querySelector("html");
+			if (htmlTag && htmlTag.getAttribute("lang")) {
+				initialLang = htmlTag.getAttribute("lang") as string;
+			} else {
+				initialLang = "en";
 			}
 		}
+
+		console.log("initialLang", initialLang, this.showUI);
+
 		this.currentLanguage = initialLang;
 		this.createWidget();
 		// Update icon if not default language

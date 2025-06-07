@@ -19,6 +19,7 @@ export declare class TranslationWidget {
     private observer;
     private translationScheduled;
     private scheduleTimeout;
+    private showUI;
     private lastTranslated;
     private static instance;
     private currentTranslationPromise;

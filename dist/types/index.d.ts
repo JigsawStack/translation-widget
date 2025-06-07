@@ -13,6 +13,7 @@ export interface TranslationConfig {
         baseColor?: string;
         textColor?: string;
     };
+    showUI?: boolean;
 }
 export interface CacheEntry {
     text: string;
