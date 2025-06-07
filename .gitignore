@@ -47,3 +47,4 @@ scripts.js
 new-language.json
 example
 bun.lock
+*.tgz

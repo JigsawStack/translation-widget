@@ -6,9 +6,9 @@ export interface Language {
     writing_system: string;
 }
 export interface TranslationConfig {
-    pageLanguage: string;
-    position: "top-right" | "top-left" | "bottom-right" | "bottom-left";
-    autoDetectLanguage: boolean;
+    pageLanguage?: string;
+    position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+    autoDetectLanguage?: boolean;
     theme?: {
         baseColor?: string;
         textColor?: string;
