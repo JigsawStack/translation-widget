@@ -1,6 +1,6 @@
 {
   "name": "translation-widget",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Open source translation widget to translate any website in to any language",
   "homepage": "https://github.com/JigsawStack/translation-widget",
   "author": "JigsawStack",
@@ -8,7 +8,7 @@
   "keywords": [
     "translation",
     "widget",
-    "translation-widget",
+    "translation-widget", 
     "google-translate"
   ],
   "repository": {

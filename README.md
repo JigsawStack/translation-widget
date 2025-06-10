@@ -4,14 +4,16 @@
 JigsawStack Translation Widget is a powerful, drop-in translation solution that brings enterprise-grade translation capabilities to any website. It's designed to be the last translation widget you'll ever need, combining speed, accuracy, and context-aware translations in one seamless package.
 
 
-⭐ Lightning-fast translations with smart caching
-🌍 Automatic language detection and URL-based switching
-🧠 Contextual accuracy beyond literal translations
-🎨 Fully customizable UI and positioning
-📱 Responsive design with automatic font scaling
-🔒 Secure API key-based authentication
-🔄 Programmatic translation control
-🎯 Perfect for product teams, documentation, and global businesses
+The goal is to make web page translations feel seamless and thoughtful — like someone truly cared enough to get it right.
+
+- ⭐ Lightning-fast translations with smart caching
+- 🌍 Automatic language detection and URL-based switching
+- 🧠 Contextual accuracy beyond literal translations
+- 🎨 Fully customizable UI and positioning
+- 📱 Responsive design with automatic font scaling
+- 🔒 Secure API key-based authentication
+- 🔄 Programmatic translation control
+- 🎯 Perfect for product teams, documentation, and global businesses
 
 Powered by JigsawStack's advanced translation engine for superior accuracy and performance.
 
