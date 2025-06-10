@@ -3,7 +3,7 @@ export const BATCH_SIZE = 10;
 export const CACHE_PREFIX = "jss-";
 
 export const DEFAULT_CONFIG = {
-	pageLanguage: "en",
-	autoDetectLanguage: false,
-	position: "top-right" as const,
+  pageLanguage: "en",
+  autoDetectLanguage: false,
+  position: "top-right" as const,
 };
