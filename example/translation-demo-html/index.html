@@ -1,125 +1,280 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title></title>
+    <title>Translation Widget Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-            background: #f7f9fb;
-            color: #222;
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
             line-height: 1.6;
             font-size: 16px;
             -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.1);
         }
 
         main {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            padding: 4rem 0;
         }
 
-        h1,
-        h2,
-        h3 {
-            color: #1a237e;
-            margin-top: 0;
+        .hero {
+            text-align: center;
+            margin-top: 4rem !important;
+            margin-bottom: 4rem;
         }
 
-        a {
-            color: #2563eb;
-            text-decoration: none;
-            transition: color 0.2s;
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
         }
 
-        a:hover {
-            color: #1d4ed8;
-            text-decoration: underline;
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        ul {
-            padding-left: 1.5rem;
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
         }
 
-        section {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04);
-            margin-bottom: 2rem;
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
             padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h2 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .button {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: var(--primary-dark);
+        }
+
+        .button-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .button-secondary:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
         }
 
         footer {
+            background: var(--card-bg);
+            padding: 2rem 0;
+            margin-top: 4rem;
             text-align: center;
-            color: #888;
-            font-size: 0.95rem;
-            margin: 2rem 0 1rem 0;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <header class="tw-header">
-        <h1>Run </h1>
-        <nav class="tw-nav">
-            <p> 😀</p>
-            <a href="#home">Home</a>
-            <a href="#products">Products</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-        </nav>
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">Translation Widget</a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#demo">Demo</a>
+                <a href="#docs">Documentation</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
     </header>
 
-    <main>
-        <section class="article-grid">
-            <article class="article">
-                <h2>Latest News</h2>
-                <p>
-                    We're excited to announce the launch of our new product
-                    line. Our team has been working tirelessly to bring you
-                    the best possible experience.
-                </p>
-                <button class="tw-button">Read More</button>
-            </article>
-
-            <article class="article">
-                <h2>Company Updates</h2>
-                <p>
-                    Our company has expanded to three new locations this
-                    year. We're now serving customers in over 50 countries
-                    worldwide.
-                </p>
-                <button class="tw-button">Learn More</button>
-            </article>
-
-            <article class="article">
-
-                <h2>Customer Stories</h2>
-                <p>
-                    Hear from our satisfied customers about how our products
-                    have transformed their businesses and improved
-                    efficiency.
-                </p>
-                <button class="tw-button">View Stories</button>
-            </article>
+    <main class="container">
+        <section class="hero">
+            <h1>Seamless Website Translation</h1>
+            <p>Transform your website into a global platform with our powerful translation widget. Support multiple languages and reach a wider audience.</p>
         </section>
 
-        <button onclick="window.translate('hi', (res)=>{
-            console.log(res);
-        }, (err)=>{
-            console.log(err);
-        })" class="tw-button notranslate">Translate to hindi</button>
+        <section id="features" class="features">
+            <div class="feature-card">
+                <h2>Easy Integration</h2>
+                <p>Add translation capabilities to your website with just a few lines of code. No complex setup required.</p>
+                <button class="button">Learn More</button>
+            </div>
 
-        <button onclick="window.resetTranslation('en', (res)=>{
-            console.log(res);
-        })">Reset Translation</button>  
+            <div class="feature-card">
+                <h2>Multiple Languages</h2>
+                <p>Support for over 100 languages with automatic language detection and seamless switching between languages.</p>
+                <button class="button">View Languages</button>
+            </div>
 
+            <div class="feature-card">
+                <h2>Real-time Translation</h2>
+                <p>Translate your content in real-time with high accuracy and natural-sounding results.</p>
+                <button class="button">Try Demo</button>
+            </div>
+        </section>
+
+        <section id="demo" class="cta-section">
+            <h2>Try It Now</h2>
+            <p>Experience the power of our translation widget with this live demo.</p>
+            <div class="button-group">
+                <button onclick="window.translate('hi', (res) => {
+                    console.log('Translation completed:', res);
+                }, (err) => {
+                    console.error('Translation error:', err);
+                })" class="button">Translate to Hindi</button>
+                <button onclick="window.resetTranslation('en', (res) => {
+                    console.log('Reset completed:', res);
+                })" class="button button-secondary">Reset to English</button>
+            </div>
+        </section>
     </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Translation Widget. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
     <script defer type="module">
         TranslationWidget("YOUR_PUBLIC_KEY_HERE")
