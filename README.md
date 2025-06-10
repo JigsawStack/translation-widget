@@ -1,4 +1,4 @@
-Demo Link - [Website](https://translation-widget-demo.vercel.app/)
+Try it out here - [Website](https://translation-widget-demo.vercel.app/)
 
 # 🌍 JigsawStack Translation Widget
 
