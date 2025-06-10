@@ -332,52 +332,30 @@ declare global {
 
 # ⚙️ Configuration Options
 
-  
-
-| Parameter | Type | Default | Optional | Description |
-
-|  --------------------  |  -------  |  -------  |  --------  |  -------------------------------------------------------------------  |
-
-|  `pageLanguage`  | string |  `'en'`  | Yes | Language of the main page content |
-
-|  `autoDetectLanguage`  | boolean |  `false`  | Yes | Automatically detect and translate based on user's browser language |
-
-|  `position`  | string |  `top-right`  | Yes | Automatically Set the position of the widget in the screen, supported `top-right`, `top-left`, `bottom-left`, `bottom-right`. |
-
-|  `theme`  | object |  `{}`  | Yes | Theme configuration for customizing widget appearance |
-
-|  `theme.baseColor`  | string |  `white`  | Yes | Base color for the widget background and accents |
-
-|  `theme.textColor`  | string |  `black`  | Yes | Text color for all text elements in the widget |
-
-|  `showUI`  | boolean |  `true`  | Yes | Toggle on/off the default widget UI |
-
-  
+| Parameter             | Type    | Default   | Optional | Description                                                                                               |
+|----------------------|---------|-----------|----------|-----------------------------------------------------------------------------------------------------------|
+| `pageLanguage`       | string  | `'en'`    | Yes      | Language of the main page content                                                                         |
+| `autoDetectLanguage` | boolean | `false`   | Yes      | Automatically detect and translate based on user's browser language                                       |
+| `position`           | string  | `top-right` | Yes    | Set the position of the widget on the screen. Supported values: `top-right`, `top-left`, `bottom-left`, `bottom-right`. |
+| `theme`              | object  | `{}`      | Yes      | Theme configuration for customizing widget appearance                                                     |
+| `theme.baseColor`    | string  | `white`   | Yes      | Base color for the widget background and accents                                                          |
+| `theme.textColor`    | string  | `black`   | Yes      | Text color for all text elements in the widget                                                            |
+| `showUI`             | boolean | `true`    | Yes      | Toggle on/off the default widget UI                                                                       |
 
 ## Theme Configuration Example
 
   
 
 ```javascript
-
-const  widget  =  new  TranslationWidget(publicKey,  {
-
-pageLanguage:  'en',
-
-position:  'top-right',
-
-autoDetectLanguage:  true,
-
-theme:  {
-
-baseColor:  '#2563eb',  // Custom base color
-
-textColor:  '#1f2937'  // Custom text color
-
-}
-
+const widget = new TranslationWidget(publicKey, {
+  pageLanguage: 'en',
+  position: 'top-right',
+  autoDetectLanguage: true,
+  theme: {
+    baseColor: '#2563eb', // Custom base color
+    textColor: '#1f2937'  // Custom text color
+  }
 });
-
 ```
 
   
@@ -453,31 +431,16 @@ window.resetTranslation('en', (res) => {
 -   Both `translate()` and `resetTranslation()` can be used to build your own custom language selector.
     
 -   Make sure the widget is initialized before calling these functions.
-    
-
-## 🏆 Language Selection Priority
-
   
-
+## 🏆 Language Selection Priority
 The widget determines which language to display using the following priority order:
 
-  
+| Priority | Source                         | Description                                      |
+|----------|--------------------------------|--------------------------------------------------|
+| 1        | `lang` URL parameter           | Language set via the `?lang=` URL parameter      |
+| 2        | User preference (selected language) | Language the user selects in the widget      |
+| 3        | `pageLanguage` (default page language) | The default language set for the page      |
 
-| Priority | Source | Description |
-
-|----------|----------------------------------------|-----------------------------------------------------|
-
-| 1 |  `lang` URL parameter | Language set via the `?lang=` URL parameter |
-
-| 2 | User preference (selected language) | Language the user selects in the widget |
-
-| 3 |  `pageLanguage` (default page language) | The default language set for the page |
-
-  
-
----
-
-  
 
 ### 5. Font Size Adjustment
 
@@ -530,19 +493,12 @@ Here's a simple example of how to change the background color and border radius 
   
 
 ```html
-
 <style>
-
-.jigts-widget-trigger  {
-
-background-color:  #eee  !important;
-
-border-radius:  8px  !important;
-
-}
-
+  .jigts-widget-trigger {
+    background-color: #eee !important;
+    border-radius: 8px !important;
+  }
 </style>
-
 ```
 
   
