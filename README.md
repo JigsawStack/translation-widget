@@ -1,4 +1,4 @@
-![Screen Recording 2025-06-11 at 4 59 10 AM](https://github.com/user-attachments/assets/a2919d34-8711-4141-9efa-387320ba5902)Demo Link - [Website](https://translation-widget-demo.vercel.app/)
+Demo Link - [Website](https://translation-widget-demo.vercel.app/)
 
 # 🌍 JigsawStack Translation Widget
 
