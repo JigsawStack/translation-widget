@@ -28,11 +28,16 @@ export default defineConfig({
         entryFileNames: "[name].min.js",
         chunkFileNames: "[name]-[hash].min.js",
         assetFileNames: "[name][extname]",
-      },]
+      },
+      {
+        format: "cjs",
+        entryFileNames: "[name].cjs",
+        chunkFileNames: "[name]-[hash].cjs",
+        assetFileNames: "[name][extname]",
+      },
+    ],
     },
-    // Ensure CSS is injected into the JavaScript bundle
     cssCodeSplit: false,
-    // Ensure CSS is inlined in the JavaScript bundle
     cssMinify: true,
   },
   plugins: [

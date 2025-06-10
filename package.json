@@ -1,11 +1,16 @@
 {
   "name": "translation-widget",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Open source translation widget to translate any website in to any language",
   "homepage": "https://github.com/JigsawStack/translation-widget",
   "author": "JigsawStack",
   "license": "Apache-2.0",
-  "keywords": ["translation", "widget", "translation-widget", "google-translate"],
+  "keywords": [
+    "translation",
+    "widget",
+    "translation-widget",
+    "google-translate"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JigsawStack/translation-widget.git"
@@ -15,9 +20,15 @@
   },
   "packageManager": "yarn@1.22.22",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs.js",
   "module": "./dist/index.js",
-  "files": ["dist"],
+  "exports": {
+    "require": "./dist/index.cjs.js",
+    "import": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
   "scripts": {
     "format": "biome format --write ./src",
