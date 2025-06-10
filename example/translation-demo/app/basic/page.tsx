@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Globe, ArrowLeft, MapPin, Calendar, Clock, Star, Users, TrendingUp, Home } from "lucide-react"
+import { MapPin, Calendar, Clock, Star, Users, TrendingUp, Home } from "lucide-react"
 
 export default function DemoPage() {
   return (

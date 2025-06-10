@@ -121,3 +121,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.jigts-translation-widget.jigts-position-top-right {
+	top: 1rem !important;
+	right: 1rem !important;
+}

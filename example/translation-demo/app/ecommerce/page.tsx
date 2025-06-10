@@ -15,9 +15,6 @@ import {
   ShieldCheck,
   RefreshCw,
   Check,
-  Search,
-  User,
-  Menu,
 } from "lucide-react"
 
 export default function EcommerceDemoPage() {
