@@ -1,12 +1,8 @@
 
 # 🌍 JigsawStack Translation Widget
 
-  
-
 JigsawStack Translation Widget is a powerful, drop-in translation solution that brings enterprise-grade translation capabilities to any website. It's designed to be the last translation widget you'll ever need, combining speed, accuracy, and context-aware translations in one seamless package.
 
-  
-  
 
 ⭐ Lightning-fast translations with smart caching
 🌍 Automatic language detection and URL-based switching
@@ -18,7 +14,6 @@ JigsawStack Translation Widget is a powerful, drop-in translation solution that 
 🎯 Perfect for product teams, documentation, and global businesses
 
 Powered by JigsawStack's advanced translation engine for superior accuracy and performance.
-
 
 # 🔧 Prerequisites
 
@@ -70,10 +65,6 @@ export default function Translation() {
       pageLanguage: 'en',
       position: "top-right",
       autoDetectLanguage: false,
-      theme: {
-        baseColor: '',
-        textColor: '',
-      },
     });
   }, []);
 
@@ -128,8 +119,8 @@ Immediately after the script, add this initialization code:
     autoDetectLanguage: false,  // Optional
     showUI: true,               // Optional
     theme: {
-      baseColor: '#2563eb',     // Optional
-      textColor: '#ffffff',     // Optional
+      baseColor: '',     // Optional
+      textColor: '',     // Optional
     }
   });
 </script>
@@ -156,9 +147,7 @@ Immediately after the script, add this initialization code:
     <script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
     <script defer type="module">
       TranslationWidget('YOUR_PUBLIC_KEY_HERE', {
-        pageLanguage: 'en',
-        position: 'top-right',
-        autoDetectLanguage: false,
+          // configuration options 
       });
     </script>
   </body>
@@ -207,7 +196,7 @@ export default function TranslationWidgetComponent() {
     const initWidget = () => {
       if (window.TranslationWidget) {
         window.TranslationWidget("YOUR_PUBLIC_KEY", {
-          // options here
+            // configuration options 
         });
       }
     };
@@ -270,9 +259,7 @@ export default function App({ Component, pageProps }: AppProps) {
         src="https://unpkg.com/translation-widget@latest/dist/index.min.js"
         onLoad={() => {
           window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-            pageLanguage: 'en',
-            position: "top-right",
-            autoDetectLanguage: false,
+              // configuration options 
           });
         }}
       />
@@ -301,9 +288,7 @@ export default function Document() {
               window.addEventListener('load', function () {
                 if (window.TranslationWidget) {
                   window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-                    pageLanguage: 'en',
-                    position: "top-right",
-                    autoDetectLanguage: false,
+                     // configuration options 
                   });
                 }
               });
