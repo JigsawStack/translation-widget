@@ -19,7 +19,7 @@ The goal is to make web page translations feel seamless and thoughtful — like 
 - 🔄 Programmatic translation control
 - 🎯 Perfect for product teams, documentation, and global businesses
 
-Powered by JigsawStack's advanced translation engine for superior accuracy and performance.
+Powered by [JigsawStack's advanced translation engine](https://jigsawstack.com/docs/api-reference/ai/translate/translate) for superior accuracy and performance.
 
 # 🔧 Prerequisites
 
