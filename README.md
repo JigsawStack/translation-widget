@@ -1,6 +1,8 @@
 
 # 🌍 JigsawStack Translation Widget
 
+https://github.com/user-attachments/assets/be0d6664-d11c-47b8-9563-3198cadbb4d7
+
 JigsawStack Translation Widget is a powerful, drop-in translation solution that brings enterprise-grade translation capabilities to any website. It's designed to be the last translation widget you'll ever need, combining speed, accuracy, and context-aware translations in one seamless package.
 
 
