@@ -11,7 +11,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "TranslationWidget",
-      fileName: "translation-widget",
+      fileName: "index",
+      formats: ["es", "cjs", "umd"],
     },
     minify: "terser",
     sourcemap: true,
@@ -35,7 +36,7 @@ export default defineConfig({
         chunkFileNames: "[name]-[hash].cjs",
         assetFileNames: "[name][extname]",
       },
-    ],
+      ],
     },
     cssCodeSplit: false,
     cssMinify: true,
