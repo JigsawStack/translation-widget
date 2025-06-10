@@ -1,7 +1,6 @@
 "use client"
 import { useEffect } from "react";  
 import TranslationWidget from "translation-widget";
-
 /**
  * We also support commonjs require('translation-widget')
  * 
@@ -9,7 +8,6 @@ import TranslationWidget from "translation-widget";
  *    const translationWidget = require('translation-widget')
  * 
  */
-
 export default function Translation() {
   useEffect(() => {
     TranslationWidget(process.env.NEXT_PUBLIC_TRANSLATION_WIDGET_PUBLIC_KEY!, {
