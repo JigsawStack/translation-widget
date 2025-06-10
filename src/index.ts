@@ -38,10 +38,10 @@ const initializeTranslationWidget = (
 
     if (document.readyState === 'loading') {
         window.addEventListener('DOMContentLoaded', initWidget)
-        return undefined as any;
+        return undefined as unknown as TranslationWidget;
     } else {
         return initWidget()
     }
 }
 
-export default initializeTranslationWidget
+export default initializeTranslationWidget;

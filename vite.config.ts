@@ -11,7 +11,8 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "TranslationWidget",
-      fileName: "translation-widget",
+      fileName: "index",
+      formats: ["es", "cjs", "umd"],
     },
     minify: "terser",
     sourcemap: true,
@@ -28,11 +29,16 @@ export default defineConfig({
         entryFileNames: "[name].min.js",
         chunkFileNames: "[name]-[hash].min.js",
         assetFileNames: "[name][extname]",
-      },]
+      },
+      {
+        format: "cjs",
+        entryFileNames: "[name].cjs",
+        chunkFileNames: "[name]-[hash].cjs",
+        assetFileNames: "[name][extname]",
+      },
+      ],
     },
-    // Ensure CSS is injected into the JavaScript bundle
     cssCodeSplit: false,
-    // Ensure CSS is inlined in the JavaScript bundle
     cssMinify: true,
   },
   plugins: [
