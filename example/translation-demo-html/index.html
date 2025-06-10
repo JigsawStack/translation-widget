@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: #f7f9fb;
+            color: #222;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #1a237e;
+            margin-top: 0;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+        }
+
+        section {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04);
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+
+        footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.95rem;
+            margin: 2rem 0 1rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="tw-header">
+        <h1>Run </h1>
+        <nav class="tw-nav">
+            <p> 😀</p>
+            <a href="#home">Home</a>
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="article-grid">
+            <article class="article">
+                <h2>Latest News</h2>
+                <p>
+                    We're excited to announce the launch of our new product
+                    line. Our team has been working tirelessly to bring you
+                    the best possible experience.
+                </p>
+                <button class="tw-button">Read More</button>
+            </article>
+
+            <article class="article">
+                <h2>Company Updates</h2>
+                <p>
+                    Our company has expanded to three new locations this
+                    year. We're now serving customers in over 50 countries
+                    worldwide.
+                </p>
+                <button class="tw-button">Learn More</button>
+            </article>
+
+            <article class="article">
+
+                <h2>Customer Stories</h2>
+                <p>
+                    Hear from our satisfied customers about how our products
+                    have transformed their businesses and improved
+                    efficiency.
+                </p>
+                <button class="tw-button">View Stories</button>
+            </article>
+        </section>
+
+        <button onclick="window.translate('hi', (res)=>{
+            console.log(res);
+        }, (err)=>{
+            console.log(err);
+        })" class="tw-button notranslate">Translate to hindi</button>
+
+        <button onclick="window.resetTranslation('en', (res)=>{
+            console.log(res);
+        })">Reset Translation</button>  
+
+    </main>
+    <script defer src="https://unpkg.com/translation-widget@latest/dist/index.min.js"></script>
+    <script defer type="module">
+        TranslationWidget("YOUR_PUBLIC_KEY_HERE")
+    </script>
+</body>
+
+</html>

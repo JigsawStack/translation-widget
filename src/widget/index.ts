@@ -1024,6 +1024,13 @@ declare global {
 }
 
 if (typeof window !== "undefined") {
+  /**
+   * Reset the translation to the default language
+   * @param defaultLang The default language to reset to
+   * @param onComplete Callback function that will be called when the translation is complete
+   * @param onError Callback function that will be called if the translation fails
+   * @returns A promise that resolves to the translation result
+   */
   window.resetTranslation = (
     defaultLang: string,
     onComplete?: (result: Pick<TranslationResult, "success" | "targetLanguage">) => void,
@@ -1044,7 +1051,12 @@ if (typeof window !== "undefined") {
     }
   };
 
-  // Add the global translate function
+  /**
+   * @param langCode The language code to translate to
+   * @param onComplete Callback function that will be called when the translation is complete
+   * @param onError Callback function that will be called if the translation fails
+   * @returns A promise that resolves to the translation result
+   */
   window.translate = async (
     langCode: string,
     onComplete?: (result: TranslationResult) => void,

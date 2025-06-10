@@ -315,7 +315,7 @@ If you're using TypeScript and encounter type errors for `window.TranslationWidg
 ```ts
 declare global {
   interface Window {
-    TranslationWidget: (publicKey: string, options: {
+    TranslationWidget: (publicKey: string, config?: {
       pageLanguage?: string;
       position?: string;
       autoDetectLanguage?: boolean;
@@ -383,7 +383,6 @@ Append a `lang` query parameter in your site URL to load the page in a specific 
 
 ```
 https://yoursite.com?lang=fr
-
 ```
 
 This will automatically translate the page to French (`fr`).
