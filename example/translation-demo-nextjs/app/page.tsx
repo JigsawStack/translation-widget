@@ -14,9 +14,6 @@ export default function Home() {
       />
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <div className="text-center sm:text-left max-w-2xl">
-          <div className="flex flex-col items-center sm:items-start mb-6">
-            <Image width={128} height={128} src="https://jigsawstack.com/jigsaw_logo.svg" alt="Jigsaw Logo" className="w-1/2"/>
-          </div>
           <h1 className="text-4xl font-extrabold mb-4 text-gray-900"> Translation Widget Demo</h1>
           <h2 className="text-lg font-medium text-blue-900 mb-4">Powering seamless multilingual experiences for modern websites.</h2>
           <p className="text-base text-gray-700 mb-8">
