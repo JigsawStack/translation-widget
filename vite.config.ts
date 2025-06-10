@@ -15,7 +15,7 @@ export default defineConfig({
       formats: ["es", "cjs", "umd"],
     },
     minify: "terser",
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       output: [{
         format: "es",
