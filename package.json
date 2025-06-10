@@ -8,7 +8,7 @@
   "keywords": [
     "translation",
     "widget",
-    "translation-widget", 
+    "translation-widget",
     "google-translate"
   ],
   "repository": {
@@ -27,7 +27,9 @@
     "import": "./dist/index.js"
   },
   "unpkg": "./dist/index.min.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
   "scripts": {
     "format": "biome format --write ./src",
