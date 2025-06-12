@@ -40,7 +40,7 @@ export class DocumentNavigator {
         }
 
         const shouldSkip =
-          container.closest("script, style, code") !== null ||
+          container.closest("script, style, code, noscript") !== null ||
           container.closest("next-route-announcer") !== null ||
           container.closest(".jigts-translation-widget") !== null ||
           container.closest(".jigts-widget-trigger") !== null ||

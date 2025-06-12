@@ -2,7 +2,7 @@ import LZString from "lz-string";
 
 export class LocalStorageWrapper {
   private prefix: string;
-  private readonly COMPRESSION_THRESHOLD = 10000;
+  private readonly COMPRESSION_THRESHOLD = 100000;
   private readonly COMPRESSION_MARKER = "__COMPRESSED__";
 
   constructor(prefix = "") {

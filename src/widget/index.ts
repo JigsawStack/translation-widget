@@ -7,7 +7,7 @@ import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
-// import emojiRegex from 'emoji-regex'
+
 interface WidgetElements {
   trigger: HTMLDivElement | null;
   dropdown: HTMLDivElement | null;
@@ -144,22 +144,13 @@ export class TranslationWidget {
   }
 
   private setupContentObserver(): void {
-    this.observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (this.widget.contains(mutation.target)) {
-          return;
-        }
-        if (
-          mutation.type === "characterData" ||
-          (mutation.type === "childList" && Array.from(mutation.addedNodes).some((node) => node.nodeType === Node.TEXT_NODE))
-        ) {
-        }
-      });
+    this.observer = new MutationObserver(() => {
       if (this.isTranslating) return;
       this.scheduleTranslation();
     });
     this.observeBody();
   }
+
 
   private observeBody() {
     this.observer?.observe(document.body, {
@@ -419,7 +410,6 @@ export class TranslationWidget {
     });
 
     // Update localStorage preference to original language
-    console.log("resetToDefaultLanguage", this.config.pageLanguage);
     localStorage.setItem("jss-pref", this.config.pageLanguage);
 
     // Update trigger icon
@@ -434,19 +424,24 @@ export class TranslationWidget {
   }
 
   private async _translatePage(targetLang: string): Promise<void> {
+    // Set the translating flag to true and disconnect the observer to pause DOM observation
     this.isTranslating = true;
-    this.observer?.disconnect(); // Pause observing during translation
+    this.observer?.disconnect();
     try {
+      // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
+      // Divide nodes into batches for processing
       const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
 
+      // Initialize cache for storing translations
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
+      // Generate a hash for the current content to use as a cache key
       let hash = generateHashForContent(nodes);
-      // Store all nodes and their corresponding texts for each batch
+      // Arrays to store nodes and texts for each batch
       const allBatchNodes: Node[][] = [];
       const allBatchTexts: string[][] = [];
 
-      // Prepare batches
+      // Prepare batches by filtering nodes that need translation
       batches.forEach((batch) => {
         const textsToTranslate: string[] = [];
         const batchNodes: Node[] = [];
@@ -457,17 +452,19 @@ export class TranslationWidget {
 
           const translatedLang = parent.getAttribute("data-translated-lang");
 
-          // Skip if parent already has data-original-text and we're not translating to English
+          // Skip nodes that are already translated to the target language
           if (parent.hasAttribute("data-original-text") && targetLang === translatedLang) {
             return;
           }
 
+          // Get text to translate and remove emojis
           let textToTranslate = this.getTextToTranslate(node as Text, parent, targetLang);
           textToTranslate = removeEmojis(textToTranslate || "");
           if (textToTranslate.length === 0 || textToTranslate.length === 1) {
             return;
           }
 
+          // Add text and node to the batch if valid
           if (textToTranslate) {
             textsToTranslate.push(textToTranslate.trim());
             batchNodes.push(node);
@@ -477,7 +474,7 @@ export class TranslationWidget {
         allBatchTexts.push(textsToTranslate);
       });
 
-      // Only keep non-empty batches
+      // Filter out empty batches
       const nonEmptyBatchNodes: Node[][] = [];
       const nonEmptyBatchTexts: string[][] = [];
       allBatchTexts.forEach((texts, i) => {
@@ -487,11 +484,12 @@ export class TranslationWidget {
         }
       });
 
+      // Check cache for existing translations
       const key = cache.getKey(hash, window.location.href, targetLang);
       const cachedTranslations = cache.getItem(key);
       if (cachedTranslations && cachedTranslations[0]) {
         const fullTranslations = cachedTranslations[0];
-        // Only update DOM if this is still the most recently requested language
+        // Update DOM if this is the most recent request
         if (this.lastRequestedLanguage === targetLang) {
           nodes.forEach((node, idx) => {
             if (node.nodeType === Node.TEXT_NODE) {
@@ -511,9 +509,10 @@ export class TranslationWidget {
         return;
       }
 
-      // Send all batch requests in parallel
+      // Translate all batches in parallel
       const allTranslatedTexts = await Promise.all(nonEmptyBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
 
+      // If no translations were made, update UI state
       if (allTranslatedTexts.length === 0) {
         if (this.lastRequestedLanguage === targetLang) {
           this.isTranslated = true;
@@ -522,7 +521,7 @@ export class TranslationWidget {
         return;
       }
 
-      // Check if all batches failed (returned original texts)
+      // Check if all batches failed
       const allBatchesFailed = allTranslatedTexts.every((translations, batchIndex) => {
         const originalTexts = nonEmptyBatchTexts[batchIndex];
         return translations.every((translation, index) => translation === originalTexts[index]);
@@ -545,8 +544,7 @@ export class TranslationWidget {
           const translatedText = allTranslatedTexts[batchIdx][textIdx];
           fullTranslations[nodeIdx] = translatedText;
 
-          console.log(this.lastRequestedLanguage, targetLang);
-          // Only update DOM if this is still the most recently requested language
+          // Update DOM if this is the most recent request
           if (this.lastRequestedLanguage === targetLang) {
             // Apply font size adjustment
             if (parent) {
@@ -565,17 +563,18 @@ export class TranslationWidget {
         }
       });
 
-      // Always cache the translations, even if they're not the most recent
+      // Cache the translations
       cache.setItem(key, [fullTranslations]);
 
-      // Only update UI state if this is still the most recently requested language
+      // Update UI state if this is the most recent request
       if (this.lastRequestedLanguage === targetLang) {
         this.isTranslated = true;
         this.updateResetButtonVisibility();
       }
     } finally {
+      // Reset translating flag and resume observing
       this.isTranslating = false;
-      this.observeBody(); // Resume observing after translation
+      this.observeBody();
     }
   }
 
