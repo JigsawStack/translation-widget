@@ -4,7 +4,7 @@ import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
 import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
-import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
+import { generateHashForContent, generateNodeHash, getUserLanguage, removeEmojis } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
@@ -414,16 +414,18 @@ export class TranslationWidget {
 
       // Initialize cache for storing translations
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
-      // Generate a hash for the current content to use as a cache key
-      let hash = generateHashForContent(nodes);
+
       // Arrays to store nodes and texts for each batch
       const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const allBatchTexts: string[][] = [];
+      const allBatchNodeHashes: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
       batches.forEach((batch) => {
         const textsToTranslate: string[] = [];
         const batchNodes: { element: HTMLElement; text: string }[] = [];
+        const batchNodeHashes: string[] = [];
+
         batch.forEach((node) => {
           const parent = node.element;
           if (!parent) return;
@@ -443,41 +445,41 @@ export class TranslationWidget {
 
           // Add text and node to the batch if valid
           if (textToTranslate) {
+            const nodeHash = generateNodeHash(textToTranslate);
+            // Use the new cache structure: array of objects
+            const cacheArray = cache.getItem(cache.getPageKey(window.location.href, targetLang)) || [];
+            const found = cacheArray.find((obj: Record<string, { o: string; t: string }>) => Object.prototype.hasOwnProperty.call(obj, nodeHash));
+            const cachedTranslation = found ? found[nodeHash] : null;
+
+            if (cachedTranslation) {
+              // Use cached translation
+              if (this.lastRequestedLanguage === targetLang) {
+                const originalText = cachedTranslation.o;
+                const translatedText = cachedTranslation.t;
+                const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
+                const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                parent.style.fontSize = newFontSize;
+                parent.textContent = translatedText;
+              }
+              return;
+            }
+
             textsToTranslate.push(textToTranslate.trim());
             batchNodes.push(node);
+            batchNodeHashes.push(nodeHash);
           }
         });
-        allBatchNodes.push(batchNodes);
-        allBatchTexts.push(textsToTranslate);
-      });
 
-      // Filter out empty batches
-      const nonEmptyBatchNodes: { element: HTMLElement; text: string }[][] = [];
-      const nonEmptyBatchTexts: string[][] = [];
-      allBatchTexts.forEach((texts, i) => {
-        if (texts.length > 0) {
-          nonEmptyBatchTexts.push(texts);
-          nonEmptyBatchNodes.push(allBatchNodes[i]);
+        if (textsToTranslate.length > 0) {
+          allBatchNodes.push(batchNodes);
+          allBatchTexts.push(textsToTranslate);
+          allBatchNodeHashes.push(batchNodeHashes);
         }
       });
 
-      // Check cache for existing translations
-      const key = cache.getKey(hash, window.location.href, targetLang);
-      const cachedTranslations = cache.getItem(key);
-      if (cachedTranslations && cachedTranslations[0]) {
-        const fullTranslations = cachedTranslations[0];
-        // Update DOM if this is the most recent request
+      // If no nodes need translation, we're done
+      if (allBatchTexts.length === 0) {
         if (this.lastRequestedLanguage === targetLang) {
-          nodes.forEach((node, idx) => {
-            const parent = node.element;
-            if (parent) {
-              const originalText = parent.getAttribute("data-original-text") || "";
-              const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
-              const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
-              parent.style.fontSize = newFontSize;
-              parent.textContent = fullTranslations[idx];
-            }
-          });
           this.isTranslated = true;
           this.updateResetButtonVisibility();
         }
@@ -485,61 +487,41 @@ export class TranslationWidget {
       }
 
       // Translate all batches in parallel
-      const allTranslatedTexts = await Promise.all(nonEmptyBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
+      const allTranslatedTexts = await Promise.all(
+        allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
+      );
 
-      // If no translations were made, update UI state
-      if (allTranslatedTexts.length === 0) {
-        if (this.lastRequestedLanguage === targetLang) {
-          this.isTranslated = true;
-          this.updateResetButtonVisibility();
-        }
-        return;
-      }
+      // Process translated batches
+      const batchArray: Array<{ [key: string]: { o: string; t: string } }> = [];
+      allTranslatedTexts.forEach((translations, batchIndex) => {
+        const batchNodes = allBatchNodes[batchIndex];
+        const batchNodeHashes = allBatchNodeHashes[batchIndex];
 
-      // Check if all batches failed
-      const allBatchesFailed = allTranslatedTexts.every((translations, batchIndex) => {
-        const originalTexts = nonEmptyBatchTexts[batchIndex];
-        return translations.every((translation, index) => translation === originalTexts[index]);
-      });
+        batchNodes.forEach((node, nodeIndex) => {
+          const parent = node.element;
+          if (parent) {
+            const originalText = node.text;
+            const translatedText = translations[nodeIndex];
+            const nodeHash = batchNodeHashes[nodeIndex];
 
-      if (allBatchesFailed) {
-        console.warn("All translations failed, not caching results");
-        throw new Error("All translation batches failed");
-      }
+            // Collect the translation for batch saving
+            batchArray.push({ [`${nodeHash}`]: { o: originalText, t: translatedText } });
 
-      // Build a full translation array for all nodes
-      const fullTranslations: string[] = [];
-      nodes.forEach((node, nodeIdx) => {
-        const parent = node.element;
-        // Check if this node was included in the API call
-        const batchIdx = nonEmptyBatchNodes.findIndex((batch) => batch.some(n => n.element === parent));
-        if (batchIdx !== -1) {
-          // This node was translated in this batch
-          const textIdx = nonEmptyBatchNodes[batchIdx].findIndex(n => n.element === parent);
-          const translatedText = allTranslatedTexts[batchIdx][textIdx];
-          fullTranslations[nodeIdx] = translatedText;
-
-          // Update DOM if this is the most recent request
-          if (this.lastRequestedLanguage === targetLang) {
-            // Apply font size adjustment
-            if (parent) {
-              const originalText = parent.getAttribute("data-original-text") || "";
+            // Update DOM if this is the most recent request
+            if (this.lastRequestedLanguage === targetLang) {
               const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
               const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
               parent.style.fontSize = newFontSize;
+              parent.textContent = translatedText;
             }
-            parent.textContent = translatedText;
           }
-        } else if (parent && parent.getAttribute("data-translated-lang") === targetLang) {
-          // Already translated, use current text
-          fullTranslations[nodeIdx] = parent.textContent || "";
-        } else {
-          fullTranslations[nodeIdx] = parent.textContent || "";
-        }
+        });
       });
 
-      // Cache the translations
-      cache.setItem(key, [fullTranslations]);
+      // Save all translations in one batch
+      if (batchArray.length > 0) {
+        cache.setBatchNodeTranslationsArray(window.location.href, targetLang, batchArray);
+      }
 
       // Update UI state if this is the most recent request
       if (this.lastRequestedLanguage === targetLang) {

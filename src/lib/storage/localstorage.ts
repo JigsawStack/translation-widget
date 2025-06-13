@@ -9,11 +9,9 @@ export class LocalStorageWrapper {
     this.prefix = prefix;
   }
 
-  getKey(hash: string, url: string, targetLang: string): string {
-    // get rid of query params
+  getPageKey(url: string, targetLang: string): string {
     const urlWithoutQuery = url.split("?")[0];
-    // Only encode the URL, not the whole key
-    return `${hash}-${encodeURIComponent(urlWithoutQuery)}-${targetLang}`;
+    return `${this.prefix}page-${encodeURIComponent(urlWithoutQuery)}-${targetLang}`;
   }
 
   private shouldCompress(value: string): boolean {
@@ -39,12 +37,10 @@ export class LocalStorageWrapper {
   }
 
   getItem(key: string): any {
-    const prefixedKey = this.prefix + key;
-    const item = localStorage.getItem(prefixedKey);
+    const item = localStorage.getItem(key);
     if (!item) return null;
 
     try {
-      // Check if the item is compressed
       const decompressed = item.startsWith(this.COMPRESSION_MARKER) ? this.decompress(item.slice(this.COMPRESSION_MARKER.length)) : item;
       return JSON.parse(decompressed);
     } catch (e) {
@@ -54,21 +50,16 @@ export class LocalStorageWrapper {
   }
 
   setItem(key: string, value: any): void {
-    const prefixedKey = this.prefix + key;
     const stringified = JSON.stringify(value);
-
-    // Use requestIdleCallback to defer compression if available
     const storeValue = () => {
       try {
         const finalValue = this.shouldCompress(stringified) ? `${this.COMPRESSION_MARKER}${this.compress(stringified)}` : stringified;
-        localStorage.setItem(prefixedKey, finalValue);
+        localStorage.setItem(key, finalValue);
       } catch (error) {
         console.error("Error storing item:", error);
-        // Fallback to storing uncompressed value
-        localStorage.setItem(prefixedKey, stringified);
+        localStorage.setItem(key, stringified);
       }
     };
-
     if (typeof requestIdleCallback !== "undefined") {
       requestIdleCallback(() => storeValue());
     } else {
@@ -76,9 +67,52 @@ export class LocalStorageWrapper {
     }
   }
 
+  // Get translation for a node from the page cache (object of node hashes)
+  getNodeTranslation(nodeHash: string, url: string, targetLang: string): { o: string; t: string } | null {
+    const pageKey = this.getPageKey(url, targetLang);
+    const translations: { [key: string]: { o: string; t: string } } = this.getItem(pageKey) || {};
+    const nodeKey = `jss-node-${nodeHash}`;
+    return translations[nodeKey] || null;
+  }
+
+  // Store translation for a node in the page cache (object of node hashes)
+  setNodeTranslation(nodeHash: string, url: string, targetLang: string, translation: { o: string; t: string }): void {
+    const pageKey = this.getPageKey(url, targetLang);
+    let translations: { [key: string]: { o: string; t: string } }[] = this.getItem(pageKey) || [];
+    const nodeKey = `${nodeHash}`;
+    translations.push({ [nodeKey]: translation });
+    this.setItem(pageKey, translations);
+  }
+
+  setBatchNodeTranslationsArray(
+    url: string,
+    targetLang: string,
+    batch: Array<{ [key: string]: { o: string; t: string } }>
+  ): void {
+    const pageKey = this.getPageKey(url, targetLang);
+    const existing: Array<{ [key: string]: { o: string; t: string } }> = this.getItem(pageKey) || [];
+
+    // Convert existing to a map for fast lookup
+    const map: { [key: string]: { o: string; t: string } } = {};
+    existing.forEach(obj => {
+      const key = Object.keys(obj)[0];
+      map[key] = obj[key];
+    });
+
+    // Add/overwrite with new batch
+    batch.forEach(obj => {
+      const key = Object.keys(obj)[0];
+      map[key] = obj[key];
+    });
+
+    // Convert back to array of objects
+    const merged = Object.keys(map).map(key => ({ [key]: map[key] }));
+
+    this.setItem(pageKey, merged);
+  }
+
   removeItem(key: string): void {
-    const prefixedKey = this.prefix + key;
-    localStorage.removeItem(prefixedKey);
+    localStorage.removeItem(key);
   }
 
   clear(): void {
