@@ -69,7 +69,6 @@ function murmurhash3_32_gc(key: string, seed: number) {
 }
 
 function getVisibleTextContent(element: HTMLElement): string {
-  // Get all child text nodes that are not inside .sr-only or [aria-hidden="true"]
   let text = "";
   element.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE && !(element.classList.contains("sr-only") || element.getAttribute("aria-hidden") === "true")) {

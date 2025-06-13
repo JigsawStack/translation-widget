@@ -2,28 +2,13 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import type { Language, TranslationConfig } from "../types";
+import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
-interface WidgetElements {
-  trigger: HTMLDivElement | null;
-  dropdown: HTMLDivElement | null;
-  searchInput: HTMLInputElement | null;
-  clearSearch: HTMLDivElement | null;
-  languageItems: NodeListOf<HTMLDivElement> | null;
-  loadingIndicator: HTMLDivElement | null;
-}
 
-interface TranslationResult {
-  success: boolean;
-  targetLanguage: string;
-  translatedNodes: number;
-  error?: string;
-  duration?: number;
-}
 
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
@@ -46,12 +31,16 @@ export class TranslationWidget {
   private translationRequestId: number = 0;
 
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
+
     const allowedPositions = ["top-right", "top-left", "bottom-left", "bottom-right"] as const;
+
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
+    
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
       safeConfig.position = "top-right";
     }
+
     this.config = safeConfig as Required<TranslationConfig>;
 
     if (!publicKey) {
@@ -87,16 +76,10 @@ export class TranslationWidget {
   private initialize(): void {
     if (!this.validateConfig()) return;
 
-    // Get language from URL parameter
-
-    // Translation Language Preference Checks
-
-    // CASE 1: URL Parameter
     const urlLang = this.getUrlParameter("lang");
 
     let initialLang = this.config.pageLanguage;
 
-    // Priority 1: URL Parameter
     if (urlLang) {
       const supportedLang = languages.find((lang) => lang.code === urlLang);
       if (supportedLang) {
@@ -118,10 +101,8 @@ export class TranslationWidget {
     this.currentLanguage = initialLang;
     if (this.showUI) {
       this.createWidget();
-      // Update icon if not default language
       const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
       if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
-        // Find the language name
         const langObj = languages.find((lang) => lang.code === this.currentLanguage);
         const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
         triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${this.currentLanguage.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
@@ -193,11 +174,9 @@ export class TranslationWidget {
   private createWidget(): void {
     const currentLanguageLabel = this.getCurrentLanguageLabel();
 
-    // Create widget element
     this.widget = document.createElement("div");
     this.widget.className = `jigts-translation-widget jigts-position-${this.config.position || "top-right"}`;
 
-    // Apply theme colors if provided
     if (this.config.theme) {
       if (this.config.theme.baseColor) {
         this.widget.style.setProperty("--jigts-custom-base-color", this.config.theme.baseColor);
@@ -527,7 +506,7 @@ export class TranslationWidget {
         return translations.every((translation, index) => translation === originalTexts[index]);
       });
 
-      if (allBatchesFailed) {
+      if (!allBatchesFailed) {
         console.warn("All translations failed, not caching results");
         throw new Error("All translation batches failed");
       }

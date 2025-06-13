@@ -1,5 +1,3 @@
-// type TreeWalkerFilter = (node: Node) => number
-
 interface NodeProcessor {
   acceptNode(node: Node): number;
 }
@@ -99,37 +97,4 @@ export class DocumentNavigator {
     return groups;
   }
 
-  /**
-   * Determines if a node contains translatable text
-   * @param node Node to evaluate
-   * @returns Whether the node contains translatable content
-   */
-  static containsTranslatableContent(node: Node): node is Text {
-    if (node.nodeType !== Node.TEXT_NODE) {
-      return false;
-    }
-
-    const container = node.parentElement;
-    if (!container) {
-      return false;
-    }
-    return !(
-      container.tagName === "SCRIPT" ||
-      container.tagName === "STYLE" ||
-      container.tagName === "CODE" ||
-      container.tagName === "next-route-announcer" ||
-      container.closest(".translate-widget") ||
-      container.closest(".notranslate") ||
-      !node.textContent?.trim()
-    );
-  }
-
-  /**
-   * Retrieves the containing element of a node
-   * @param node Node to find container for
-   * @returns Containing element or null if none exists
-   */
-  static getContainer(node: Node): HTMLElement | null {
-    return node.parentElement;
-  }
 }

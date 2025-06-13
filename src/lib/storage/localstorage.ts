@@ -72,7 +72,6 @@ export class LocalStorageWrapper {
     if (typeof requestIdleCallback !== "undefined") {
       requestIdleCallback(() => storeValue());
     } else {
-      // Fallback to setTimeout if requestIdleCallback is not available
       setTimeout(storeValue, 0);
     }
   }
