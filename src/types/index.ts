@@ -33,3 +33,21 @@ export interface TranslationWidgetOptions {
   publicKey: string;
   config?: TranslationConfig;
 }
+
+
+export interface WidgetElements {
+  trigger: HTMLDivElement | null;
+  dropdown: HTMLDivElement | null;
+  searchInput: HTMLInputElement | null;
+  clearSearch: HTMLDivElement | null;
+  languageItems: NodeListOf<HTMLDivElement> | null;
+  loadingIndicator: HTMLDivElement | null;
+}
+
+export interface TranslationResult {
+  success: boolean;
+  targetLanguage: string;
+  translatedNodes: number;
+  error?: string;
+  duration?: number;
+}

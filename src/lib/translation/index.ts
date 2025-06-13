@@ -18,7 +18,6 @@ interface CacheMetrics {
 export class TranslationService {
   private readonly publicKey: string;
   private cacheMetrics: CacheMetrics = { hits: 0, misses: 0 };
-  // Todo: convert this to use sdk instead of api
   private readonly apiUrl = "https://api.jigsawstack.com/v1/ai/translate";
 
   constructor(publicKey: string) {
@@ -66,6 +65,6 @@ export class TranslationService {
         await new Promise((res) => setTimeout(res, retryDelay));
       }
     }
-    return texts; // Fallback, should not reach here
+    return texts;
   }
 }

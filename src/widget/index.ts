@@ -2,28 +2,13 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import type { Language, TranslationConfig } from "../types";
+import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
-interface WidgetElements {
-  trigger: HTMLDivElement | null;
-  dropdown: HTMLDivElement | null;
-  searchInput: HTMLInputElement | null;
-  clearSearch: HTMLDivElement | null;
-  languageItems: NodeListOf<HTMLDivElement> | null;
-  loadingIndicator: HTMLDivElement | null;
-}
 
-interface TranslationResult {
-  success: boolean;
-  targetLanguage: string;
-  translatedNodes: number;
-  error?: string;
-  duration?: number;
-}
 
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
@@ -46,12 +31,16 @@ export class TranslationWidget {
   private translationRequestId: number = 0;
 
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
+
     const allowedPositions = ["top-right", "top-left", "bottom-left", "bottom-right"] as const;
+
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
+    
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
       safeConfig.position = "top-right";
     }
+
     this.config = safeConfig as Required<TranslationConfig>;
 
     if (!publicKey) {
@@ -87,16 +76,10 @@ export class TranslationWidget {
   private initialize(): void {
     if (!this.validateConfig()) return;
 
-    // Get language from URL parameter
-
-    // Translation Language Preference Checks
-
-    // CASE 1: URL Parameter
     const urlLang = this.getUrlParameter("lang");
 
     let initialLang = this.config.pageLanguage;
 
-    // Priority 1: URL Parameter
     if (urlLang) {
       const supportedLang = languages.find((lang) => lang.code === urlLang);
       if (supportedLang) {
@@ -118,10 +101,8 @@ export class TranslationWidget {
     this.currentLanguage = initialLang;
     if (this.showUI) {
       this.createWidget();
-      // Update icon if not default language
       const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
       if (triggerIcon && this.currentLanguage !== this.config.pageLanguage) {
-        // Find the language name
         const langObj = languages.find((lang) => lang.code === this.currentLanguage);
         const langName = langObj ? langObj.name : this.currentLanguage.toUpperCase();
         triggerIcon.innerHTML = `<span class=\"jigts-lang-code\">${this.currentLanguage.toUpperCase()}</span><span class=\"jigts-lang-name\">${langName}</span>`;
@@ -193,11 +174,9 @@ export class TranslationWidget {
   private createWidget(): void {
     const currentLanguageLabel = this.getCurrentLanguageLabel();
 
-    // Create widget element
     this.widget = document.createElement("div");
     this.widget.className = `jigts-translation-widget jigts-position-${this.config.position || "top-right"}`;
 
-    // Apply theme colors if provided
     if (this.config.theme) {
       if (this.config.theme.baseColor) {
         this.widget.style.setProperty("--jigts-custom-base-color", this.config.theme.baseColor);
@@ -298,9 +277,9 @@ export class TranslationWidget {
     triggerSpan.classList.add("jigts-fade-in");
   }
 
-  private getTextToTranslate(node: Text, parent: HTMLElement, targetLang: string): string | null {
+    private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
     if (!parent.hasAttribute("data-original-text")) {
-      const originalText = node.textContent?.trim();
+      const originalText = node.text?.trim();
       if (originalText) {
         parent.setAttribute("data-translated-lang", targetLang);
         parent.setAttribute("data-original-text", originalText);
@@ -312,7 +291,7 @@ export class TranslationWidget {
         return originalText;
       }
     } else {
-      const textToTranslate = node.textContent?.trim();
+      const textToTranslate = node.text?.trim();
       if (this.currentLanguage !== "en" && targetLang !== "en") {
         parent.setAttribute("data-translated-lang", targetLang);
         return parent.getAttribute("data-original-text");
@@ -438,18 +417,16 @@ export class TranslationWidget {
       // Generate a hash for the current content to use as a cache key
       let hash = generateHashForContent(nodes);
       // Arrays to store nodes and texts for each batch
-      const allBatchNodes: Node[][] = [];
+      const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const allBatchTexts: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
       batches.forEach((batch) => {
         const textsToTranslate: string[] = [];
-        const batchNodes: Node[] = [];
-        batch.forEach((node: Node) => {
-          if (node.nodeType !== Node.TEXT_NODE) return;
-          const parent = node.parentElement;
+        const batchNodes: { element: HTMLElement; text: string }[] = [];
+        batch.forEach((node) => {
+          const parent = node.element;
           if (!parent) return;
-
           const translatedLang = parent.getAttribute("data-translated-lang");
 
           // Skip nodes that are already translated to the target language
@@ -458,7 +435,7 @@ export class TranslationWidget {
           }
 
           // Get text to translate and remove emojis
-          let textToTranslate = this.getTextToTranslate(node as Text, parent, targetLang);
+          let textToTranslate = this.getTextToTranslate(node, parent, targetLang);
           textToTranslate = removeEmojis(textToTranslate || "");
           if (textToTranslate.length === 0 || textToTranslate.length === 1) {
             return;
@@ -475,7 +452,7 @@ export class TranslationWidget {
       });
 
       // Filter out empty batches
-      const nonEmptyBatchNodes: Node[][] = [];
+      const nonEmptyBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const nonEmptyBatchTexts: string[][] = [];
       allBatchTexts.forEach((texts, i) => {
         if (texts.length > 0) {
@@ -492,15 +469,13 @@ export class TranslationWidget {
         // Update DOM if this is the most recent request
         if (this.lastRequestedLanguage === targetLang) {
           nodes.forEach((node, idx) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-              const parent = node.parentElement;
-              if (parent) {
-                const originalText = parent.getAttribute("data-original-text") || "";
-                const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
-                const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
-                parent.style.fontSize = newFontSize;
-              }
-              node.textContent = fullTranslations[idx];
+            const parent = node.element;
+            if (parent) {
+              const originalText = parent.getAttribute("data-original-text") || "";
+              const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
+              const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
+              parent.style.fontSize = newFontSize;
+              parent.textContent = fullTranslations[idx];
             }
           });
           this.isTranslated = true;
@@ -535,12 +510,12 @@ export class TranslationWidget {
       // Build a full translation array for all nodes
       const fullTranslations: string[] = [];
       nodes.forEach((node, nodeIdx) => {
-        const parent = node.parentElement as HTMLElement | null;
+        const parent = node.element;
         // Check if this node was included in the API call
-        const batchIdx = nonEmptyBatchNodes.findIndex((batch) => batch.includes(node));
+        const batchIdx = nonEmptyBatchNodes.findIndex((batch) => batch.some(n => n.element === parent));
         if (batchIdx !== -1) {
           // This node was translated in this batch
-          const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
+          const textIdx = nonEmptyBatchNodes[batchIdx].findIndex(n => n.element === parent);
           const translatedText = allTranslatedTexts[batchIdx][textIdx];
           fullTranslations[nodeIdx] = translatedText;
 
@@ -553,13 +528,13 @@ export class TranslationWidget {
               const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
               parent.style.fontSize = newFontSize;
             }
-            node.textContent = translatedText;
+            parent.textContent = translatedText;
           }
         } else if (parent && parent.getAttribute("data-translated-lang") === targetLang) {
           // Already translated, use current text
-          fullTranslations[nodeIdx] = node.textContent || "";
+          fullTranslations[nodeIdx] = parent.textContent || "";
         } else {
-          fullTranslations[nodeIdx] = node.textContent || "";
+          fullTranslations[nodeIdx] = parent.textContent || "";
         }
       });
 
@@ -595,7 +570,7 @@ export class TranslationWidget {
       if (textNodes.length > 0) {
         const originalText = element.getAttribute("data-original-text");
         if (originalText) {
-          textNodes[0].textContent = originalText;
+          element.innerHTML = originalText;
         }
       }
       // Restore original font size

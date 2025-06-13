@@ -1,87 +1,77 @@
-// type TreeWalkerFilter = (node: Node) => number
-
 interface NodeProcessor {
   acceptNode(node: Node): number;
 }
 
 import { removeEmojis } from "../../utils/utils";
 
+export type TranslatableContent = {
+  element: HTMLElement;
+  text: string;
+}[]
 export class DocumentNavigator {
   /**
    * Retrieves text nodes eligible for translation from the document
    * @returns Collection of text nodes ready for translation
    */
-  static findTranslatableContent(): Text[] {
-    // Skip during server-side rendering
-    if (typeof window === "undefined") {
-      return [];
-    }
-
+  static findTranslatableContent(): TranslatableContent {
+    if (typeof window === "undefined") return [];
+  
     const validator: NodeProcessor = {
       acceptNode(node: Node): number {
-        if (node.nodeType !== Node.TEXT_NODE) {
-          // Log non-text nodes
-          return NodeFilter.FILTER_REJECT;
-        }
-
+        if (node.nodeType !== Node.TEXT_NODE) return NodeFilter.FILTER_REJECT;
+  
         const container = (node as Text).parentElement;
-        if (!container) {
-          return NodeFilter.FILTER_REJECT;
-        }
-
-        // Skip if any ancestor has aria-hidden="true"
-        if (container.closest('[aria-hidden="true"]')) {
-          return NodeFilter.FILTER_REJECT;
-        }
-
-        // // check if the classname is sr-only
-        if (container.classList.contains("sr-only")) {
-          return NodeFilter.FILTER_REJECT;
-        }
-
+        if (!container) return NodeFilter.FILTER_REJECT;
+  
+        if (container.closest('[aria-hidden="true"]')) return NodeFilter.FILTER_REJECT;
+        if (container.classList.contains("sr-only")) return NodeFilter.FILTER_REJECT;
+  
         const shouldSkip =
-          container.closest("script, style, code, noscript") !== null ||
-          container.closest("next-route-announcer") !== null ||
-          container.closest(".jigts-translation-widget") !== null ||
-          container.closest(".jigts-widget-trigger") !== null ||
-          container.closest(".jigts-widget-dropdown") !== null ||
-          container.closest(".notranslate") !== null ||
+          container.closest("script, style, code, noscript, next-route-announcer, .jigts-translation-widget, .jigts-widget-trigger, .jigts-widget-dropdown, .notranslate") !== null ||
           !node.textContent?.trim();
+  
         return shouldSkip ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
       },
     };
-
+  
     const navigator = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, validator);
-
-    const results: Text[] = [];
+    const groupedText = new Map<HTMLElement, Text[]>();
+  
     let currentNode: Node | null;
-
     while ((currentNode = navigator.nextNode())) {
-      if (currentNode.nodeType === Node.TEXT_NODE) {
-        let text = currentNode.textContent?.trim() || "";
-        const parentElement = currentNode.parentElement;
-        if (parentElement) {
-          const originalText = parentElement.getAttribute("data-original-text");
-          if (originalText) {
-            text = originalText;
-          }
-        }
-        /**
-         * Skip the content if
-         * 1. the content if empty
-         * 2. the content is only one character in length
-         * 3. the content is only an emoji
-         */
+      const parentElement = (currentNode as Text).parentElement;
+      if (!parentElement) continue;
+  
+      if (!groupedText.has(parentElement)) {
+        groupedText.set(parentElement, []);
+      }
+      groupedText.get(parentElement)!.push(currentNode as Text);
+    }
+  
+    const results: { element: HTMLElement; text: string }[] = [];
+  
+    for (const [element, textNodes] of groupedText.entries()) {
+      let combinedText = "";
+  
+      for (const node of textNodes) {
+        let text = node.textContent?.trim() || "";
+        const originalText = element.getAttribute("data-original-text");
+        if (originalText) text = originalText;
+  
         const textWithoutEmojis = removeEmojis(text);
-        if (text.length === 0 || text.length === 1 || textWithoutEmojis.length === 0) {
-          continue;
-        }
-        results.push(currentNode as Text);
+        if (text.length === 0 || text.length === 1 || textWithoutEmojis.length === 0) continue;
+  
+        combinedText += (combinedText ? " " : "") + text;
+      }
+  
+      if (combinedText.length > 0) {
+        results.push({ element, text: combinedText });
       }
     }
-
+  
     return results;
   }
+  
 
   /**
    * Divides a collection into smaller groups
@@ -99,37 +89,4 @@ export class DocumentNavigator {
     return groups;
   }
 
-  /**
-   * Determines if a node contains translatable text
-   * @param node Node to evaluate
-   * @returns Whether the node contains translatable content
-   */
-  static containsTranslatableContent(node: Node): node is Text {
-    if (node.nodeType !== Node.TEXT_NODE) {
-      return false;
-    }
-
-    const container = node.parentElement;
-    if (!container) {
-      return false;
-    }
-    return !(
-      container.tagName === "SCRIPT" ||
-      container.tagName === "STYLE" ||
-      container.tagName === "CODE" ||
-      container.tagName === "next-route-announcer" ||
-      container.closest(".translate-widget") ||
-      container.closest(".notranslate") ||
-      !node.textContent?.trim()
-    );
-  }
-
-  /**
-   * Retrieves the containing element of a node
-   * @param node Node to find container for
-   * @returns Containing element or null if none exists
-   */
-  static getContainer(node: Node): HTMLElement | null {
-    return node.parentElement;
-  }
 }
