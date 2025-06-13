@@ -4,7 +4,7 @@ import TranslationWidget from "translation-widget";
 
 export default function Translation() {
   useEffect(() => {
-    TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
+    TranslationWidget(process.env.NEXT_PUBLIC_TRANSLATION_WIDGET_PUBLIC_KEY!, {
       showUI: true,
       pageLanguage: 'en',
       position: "top-right",
