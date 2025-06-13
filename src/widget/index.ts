@@ -446,8 +446,14 @@ export class TranslationWidget {
           // Add text and node to the batch if valid
           if (textToTranslate) {
             const nodeHash = generateNodeHash(textToTranslate);
-            const cachedTranslation = cache.getNodeTranslation(nodeHash, window.location.href, targetLang);
+            // Use the new cache structure: array of objects
+            const cacheArray = cache.getItem(cache.getPageKey(window.location.href, targetLang)) || [];
+            console.log("cacheArray", cacheArray);
+            const found = cacheArray.find((obj: Record<string, { o: string; t: string }>) => Object.prototype.hasOwnProperty.call(obj, nodeHash));
+            console.log("found", found);
+            const cachedTranslation = found ? found[nodeHash] : null;
 
+            console.log("cachedTranslation", cachedTranslation);
             if (cachedTranslation) {
               // Use cached translation
               if (this.lastRequestedLanguage === targetLang) {
@@ -489,6 +495,7 @@ export class TranslationWidget {
       );
 
       // Process translated batches
+      const batchArray: Array<{ [key: string]: { o: string; t: string } }> = [];
       allTranslatedTexts.forEach((translations, batchIndex) => {
         const batchNodes = allBatchNodes[batchIndex];
         const batchNodeHashes = allBatchNodeHashes[batchIndex];
@@ -500,11 +507,8 @@ export class TranslationWidget {
             const translatedText = translations[nodeIndex];
             const nodeHash = batchNodeHashes[nodeIndex];
 
-            // Cache the translation
-            cache.setNodeTranslation(nodeHash, window.location.href, targetLang, {
-              o: originalText,
-              t: translatedText
-            });
+            // Collect the translation for batch saving
+            batchArray.push({ [`${nodeHash}`]: { o: originalText, t: translatedText } });
 
             // Update DOM if this is the most recent request
             if (this.lastRequestedLanguage === targetLang) {
@@ -516,6 +520,11 @@ export class TranslationWidget {
           }
         });
       });
+
+      // Save all translations in one batch
+      if (batchArray.length > 0) {
+        cache.setBatchNodeTranslationsArray(window.location.href, targetLang, batchArray);
+      }
 
       // Update UI state if this is the most recent request
       if (this.lastRequestedLanguage === targetLang) {
