@@ -54,7 +54,6 @@ export class LocalStorageWrapper {
     const storeValue = () => {
       try {
         const finalValue = this.shouldCompress(stringified) ? `${this.COMPRESSION_MARKER}${this.compress(stringified)}` : stringified;
-        console.log("finalValue", finalValue);
         localStorage.setItem(key, finalValue);
       } catch (error) {
         console.error("Error storing item:", error);
@@ -85,9 +84,31 @@ export class LocalStorageWrapper {
     this.setItem(pageKey, translations);
   }
 
-  setBatchNodeTranslationsArray(url: string, targetLang: string, batch: Array<{ [key: string]: { o: string; t: string } }>): void {
+  setBatchNodeTranslationsArray(
+    url: string,
+    targetLang: string,
+    batch: Array<{ [key: string]: { o: string; t: string } }>
+  ): void {
     const pageKey = this.getPageKey(url, targetLang);
-    this.setItem(pageKey, batch);
+    const existing: Array<{ [key: string]: { o: string; t: string } }> = this.getItem(pageKey) || [];
+
+    // Convert existing to a map for fast lookup
+    const map: { [key: string]: { o: string; t: string } } = {};
+    existing.forEach(obj => {
+      const key = Object.keys(obj)[0];
+      map[key] = obj[key];
+    });
+
+    // Add/overwrite with new batch
+    batch.forEach(obj => {
+      const key = Object.keys(obj)[0];
+      map[key] = obj[key];
+    });
+
+    // Convert back to array of objects
+    const merged = Object.keys(map).map(key => ({ [key]: map[key] }));
+
+    this.setItem(pageKey, merged);
   }
 
   removeItem(key: string): void {

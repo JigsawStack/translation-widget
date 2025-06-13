@@ -448,12 +448,9 @@ export class TranslationWidget {
             const nodeHash = generateNodeHash(textToTranslate);
             // Use the new cache structure: array of objects
             const cacheArray = cache.getItem(cache.getPageKey(window.location.href, targetLang)) || [];
-            console.log("cacheArray", cacheArray);
             const found = cacheArray.find((obj: Record<string, { o: string; t: string }>) => Object.prototype.hasOwnProperty.call(obj, nodeHash));
-            console.log("found", found);
             const cachedTranslation = found ? found[nodeHash] : null;
 
-            console.log("cachedTranslation", cachedTranslation);
             if (cachedTranslation) {
               // Use cached translation
               if (this.lastRequestedLanguage === targetLang) {
