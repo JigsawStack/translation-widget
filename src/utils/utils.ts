@@ -1,15 +1,9 @@
 import { languages } from "../constants/languages";
-function generateHashForContent(nodes: Node[]): string {
+import { TranslatableContent } from "../lib/dom";
+function generateHashForContent(nodes: TranslatableContent): string {
   const content = nodes
     .map((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const parent = node.parentElement as HTMLElement | null;
-        // Use original text if available, else current text
-        if (parent && parent.hasAttribute("data-original-text")) {
-          return parent.getAttribute("data-original-text")?.replace(/\s+/g, " ").trim();
-        }
-        return node.textContent?.replace(/\s+/g, " ").trim().toLocaleLowerCase();
-      }
+      return node.text.replace(/\s+/g, " ").trim().toLocaleLowerCase();
     })
     .join(" ")
     .trim();

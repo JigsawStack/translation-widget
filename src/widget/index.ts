@@ -277,9 +277,9 @@ export class TranslationWidget {
     triggerSpan.classList.add("jigts-fade-in");
   }
 
-  private getTextToTranslate(node: Text, parent: HTMLElement, targetLang: string): string | null {
+    private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
     if (!parent.hasAttribute("data-original-text")) {
-      const originalText = node.textContent?.trim();
+      const originalText = node.text?.trim();
       if (originalText) {
         parent.setAttribute("data-translated-lang", targetLang);
         parent.setAttribute("data-original-text", originalText);
@@ -291,7 +291,7 @@ export class TranslationWidget {
         return originalText;
       }
     } else {
-      const textToTranslate = node.textContent?.trim();
+      const textToTranslate = node.text?.trim();
       if (this.currentLanguage !== "en" && targetLang !== "en") {
         parent.setAttribute("data-translated-lang", targetLang);
         return parent.getAttribute("data-original-text");
@@ -417,18 +417,16 @@ export class TranslationWidget {
       // Generate a hash for the current content to use as a cache key
       let hash = generateHashForContent(nodes);
       // Arrays to store nodes and texts for each batch
-      const allBatchNodes: Node[][] = [];
+      const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const allBatchTexts: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
       batches.forEach((batch) => {
         const textsToTranslate: string[] = [];
-        const batchNodes: Node[] = [];
-        batch.forEach((node: Node) => {
-          if (node.nodeType !== Node.TEXT_NODE) return;
-          const parent = node.parentElement;
+        const batchNodes: { element: HTMLElement; text: string }[] = [];
+        batch.forEach((node) => {
+          const parent = node.element;
           if (!parent) return;
-
           const translatedLang = parent.getAttribute("data-translated-lang");
 
           // Skip nodes that are already translated to the target language
@@ -437,7 +435,7 @@ export class TranslationWidget {
           }
 
           // Get text to translate and remove emojis
-          let textToTranslate = this.getTextToTranslate(node as Text, parent, targetLang);
+          let textToTranslate = this.getTextToTranslate(node, parent, targetLang);
           textToTranslate = removeEmojis(textToTranslate || "");
           if (textToTranslate.length === 0 || textToTranslate.length === 1) {
             return;
@@ -454,7 +452,7 @@ export class TranslationWidget {
       });
 
       // Filter out empty batches
-      const nonEmptyBatchNodes: Node[][] = [];
+      const nonEmptyBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const nonEmptyBatchTexts: string[][] = [];
       allBatchTexts.forEach((texts, i) => {
         if (texts.length > 0) {
@@ -471,15 +469,13 @@ export class TranslationWidget {
         // Update DOM if this is the most recent request
         if (this.lastRequestedLanguage === targetLang) {
           nodes.forEach((node, idx) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-              const parent = node.parentElement;
-              if (parent) {
-                const originalText = parent.getAttribute("data-original-text") || "";
-                const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
-                const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
-                parent.style.fontSize = newFontSize;
-              }
-              node.textContent = fullTranslations[idx];
+            const parent = node.element;
+            if (parent) {
+              const originalText = parent.getAttribute("data-original-text") || "";
+              const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
+              const newFontSize = this.calculateFontSize(fullTranslations[idx], originalFontSize, originalText);
+              parent.style.fontSize = newFontSize;
+              parent.textContent = fullTranslations[idx];
             }
           });
           this.isTranslated = true;
@@ -506,7 +502,7 @@ export class TranslationWidget {
         return translations.every((translation, index) => translation === originalTexts[index]);
       });
 
-      if (!allBatchesFailed) {
+      if (allBatchesFailed) {
         console.warn("All translations failed, not caching results");
         throw new Error("All translation batches failed");
       }
@@ -514,12 +510,12 @@ export class TranslationWidget {
       // Build a full translation array for all nodes
       const fullTranslations: string[] = [];
       nodes.forEach((node, nodeIdx) => {
-        const parent = node.parentElement as HTMLElement | null;
+        const parent = node.element;
         // Check if this node was included in the API call
-        const batchIdx = nonEmptyBatchNodes.findIndex((batch) => batch.includes(node));
+        const batchIdx = nonEmptyBatchNodes.findIndex((batch) => batch.some(n => n.element === parent));
         if (batchIdx !== -1) {
           // This node was translated in this batch
-          const textIdx = nonEmptyBatchNodes[batchIdx].indexOf(node);
+          const textIdx = nonEmptyBatchNodes[batchIdx].findIndex(n => n.element === parent);
           const translatedText = allTranslatedTexts[batchIdx][textIdx];
           fullTranslations[nodeIdx] = translatedText;
 
@@ -532,13 +528,13 @@ export class TranslationWidget {
               const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
               parent.style.fontSize = newFontSize;
             }
-            node.textContent = translatedText;
+            parent.textContent = translatedText;
           }
         } else if (parent && parent.getAttribute("data-translated-lang") === targetLang) {
           // Already translated, use current text
-          fullTranslations[nodeIdx] = node.textContent || "";
+          fullTranslations[nodeIdx] = parent.textContent || "";
         } else {
-          fullTranslations[nodeIdx] = node.textContent || "";
+          fullTranslations[nodeIdx] = parent.textContent || "";
         }
       });
 
@@ -574,7 +570,7 @@ export class TranslationWidget {
       if (textNodes.length > 0) {
         const originalText = element.getAttribute("data-original-text");
         if (originalText) {
-          textNodes[0].textContent = originalText;
+          element.innerHTML = originalText;
         }
       }
       // Restore original font size
