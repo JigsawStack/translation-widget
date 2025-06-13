@@ -2951,10 +2951,10 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-translation-widget@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/translation-widget/-/translation-widget-1.0.1.tgz"
-  integrity sha512-ADIA0vZG0srHAlgv1fxe4HhnSL1S5b/o2gQT6Z7t+l3AoZ1WqazXjtOJ8BjIhloJEJlOdEVNToMydbAk/mPTNA==
+translation-widget@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/translation-widget/-/translation-widget-1.0.2.tgz"
+  integrity sha512-g9Wc654qm7evRAHpjLQzylkdjY1ZSLYcQC9fWbGr6fBzo6Jpp6ZJTsRyHIQXYQRd11kEcq0GI47HdRkcBdFYqw==
   dependencies:
     lz-string "^1.5.0"
 

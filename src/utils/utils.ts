@@ -87,4 +87,17 @@ const getUserLanguage = () => {
   return userLanguage?.code || "en";
 };
 
-export { generateHashForContent, getVisibleTextContent, removeEmojis, getUserLanguage };
+function generateNodeHash(text: string): string {
+  const normalizedText = text.replace(/\s+/g, " ").trim().toLocaleLowerCase();
+  return murmurhash3_32_gc(normalizedText, 42).toString(16);
+}
+
+function generateChunkHash(texts: string[]): string {
+  const content = texts
+    .map(text => text.replace(/\s+/g, " ").trim().toLocaleLowerCase())
+    .join(" ")
+    .trim();
+  return murmurhash3_32_gc(content.toLowerCase(), 42).toString(16);
+}
+
+export { generateHashForContent, generateNodeHash, generateChunkHash, getVisibleTextContent, removeEmojis, getUserLanguage };

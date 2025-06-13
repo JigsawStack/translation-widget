@@ -9,11 +9,11 @@ export class LocalStorageWrapper {
     this.prefix = prefix;
   }
 
-  getKey(hash: string, url: string, targetLang: string): string {
+  getNodeKey(nodeHash: string, url: string, targetLang: string): string {
     // get rid of query params
     const urlWithoutQuery = url.split("?")[0];
     // Only encode the URL, not the whole key
-    return `${hash}-${encodeURIComponent(urlWithoutQuery)}-${targetLang}`;
+    return `${this.prefix}node-${nodeHash}-${encodeURIComponent(urlWithoutQuery)}-${targetLang}`;
   }
 
   private shouldCompress(value: string): boolean {
@@ -39,8 +39,7 @@ export class LocalStorageWrapper {
   }
 
   getItem(key: string): any {
-    const prefixedKey = this.prefix + key;
-    const item = localStorage.getItem(prefixedKey);
+    const item = localStorage.getItem(key);
     if (!item) return null;
 
     try {
@@ -54,18 +53,17 @@ export class LocalStorageWrapper {
   }
 
   setItem(key: string, value: any): void {
-    const prefixedKey = this.prefix + key;
     const stringified = JSON.stringify(value);
 
     // Use requestIdleCallback to defer compression if available
     const storeValue = () => {
       try {
         const finalValue = this.shouldCompress(stringified) ? `${this.COMPRESSION_MARKER}${this.compress(stringified)}` : stringified;
-        localStorage.setItem(prefixedKey, finalValue);
+        localStorage.setItem(key, finalValue);
       } catch (error) {
         console.error("Error storing item:", error);
         // Fallback to storing uncompressed value
-        localStorage.setItem(prefixedKey, stringified);
+        localStorage.setItem(key, stringified);
       }
     };
 
@@ -76,9 +74,20 @@ export class LocalStorageWrapper {
     }
   }
 
+  // Store translation for a single node
+  setNodeTranslation(nodeHash: string, url: string, targetLang: string, translation: { o: string; t: string }): void {
+    const key = this.getNodeKey(nodeHash, url, targetLang);
+    this.setItem(key, translation);
+  }
+
+  // Get translation for a single node
+  getNodeTranslation(nodeHash: string, url: string, targetLang: string): { o: string; t: string } | null {
+    const key = this.getNodeKey(nodeHash, url, targetLang);
+    return this.getItem(key);
+  }
+
   removeItem(key: string): void {
-    const prefixedKey = this.prefix + key;
-    localStorage.removeItem(prefixedKey);
+    localStorage.removeItem(key);
   }
 
   clear(): void {
