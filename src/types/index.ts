@@ -63,6 +63,11 @@ export enum LOCALSTORAGE_KEYS {
   PREFERRED_LANGUAGE = "jss-pref",
 }
 
+export enum ATTRIBUTES {
+  TRANSLATED_LANG = "data-translated-lang",
+  ORIGINAL_TEXT = "data-original-text",
+  ORIGINAL_FONT_SIZE = "data-original-font-size",
+}
 
 export const LANG_PARAM = "lang"
 export interface TranslationContent { [key: string]: string }

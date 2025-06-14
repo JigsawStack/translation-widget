@@ -2,7 +2,7 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import { Language, TranslationConfig, WidgetElements, TranslationResult, Position, LANG_PARAM, LOCALSTORAGE_KEYS } from "../types";
+import { Language, TranslationConfig, WidgetElements, TranslationResult, Position, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
@@ -77,12 +77,12 @@ export class TranslationWidget {
     TranslationWidget.instance = this;
   }
 
+  /**
+   * Initializes the translation widget
+   */
   private initialize(): void {
-
     const urlLang = this.getUrlParameter(LANG_PARAM);
-
     let initialLang = this.config.pageLanguage;
-
     // Check if a language is specified in the URL
     if (urlLang) {
       const supportedLang = languages.find((lang) => lang.code === urlLang);
@@ -130,11 +130,19 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Gets the value of a URL parameter
+   * @param name - The name of the URL parameter
+   * @returns The value of the URL parameter
+   */
   private getUrlParameter(name: string): string | null {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
   }
 
+  /**
+   * Sets up the content observer
+   */
   private setupContentObserver(): void {
     if (!this.observer) {
       this.observer = new MutationObserver(() => {
@@ -148,6 +156,9 @@ export class TranslationWidget {
   }
 
 
+  /**
+   * Observes the body for changes
+   */
   private observeBody() {
     this.observer?.observe(document.body, {
       childList: true,
@@ -157,16 +168,22 @@ export class TranslationWidget {
     });
   }
 
+  /**
+   * Handles the URL change
+   */
   private onUrlChange = () => {
     this.scheduleTranslation();
   };
 
+  /**
+   * Sets up the URL observer
+   */
   private setupURLObserver(): void {
     const historyMethods = ["pushState", "replaceState"] as const;
 
     historyMethods.forEach((method) => {
       const original = history[method];
-      history[method] = function (state: any, title: string, url?: string | URL | null) {
+      history[method] = function (state: unknown, title: string, url?: string | URL | null) {
         const result = original.call(this, state, title, url);
         window.dispatchEvent(new Event(method));
         return result;
@@ -179,6 +196,9 @@ export class TranslationWidget {
   }
 
 
+  /**
+   * Creates the widget
+   */
   private createWidget(): void {
     const currentLanguageLabel = this.getCurrentLanguageLabel();
 
@@ -198,7 +218,7 @@ export class TranslationWidget {
 
     this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel);
 
-    // Cache element references
+    //  element references
     this.elements = {
       trigger: this.widget.querySelector<HTMLDivElement>(".jigts-widget-trigger"),
       dropdown: this.widget.querySelector<HTMLDivElement>(".jigts-widget-dropdown"),
@@ -215,10 +235,19 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Gets the current language label
+   * @returns The current language label
+   */
   private getCurrentLanguageLabel(): string {
     return languages.find((language: Language) => language.code === this.currentLanguage)?.native || "English";
   }
 
+  /**
+   * Creates the widget HTML
+   * @param currentLanguageLabel - The current language label
+   * @returns The widget HTML
+   */
   private createWidgetHTML(currentLanguageLabel: string): string {
     const languageOptions = this.createLanguageOptions();
     const languageCount = languages.length;
@@ -228,6 +257,10 @@ export class TranslationWidget {
       .replace("{{languageCount}}", languageCount.toString());
   }
 
+  /**
+   * Creates the language options
+   * @returns The language options
+   */
   private createLanguageOptions(): string {
     const currentLang = this.currentLanguage;
     const currentLanguage = languages.find((lang: Language) => lang.code === currentLang);
@@ -260,55 +293,71 @@ export class TranslationWidget {
         `;
   }
 
+  /**
+   * Updates the trigger text
+   * @param newText - The new text
+   */
   private async updateTriggerText(newText: string): Promise<void> {
     const triggerSpan = this.elements.trigger?.querySelector("span");
     if (!triggerSpan) return;
-
-    // Force a reflow to ensure the animation plays
     triggerSpan.offsetHeight;
-
-    // Start fade out
     triggerSpan.classList.remove("jigts-fade-in");
     triggerSpan.classList.add("jigts-fade-out");
 
-    // Wait for fade out
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Update text
     triggerSpan.textContent = newText;
-
-    // Force a reflow
     triggerSpan.offsetHeight;
-
-    // Start fade in
     triggerSpan.classList.remove("jigts-fade-out");
     triggerSpan.classList.add("jigts-fade-in");
   }
 
+  /**
+   * Gets the text to translate
+   * @param node - The node to translate
+   * @param parent - The parent element
+   * @param targetLang - The target language
+   * @returns The text to translate
+   */
   private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
-    if (!parent.hasAttribute("data-original-text")) {
+    if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT)) {
       const originalText = node.text?.trim();
       if (originalText) {
-        parent.setAttribute("data-translated-lang", targetLang);
-        parent.setAttribute("data-original-text", originalText);
+        parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
+        parent.setAttribute(ATTRIBUTES.ORIGINAL_TEXT, originalText);
         // Store original font size if not already stored
-        if (!parent.hasAttribute("data-original-font-size")) {
+        if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE)) {
           const computedStyle = window.getComputedStyle(parent);
-          parent.setAttribute("data-original-font-size", computedStyle.fontSize);
+          parent.setAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE, computedStyle.fontSize);
         }
         return originalText;
       }
     } else {
       const textToTranslate = node.text?.trim();
-      if (this.currentLanguage !== "en" && targetLang !== "en") {
-        parent.setAttribute("data-translated-lang", targetLang);
-        return parent.getAttribute("data-original-text");
+
+      /**
+       * Check for this case: LOC 409
+       * Here is it added as an extra measure to check if the text is already translated to the target language
+       */
+      if (this.currentLanguage !== targetLang) {
+        parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
+        let originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+        if (originalText) {
+          return originalText;
+        }
       }
       return textToTranslate || null;
     }
     return null;
   }
 
+  /**
+   * Calculates the font size
+   * @param text - The text to calculate the font size for
+   * @param originalFontSize - The original font size
+   * @param originalText - The original text
+   * @returns The font size
+   */
   private calculateFontSize(text: string, originalFontSize: string, originalText: string): string {
     const baseFontSize = 12; // Minimum font size in pixels
     const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
@@ -320,14 +369,20 @@ export class TranslationWidget {
       return originalFontSize;
     }
 
-    // Calculate font size based on text length
-    // The longer the text, the smaller the font size
-    // We use a logarithmic scale to make the reduction more gradual
+    /**
+     * Calculate font size based on text length
+     * The longer the text, the smaller the font size
+     * Using logarithmic scale to make the reduction more gradual
+     */
     const fontSize = Math.max(baseFontSize, Math.min(maxFontSize, maxFontSize * (1 - Math.log(textLength) / 10)));
 
     return `${fontSize}px`;
   }
 
+  /**
+   * Updates the loading state
+   * @param isLoading - Whether the widget is loading
+   */
   private updateLoadingState(isLoading: boolean): void {
     const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-content");
     const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-loading");
@@ -342,6 +397,18 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Main function to translate the page
+   * 
+   * Handles the translation of the page for multiple languages
+   *  
+   * 1. Increments the request ID for each new translation
+   * 2. Waits for the current translation to complete
+   * 3. If the target language is the default page language, resets the translations
+   * 4. Creates a new promise for each translation and awaits it
+   * 
+   * @param targetLang - The target language
+   */
   private async translatePage(targetLang: string): Promise<void> {
     // Increment the request ID for each new translation
     const requestId = ++this.translationRequestId;
@@ -366,10 +433,8 @@ export class TranslationWidget {
       await this.currentTranslationPromise;
     } catch (error) {
       console.error("Translation failed:", error);
-      // If translation fails, reset to default language
       this.resetToDefaultLanguage();
     } finally {
-      // Only hide loader if this is the latest request
       if (requestId === this.translationRequestId) {
         this.currentTranslationPromise = null;
         this.updateLoadingState(false);
@@ -377,14 +442,15 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Reset to default Page language
+   * @returns 
+   */
   resetToDefaultLanguage(): void {
     if (this.isTranslating) {
       return;
     }
-    // Reset translations
     this.resetTranslations();
-
-    // Update language states
     this.lastRequestedLanguage = this.config.pageLanguage;
     this.currentLanguage = this.config.pageLanguage;
 
@@ -426,21 +492,18 @@ export class TranslationWidget {
       // Arrays to store nodes and texts for each batch
       const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const allBatchTexts: string[][] = [];
-      const allBatchNodeHashes: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
       batches.forEach((batch) => {
         const textsToTranslate: string[] = [];
         const batchNodes: { element: HTMLElement; text: string }[] = [];
-        const batchNodeHashes: string[] = [];
 
         batch.forEach((node) => {
           const parent = node.element;
           if (!parent) return;
-          const translatedLang = parent.getAttribute("data-translated-lang");
-
+          const translatedLang = parent.getAttribute(ATTRIBUTES.TRANSLATED_LANG);
           // Skip nodes that are already translated to the target language
-          if (parent.hasAttribute("data-original-text") && targetLang === translatedLang) {
+          if (parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT) && targetLang === translatedLang) {
             return;
           }
 
@@ -461,7 +524,7 @@ export class TranslationWidget {
               if (this.lastRequestedLanguage === targetLang) {
                 const originalText = textToTranslate;
                 const translatedText = cachedTranslation;
-                const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
+                const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
                 const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                 parent.style.fontSize = newFontSize;
                 parent.textContent = translatedText;
@@ -477,7 +540,6 @@ export class TranslationWidget {
         if (textsToTranslate.length > 0) {
           allBatchNodes.push(batchNodes);
           allBatchTexts.push(textsToTranslate);
-          allBatchNodeHashes.push(batchNodeHashes);
         }
       });
 
@@ -511,7 +573,7 @@ export class TranslationWidget {
 
             // Update DOM if this is the most recent request
             if (this.lastRequestedLanguage === targetLang) {
-              const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
+              const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
               const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
               parent.style.fontSize = newFontSize;
               parent.textContent = translatedText;
@@ -537,6 +599,9 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Updates the visibility of the reset button
+   */
   private updateResetButtonVisibility(): void {
     const resetButton = this.widget.querySelector<HTMLElement>(".jigts-reset-option");
     if (resetButton) {
@@ -544,27 +609,30 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Resets the translations
+   */
   private resetTranslations(): void {
     if (this.observer) {
       this.observer.disconnect();
     }
-    const elements = document.querySelectorAll<HTMLElement>("[data-original-text]");
+    const elements = document.querySelectorAll<HTMLElement>(`[${ATTRIBUTES.ORIGINAL_TEXT}]`); 
     elements.forEach((element) => {
       const textNodes = Array.from(element.childNodes).filter((node): node is Text => node.nodeType === Node.TEXT_NODE);
       if (textNodes.length > 0) {
-        const originalText = element.getAttribute("data-original-text");
+        const originalText = element.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
           element.innerHTML = originalText;
         }
       }
       // Restore original font size
-      const originalFontSize = element.getAttribute("data-original-font-size");
+      const originalFontSize = element.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE);
       if (originalFontSize) {
         element.style.fontSize = originalFontSize;
       }
-      element.removeAttribute("data-original-text");
-      element.removeAttribute("data-translated-lang");
-      element.removeAttribute("data-original-font-size");
+      element.removeAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+      element.removeAttribute(ATTRIBUTES.TRANSLATED_LANG);
+      element.removeAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE);
     });
     this.isTranslated = false;
 
@@ -582,6 +650,9 @@ export class TranslationWidget {
     this.observeBody(); // Reconnect observer
   }
 
+  /**
+   * Adjusts the dropdown position
+   */
   private adjustDropdownPosition(): void {
     const { dropdown, trigger } = this.elements;
     if (!dropdown || !trigger) return;
@@ -637,6 +708,9 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Sets up the event listeners
+   */
   private setupEventListeners(): void {
     const { trigger, dropdown, searchInput, clearSearch, languageItems } = this.elements;
 
@@ -928,7 +1002,7 @@ export class TranslationWidget {
       }
 
       const endTime = Date.now();
-      const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+      const translatedNodes = document.querySelectorAll(`[${ATTRIBUTES.TRANSLATED_LANG}]`).length;
       onComplete?.({
         success: true,
         targetLanguage: langCode,
