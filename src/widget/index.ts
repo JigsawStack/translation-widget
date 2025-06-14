@@ -124,6 +124,7 @@ export class TranslationWidget {
     }
     // Trigger translation immediately if language is different from page language
     if (this.currentLanguage !== this.config.pageLanguage) {
+      console.log("calling translatePage", this.currentLanguage);
       this.translatePage(this.currentLanguage).catch((error) => {
         console.error("Initial translation error:", error);
       });
@@ -145,9 +146,26 @@ export class TranslationWidget {
    */
   private setupContentObserver(): void {
     if (!this.observer) {
-      this.observer = new MutationObserver(() => {
+      this.observer = new MutationObserver((mutations) => {
         if (this.isTranslating) return;
-        this.scheduleTranslation();
+        const widgetContainer = this.widget;
+
+        // Filter out mutations that occur within the widget container
+        const relevantMutations = mutations.filter((mutation) => {
+          if (widgetContainer.contains(mutation.target)) return false;
+
+          if (mutation.type === 'childList') {
+            const addedScripts = Array.from(mutation.addedNodes).some(node => node.nodeName === 'SCRIPT');
+            const removedScripts = Array.from(mutation.removedNodes).some(node => node.nodeName === 'SCRIPT');
+            return !addedScripts && !removedScripts;
+          }
+
+          return true;
+        });
+
+        if (relevantMutations.length > 0) {
+          this.scheduleTranslation();
+        }
       });
       this.observeBody();
     } else {
@@ -163,7 +181,6 @@ export class TranslationWidget {
     this.observer?.observe(document.body, {
       childList: true,
       subtree: true,
-      attributes: true,
       characterData: true,
     });
   }
@@ -427,6 +444,8 @@ export class TranslationWidget {
       }
       return;
     }
+
+    console.log("calling translatePage", requestId);
     // Create a new promise for this translation
     this.currentTranslationPromise = this._translatePage(targetLang);
     try {
@@ -484,7 +503,24 @@ export class TranslationWidget {
       // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
       // Divide nodes into batches for processing
-      const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
+      // const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
+
+      // get the visible nodes 
+      const visibleNodes = nodes.filter((node) => {
+        const rect = node.element.getBoundingClientRect();
+        return rect.height > 0 && rect.top < window.innerHeight;
+      });
+
+      const nonVisibleNodes = nodes.filter((node) => {
+        const rect = node.element.getBoundingClientRect();
+        return rect.height === 0 || rect.top > window.innerHeight;
+      });
+
+      const visibleBatches = DocumentNavigator.divideIntoGroups(visibleNodes, BATCH_SIZE);
+      const nonVisibleBatches = DocumentNavigator.divideIntoGroups(nonVisibleNodes, BATCH_SIZE);
+
+      console.log("visibleBatches", visibleBatches);
+      console.log("nonVisibleBatches", nonVisibleBatches);
 
       // Initialize cache for storing translations
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
@@ -494,7 +530,7 @@ export class TranslationWidget {
       const allBatchTexts: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
-      batches.forEach((batch) => {
+      visibleBatches.forEach((batch) => {
         const textsToTranslate: string[] = [];
         const batchNodes: { element: HTMLElement; text: string }[] = [];
 
@@ -616,13 +652,13 @@ export class TranslationWidget {
     if (this.observer) {
       this.observer.disconnect();
     }
-    const elements = document.querySelectorAll<HTMLElement>(`[${ATTRIBUTES.ORIGINAL_TEXT}]`); 
+    const elements = document.querySelectorAll<HTMLElement>(`[${ATTRIBUTES.ORIGINAL_TEXT}]`);
     elements.forEach((element) => {
       const textNodes = Array.from(element.childNodes).filter((node): node is Text => node.nodeType === Node.TEXT_NODE);
       if (textNodes.length > 0) {
         const originalText = element.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
-          element.innerHTML = originalText;
+          element.textContent = originalText;
         }
       }
       // Restore original font size
@@ -862,6 +898,7 @@ export class TranslationWidget {
           }
 
           try {
+            console.log("calling translatePage", langCode);
             await this.translatePage(langCode);
             this.currentLanguage = langCode;
           } catch (error) {
@@ -911,6 +948,7 @@ export class TranslationWidget {
           triggerContent.style.display = "none";
           triggerLoading.style.display = "flex";
         }
+        console.log("scheduling translation", this.currentLanguage);
         this.translatePage(this.currentLanguage)
           .then(() => {
             const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
@@ -979,6 +1017,7 @@ export class TranslationWidget {
 
     try {
       localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
+      console.log("calling translatePage", langCode);
       await this.translatePage(langCode);
       // Update the current language
       this.currentLanguage = langCode;
