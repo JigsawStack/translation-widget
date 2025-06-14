@@ -529,7 +529,7 @@ export class TranslationWidget {
       const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
       const allBatchTexts: string[][] = [];
 
-      // Prepare batches by filtering nodes that need translation
+      // Process visible batches first
       visibleBatches.forEach((batch) => {
         const textsToTranslate: string[] = [];
         const batchNodes: { element: HTMLElement; text: string }[] = [];
@@ -579,48 +579,131 @@ export class TranslationWidget {
         }
       });
 
-      // If no nodes need translation, we're done
-      if (allBatchTexts.length === 0) {
-        if (this.lastRequestedLanguage === targetLang) {
-          this.isTranslated = true;
-          this.updateResetButtonVisibility();
+      // Translate visible batches
+      if (allBatchTexts.length > 0) {
+        const allTranslatedTexts = await Promise.all(
+          allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
+        );
+
+        // Process translated visible batches
+        const batchArray: Array<{ originalText: string; translatedText: string }> = [];
+        allTranslatedTexts.forEach((translations, batchIndex) => {
+          const batchNodes = allBatchNodes[batchIndex];
+
+          batchNodes.forEach((node, nodeIndex) => {
+            const parent = node.element;
+            if (parent) {
+              const originalText = node.text;
+              const translatedText = translations[nodeIndex];
+
+              // Collect the translation for batch saving
+              batchArray.push({ originalText, translatedText });
+
+              // Update DOM if this is the most recent request
+              if (this.lastRequestedLanguage === targetLang) {
+                const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                parent.style.fontSize = newFontSize;
+                parent.textContent = translatedText;
+              }
+            }
+          });
+        });
+
+        // Save all translations in one batch
+        if (batchArray.length > 0) {
+          cache.setBatchNodeTranslationsArray(targetLang, batchArray);
         }
-        return;
       }
 
-      // Translate all batches in parallel
-      const allTranslatedTexts = await Promise.all(
-        allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
-      );
+      // Now process non-visible batches
+      const nonVisibleBatchNodes: { element: HTMLElement; text: string }[][] = [];
+      const nonVisibleBatchTexts: string[][] = [];
 
-      // Process translated batches
-      const batchArray: Array<{ originalText: string; translatedText: string }> = [];
-      allTranslatedTexts.forEach((translations, batchIndex) => {
-        const batchNodes = allBatchNodes[batchIndex];
+      nonVisibleBatches.forEach((batch) => {
+        const textsToTranslate: string[] = [];
+        const batchNodes: { element: HTMLElement; text: string }[] = [];
 
-        batchNodes.forEach((node, nodeIndex) => {
+        batch.forEach((node) => {
           const parent = node.element;
-          if (parent) {
-            const originalText = node.text;
-            const translatedText = translations[nodeIndex];
+          if (!parent) return;
+          const translatedLang = parent.getAttribute(ATTRIBUTES.TRANSLATED_LANG);
+          // Skip nodes that are already translated to the target language
+          if (parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT) && targetLang === translatedLang) {
+            return;
+          }
 
-            // Collect the translation for batch saving
-            batchArray.push({ originalText, translatedText });
+          // Get text to translate and remove emojis
+          let textToTranslate = this.getTextToTranslate(node, parent, targetLang);
+          textToTranslate = removeEmojis(textToTranslate || "");
+          if (textToTranslate.length === 0 || textToTranslate.length === 1) {
+            return;
+          }
 
-            // Update DOM if this is the most recent request
-            if (this.lastRequestedLanguage === targetLang) {
-              const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
-              const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-              parent.style.fontSize = newFontSize;
-              parent.textContent = translatedText;
+          // Add text and node to the batch if valid
+          if (textToTranslate) {
+            const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
+            const cachedTranslation = cacheObject[textToTranslate] || null;
+
+            if (cachedTranslation) {
+              // Use cached translation
+              if (this.lastRequestedLanguage === targetLang) {
+                const originalText = textToTranslate;
+                const translatedText = cachedTranslation;
+                const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                parent.style.fontSize = newFontSize;
+                parent.textContent = translatedText;
+              }
+              return;
             }
+
+            textsToTranslate.push(textToTranslate.trim());
+            batchNodes.push(node);
           }
         });
+
+        if (textsToTranslate.length > 0) {
+          nonVisibleBatchNodes.push(batchNodes);
+          nonVisibleBatchTexts.push(textsToTranslate);
+        }
       });
 
-      // Save all translations in one batch
-      if (batchArray.length > 0) {
-        cache.setBatchNodeTranslationsArray(targetLang, batchArray);
+      // Translate non-visible batches
+      if (nonVisibleBatchTexts.length > 0) {
+        const allTranslatedTexts = await Promise.all(
+          nonVisibleBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
+        );
+
+        // Process translated non-visible batches
+        const batchArray: Array<{ originalText: string; translatedText: string }> = [];
+        allTranslatedTexts.forEach((translations, batchIndex) => {
+          const batchNodes = nonVisibleBatchNodes[batchIndex];
+
+          batchNodes.forEach((node, nodeIndex) => {
+            const parent = node.element;
+            if (parent) {
+              const originalText = node.text;
+              const translatedText = translations[nodeIndex];
+
+              // Collect the translation for batch saving
+              batchArray.push({ originalText, translatedText });
+
+              // Update DOM if this is the most recent request
+              if (this.lastRequestedLanguage === targetLang) {
+                const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                parent.style.fontSize = newFontSize;
+                parent.textContent = translatedText;
+              }
+            }
+          });
+        });
+
+        // Save all translations in one batch
+        if (batchArray.length > 0) {
+          cache.setBatchNodeTranslationsArray(targetLang, batchArray);
+        }
       }
 
       // Update UI state if this is the most recent request
