@@ -4,7 +4,7 @@ import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
 import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
-import { generateHashForContent, generateNodeHash, getUserLanguage, removeEmojis } from "../utils/utils";
+import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
@@ -445,17 +445,14 @@ export class TranslationWidget {
 
           // Add text and node to the batch if valid
           if (textToTranslate) {
-            const nodeHash = generateNodeHash(textToTranslate);
-            // Use the new cache structure: array of objects
-            const cacheArray = cache.getItem(cache.getPageKey(window.location.href, targetLang)) || [];
-            const found = cacheArray.find((obj: Record<string, { o: string; t: string }>) => Object.prototype.hasOwnProperty.call(obj, nodeHash));
-            const cachedTranslation = found ? found[nodeHash] : null;
-
+            const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
+            const cachedTranslation = cacheObject[textToTranslate] || null;
+            
             if (cachedTranslation) {
               // Use cached translation
               if (this.lastRequestedLanguage === targetLang) {
-                const originalText = cachedTranslation.o;
-                const translatedText = cachedTranslation.t;
+                const originalText = textToTranslate;
+                const translatedText = cachedTranslation;
                 const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
                 const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                 parent.style.fontSize = newFontSize;
@@ -466,7 +463,6 @@ export class TranslationWidget {
 
             textsToTranslate.push(textToTranslate.trim());
             batchNodes.push(node);
-            batchNodeHashes.push(nodeHash);
           }
         });
 
@@ -492,20 +488,18 @@ export class TranslationWidget {
       );
 
       // Process translated batches
-      const batchArray: Array<{ [key: string]: { o: string; t: string } }> = [];
+      const batchArray: Array<{ originalText: string; translatedText: string }> = [];
       allTranslatedTexts.forEach((translations, batchIndex) => {
         const batchNodes = allBatchNodes[batchIndex];
-        const batchNodeHashes = allBatchNodeHashes[batchIndex];
 
         batchNodes.forEach((node, nodeIndex) => {
           const parent = node.element;
           if (parent) {
             const originalText = node.text;
             const translatedText = translations[nodeIndex];
-            const nodeHash = batchNodeHashes[nodeIndex];
 
             // Collect the translation for batch saving
-            batchArray.push({ [`${nodeHash}`]: { o: originalText, t: translatedText } });
+            batchArray.push({ originalText, translatedText });
 
             // Update DOM if this is the most recent request
             if (this.lastRequestedLanguage === targetLang) {
@@ -520,7 +514,7 @@ export class TranslationWidget {
 
       // Save all translations in one batch
       if (batchArray.length > 0) {
-        cache.setBatchNodeTranslationsArray(window.location.href, targetLang, batchArray);
+        cache.setBatchNodeTranslationsArray(targetLang, batchArray);
       }
 
       // Update UI state if this is the most recent request

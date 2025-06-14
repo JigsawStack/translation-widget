@@ -51,3 +51,5 @@ export interface TranslationResult {
   error?: string;
   duration?: number;
 }
+
+export interface TranslationContent { [key: string]: string }
