@@ -37,13 +37,11 @@ export class LocalStorageWrapper {
   }
 
   getItem(key: string): TranslationContent | null {
-    console.log("getItem", key);
     const item = localStorage.getItem(key);
     if (!item) return null;
 
     try {
       const decompressed = item.startsWith(this.COMPRESSION_MARKER) ? this.decompress(item.slice(this.COMPRESSION_MARKER.length)) : item;
-      console.log("decompressed", decompressed);
       return JSON.parse(decompressed);
     } catch (e) {
       console.error("Error parsing cached item:", e);
