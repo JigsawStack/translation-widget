@@ -8,7 +8,7 @@ export interface Language {
 
 export interface TranslationConfig {
   pageLanguage?: string;
-  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  position?: Position;
   autoDetectLanguage?: boolean;
   theme?: {
     baseColor?: string;
@@ -52,4 +52,17 @@ export interface TranslationResult {
   duration?: number;
 }
 
+export enum Position {
+  TopRight = "top-right",
+  TopLeft = "top-left",
+  BottomLeft = "bottom-left",
+  BottomRight = "bottom-right",
+}
+
+export enum LOCALSTORAGE_KEYS {
+  PREFERRED_LANGUAGE = "jss-pref",
+}
+
+
+export const LANG_PARAM = "lang"
 export interface TranslationContent { [key: string]: string }

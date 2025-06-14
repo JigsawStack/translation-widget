@@ -2,9 +2,9 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
+import { Language, TranslationConfig, WidgetElements, TranslationResult, Position, LANG_PARAM, LOCALSTORAGE_KEYS } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
-import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
+import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
@@ -30,29 +30,33 @@ export class TranslationWidget {
   private lastRequestedLanguage: string | null = null;
   private translationRequestId: number = 0;
 
+  /**
+   * @param publicKey - The public api key for the translation widget
+   * @param config - The configuration for the translation widget
+   */
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
 
-    const allowedPositions = ["top-right", "top-left", "bottom-left", "bottom-right"] as const;
+    const allowedPositions: Position[] = [
+      Position.TopRight,
+      Position.TopLeft,
+      Position.BottomLeft,
+      Position.BottomRight,
+    ];
 
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
-    
+
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
-      safeConfig.position = "top-right";
+      safeConfig.position = Position.TopRight;
     }
 
     this.config = safeConfig as Required<TranslationConfig>;
 
-    if (!publicKey) {
-      throw new Error("Public key is required to initialize the translation widget");
-    }
+    // Validate public api key
+    const apiValidationResult = validatePublicApiKey(publicKey);
 
-    if (publicKey.startsWith("sk_")) {
-      throw new Error("Please use public api key for security reasons. You can get one from https://jigsawstack.com");
-    }
-
-    if (!publicKey.startsWith("pk_")) {
-      throw new Error("Please use proper api key. You can get one from https://jigsawstack.com");
+    if (!apiValidationResult.isValid) {
+      throw new Error(apiValidationResult.message);
     }
 
     this.translationService = new TranslationService(publicKey);
@@ -74,31 +78,38 @@ export class TranslationWidget {
   }
 
   private initialize(): void {
-    if (!this.validateConfig()) return;
 
-    const urlLang = this.getUrlParameter("lang");
+    const urlLang = this.getUrlParameter(LANG_PARAM);
 
     let initialLang = this.config.pageLanguage;
 
+    // Check if a language is specified in the URL
     if (urlLang) {
       const supportedLang = languages.find((lang) => lang.code === urlLang);
       if (supportedLang) {
         initialLang = urlLang;
       }
-    } else if (localStorage.getItem("jss-pref")) {
-      initialLang = localStorage.getItem("jss-pref") as string;
-    } else if (this.autoDetectLanguage) {
+    }
+    // Check if a preferred language is stored in localStorage
+    else if (localStorage.getItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE)) {
+      initialLang = localStorage.getItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE) as string;
+    }
+    // Use auto-detected language if enabled
+    else if (this.autoDetectLanguage) {
       initialLang = this.userLanguage;
-    } else if (!this.config.pageLanguage) {
+    }
+    // Fallback to the page's language or default to English
+    else if (!this.config.pageLanguage) {
       const htmlTag = document.querySelector("html");
-      if (htmlTag && htmlTag.getAttribute("lang")) {
-        initialLang = htmlTag.getAttribute("lang") as string;
+      if (htmlTag && htmlTag.getAttribute(LANG_PARAM)) {
+        initialLang = htmlTag.getAttribute(LANG_PARAM) as string;
       } else {
         initialLang = "en";
       }
     }
 
     this.currentLanguage = initialLang;
+
     if (this.showUI) {
       this.createWidget();
       const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -125,11 +136,15 @@ export class TranslationWidget {
   }
 
   private setupContentObserver(): void {
-    this.observer = new MutationObserver(() => {
-      if (this.isTranslating) return;
-      this.scheduleTranslation();
-    });
-    this.observeBody();
+    if (!this.observer) {
+      this.observer = new MutationObserver(() => {
+        if (this.isTranslating) return;
+        this.scheduleTranslation();
+      });
+      this.observeBody();
+    } else {
+      console.warn("Observer already exists. Skipping setupContentObserver");
+    }
   }
 
 
@@ -163,13 +178,6 @@ export class TranslationWidget {
     window.addEventListener("popstate", this.onUrlChange);
   }
 
-  private validateConfig(): boolean {
-    if (!this.translationService) {
-      console.error("Translation service is required to initialize the translation widget");
-      return false;
-    }
-    return true;
-  }
 
   private createWidget(): void {
     const currentLanguageLabel = this.getCurrentLanguageLabel();
@@ -277,7 +285,7 @@ export class TranslationWidget {
     triggerSpan.classList.add("jigts-fade-in");
   }
 
-    private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
+  private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
     if (!parent.hasAttribute("data-original-text")) {
       const originalText = node.text?.trim();
       if (originalText) {
@@ -389,7 +397,7 @@ export class TranslationWidget {
     });
 
     // Update localStorage preference to original language
-    localStorage.setItem("jss-pref", this.config.pageLanguage);
+    localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, this.config.pageLanguage);
 
     // Update trigger icon
     const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -447,7 +455,7 @@ export class TranslationWidget {
           if (textToTranslate) {
             const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
             const cachedTranslation = cacheObject[textToTranslate] || null;
-            
+
             if (cachedTranslation) {
               // Use cached translation
               if (this.lastRequestedLanguage === targetLang) {
@@ -762,7 +770,7 @@ export class TranslationWidget {
         }
 
         if (langCode) {
-          localStorage.setItem("jss-pref", langCode);
+          localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
         }
 
         const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -896,7 +904,7 @@ export class TranslationWidget {
     }
 
     try {
-      localStorage.setItem("jss-pref", langCode);
+      localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
       await this.translatePage(langCode);
       // Update the current language
       this.currentLanguage = langCode;
