@@ -112,11 +112,12 @@
             console.log(res);
         }, (err)=>{
             console.log(err);
-        })" class="tw-button notranslate">Translat to hindi</button>
+        })" class="tw-button notranslate">Translate to hindi</button>
 
         <button onclick="window.resetTranslation('en', (res)=>{
             console.log(res);
-        })">Reset Translio</button>  
+        })">Reset Translio</button>
+        <button onclick="window.clearCache()" class="button button-secondary">Clear Cache</button>
 
     </main>
     <script defer src="http://localhost:5173/dist/index.min.js"></script>
