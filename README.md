@@ -427,6 +427,21 @@ window.resetTranslation('en', (res) => {
 
 ----------
 
+### 5. 🗑️ Clear Cache with `window.clearCache()`
+
+Clear the translation cache from localstorage:
+
+```js
+window.clearCache(() => {
+  console.log('success');
+}, (err) => {
+  console.error(err);
+}); // Clears translation cache
+
+```
+
+----------
+
 ### ✅ Tips:
 
 -   Both `translate()` and `resetTranslation()` can be used to build your own custom language selector.
@@ -443,7 +458,7 @@ The widget determines which language to display using the following priority ord
 | 3        | `pageLanguage` (default page language) | The default language set for the page      |
 
 
-### 5. Font Size Adjustment
+### 6. Font Size Adjustment
 
   
 
@@ -465,7 +480,7 @@ The font size adjustment is automatic and requires no additional configuration. 
 
   
 
-### 6. 🚀 Faster and More Accurate than Google Translate
+### 7. 🚀 Faster and More Accurate than Google Translate
 
   
 
