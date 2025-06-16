@@ -18,7 +18,9 @@ export class TranslationService {
     this.publicKey = publicKey;
   }
 
-  async translateBatchText(texts: string[], targetLang: string, maxRetries = 2, retryDelay = 100): Promise<string[]> {
+  async translateBatchText(texts: string[], targetLang: string, maxRetries = 2, retryDelay = 100): Promise<string[] | null> {
+
+
     let attempt = 0;
     while (attempt < maxRetries) {
       try {
@@ -49,11 +51,11 @@ export class TranslationService {
         attempt++;
         if (attempt >= maxRetries) {
           console.error("Translation error after retries:", error);
-          return texts;
+          return null;
         }
         await new Promise((res) => setTimeout(res, retryDelay));
       }
     }
-    return texts;
+    return null;
   }
 }

@@ -116,7 +116,6 @@ export class TranslationWidget {
     }
     // Trigger translation immediately if language is different from page language
     if (this.currentLanguage !== this.config.pageLanguage) {
-      console.log("calling translatePage", this.currentLanguage);
       this.translatePage(this.currentLanguage).catch((error) => {
         console.error("Initial translation error:", error);
       });
@@ -437,7 +436,6 @@ export class TranslationWidget {
       return;
     }
 
-    console.log("calling translatePage", requestId);
     // Create a new promise for this translation
     this.currentTranslationPromise = this._translatePage(targetLang);
     try {
@@ -464,6 +462,7 @@ export class TranslationWidget {
     this.resetTranslations();
     this.lastRequestedLanguage = this.config.pageLanguage;
     this.currentLanguage = this.config.pageLanguage;
+
 
     // Update UI
     const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
@@ -568,35 +567,63 @@ export class TranslationWidget {
         if (allBatchTexts.length > 0) {
           const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
 
-          const batchArray: Array<{ originalText: string; translatedText: string }> = [];
+          // Filter out failed batches and create a mapping of successful translations
+          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string }[] }> = [];
+          
           allTranslatedTexts.forEach((translations, batchIndex) => {
-            const batchNodes = allBatchNodes[batchIndex];
+            if (translations !== null && translations.length > 0) {
+              successfulBatches.push({
+                translations,
+                nodes: allBatchNodes[batchIndex]
+              });
+            }
+          });
 
-            batchNodes.forEach((node, nodeIndex) => {
+          // If no successful batches, reset to default language
+          if (successfulBatches.length === 0) {
+            this.updateLoadingState(false);
+            this.isTranslating = false;
+            this.resetToDefaultLanguage();
+            return;
+          }
+
+          const batchArray: Array<{ originalText: string; translatedText: string }> = [];
+
+          // Process successful batches
+          successfulBatches.forEach(({ translations, nodes }) => {
+            nodes.forEach((node, nodeIndex) => {
               const parent = node.element;
-              if (parent) {
-                let originalText = node.text;
+              if (parent && translations[nodeIndex]) {
+                const originalText = node.text || "";
                 const translatedText = translations[nodeIndex];
-                let originalTextWithoutEmojis = removeEmojis(originalText || "");
-                batchArray.push({ originalText: originalTextWithoutEmojis, translatedText });
+                const originalTextWithoutEmojis = removeEmojis(originalText);
 
-                if (this.lastRequestedLanguage === targetLang) {
-                  const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
-                  const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-                  parent.style.fontSize = newFontSize;
-                  parent.textContent = translatedText;
+                // Only process if we have valid text
+                if (originalTextWithoutEmojis && translatedText) {
+                  batchArray.push({
+                    originalText: originalTextWithoutEmojis,
+                    translatedText
+                  });
+
+                  // Update DOM only if this is the most recent translation request
+                  if (this.lastRequestedLanguage === targetLang) {
+                    const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                    const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                    parent.style.fontSize = newFontSize;
+                    parent.textContent = translatedText;
+                  }
                 }
               }
             });
           });
 
+          // Cache successful translations
           if (batchArray.length > 0) {
             cache.setBatchNodeTranslationsArray(targetLang, batchArray);
           }
         }
 
         const endTime = performance.now();
-        console.log(`Time taken to translate ${batches.length} batches: ${endTime - startTime} milliseconds`);
       };
 
       // Process both visible and non-visible batches concurrently
@@ -880,7 +907,6 @@ export class TranslationWidget {
           }
 
           try {
-            console.log("calling translatePage", langCode);
             await this.translatePage(langCode);
             this.currentLanguage = langCode;
           } catch (error) {
@@ -930,7 +956,6 @@ export class TranslationWidget {
           triggerContent.style.display = "none";
           triggerLoading.style.display = "flex";
         }
-        console.log("scheduling translation", this.currentLanguage);
         this.translatePage(this.currentLanguage)
           .then(() => {
             const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
@@ -999,7 +1024,6 @@ export class TranslationWidget {
 
     try {
       localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
-      console.log("calling translatePage", langCode);
       await this.translatePage(langCode);
       // Update the current language
       this.currentLanguage = langCode;

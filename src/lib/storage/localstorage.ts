@@ -11,7 +11,7 @@ export class LocalStorageWrapper {
   }
 
   getPageKey(targetLang: string): string {
-    return `${this.prefix}-${targetLang}`;
+    return `${this.prefix}${targetLang}`;
   }
 
   private shouldCompress(value: string): boolean {
