@@ -113,12 +113,12 @@ export class LocalStorageWrapper {
       for (let key in localStorage) {
         if (key.startsWith(this.prefix)) {
           localStorage.removeItem(key);
-          delete this.cache[key]; // Invalidate the cache for this key
+          delete this.cache[key];
         }
       }
     } else {
       localStorage.clear();
-      this.cache = {}; // Clear the entire cache
+      this.cache = {};
     }
   }
 
