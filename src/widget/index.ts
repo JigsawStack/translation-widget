@@ -8,8 +8,6 @@ import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicAp
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
-
-
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
   private translationService: TranslationService;
@@ -35,13 +33,7 @@ export class TranslationWidget {
    * @param config - The configuration for the translation widget
    */
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
-
-    const allowedPositions: Position[] = [
-      Position.TopRight,
-      Position.TopLeft,
-      Position.BottomLeft,
-      Position.BottomRight,
-    ];
+    const allowedPositions: Position[] = [Position.TopRight, Position.TopLeft, Position.BottomLeft, Position.BottomRight];
 
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -154,9 +146,9 @@ export class TranslationWidget {
         const relevantMutations = mutations.filter((mutation) => {
           if (widgetContainer.contains(mutation.target)) return false;
 
-          if (mutation.type === 'childList') {
-            const addedScripts = Array.from(mutation.addedNodes).some(node => node.nodeName === 'SCRIPT');
-            const removedScripts = Array.from(mutation.removedNodes).some(node => node.nodeName === 'SCRIPT');
+          if (mutation.type === "childList") {
+            const addedScripts = Array.from(mutation.addedNodes).some((node) => node.nodeName === "SCRIPT");
+            const removedScripts = Array.from(mutation.removedNodes).some((node) => node.nodeName === "SCRIPT");
             return !addedScripts && !removedScripts;
           }
 
@@ -173,7 +165,6 @@ export class TranslationWidget {
     }
   }
 
-
   /**
    * Observes the body for changes
    */
@@ -182,6 +173,8 @@ export class TranslationWidget {
       childList: true,
       subtree: true,
       characterData: true,
+      // this is needed to detect changes for "mobile-only" elements
+      attributes: true,
     });
   }
 
@@ -211,7 +204,6 @@ export class TranslationWidget {
     // Also listen for popstate events (browser back/forward)
     window.addEventListener("popstate", this.onUrlChange);
   }
-
 
   /**
    * Creates the widget
@@ -416,14 +408,14 @@ export class TranslationWidget {
 
   /**
    * Main function to translate the page
-   * 
+   *
    * Handles the translation of the page for multiple languages
-   *  
+   *
    * 1. Increments the request ID for each new translation
    * 2. Waits for the current translation to complete
    * 3. If the target language is the default page language, resets the translations
    * 4. Creates a new promise for each translation and awaits it
-   * 
+   *
    * @param targetLang - The target language
    */
   private async translatePage(targetLang: string): Promise<void> {
@@ -463,7 +455,7 @@ export class TranslationWidget {
 
   /**
    * Reset to default Page language
-   * @returns 
+   * @returns
    */
   resetToDefaultLanguage(): void {
     if (this.isTranslating) {
@@ -505,7 +497,7 @@ export class TranslationWidget {
       // Divide nodes into batches for processing
       // const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
 
-      // get the visible nodes 
+      // get the visible nodes
       const visibleNodes = nodes.filter((node) => {
         const rect = node.element.getBoundingClientRect();
         return rect.height > 0 && rect.top < window.innerHeight;
@@ -580,9 +572,7 @@ export class TranslationWidget {
         });
 
         if (allBatchTexts.length > 0) {
-          const allTranslatedTexts = await Promise.all(
-            allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
-          );
+          const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
 
           const batchArray: Array<{ originalText: string; translatedText: string }> = [];
           allTranslatedTexts.forEach((translations, batchIndex) => {
@@ -614,7 +604,7 @@ export class TranslationWidget {
 
       const nonVisibleBatchPromise = (async () => {
         // await for 10s
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        await new Promise((resolve) => setTimeout(resolve, 10000));
 
         const nonVisibleBatchNodes: { element: HTMLElement; text: string }[][] = [];
         const nonVisibleBatchTexts: string[][] = [];

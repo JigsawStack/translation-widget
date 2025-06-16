@@ -79,13 +79,10 @@ export class LocalStorageWrapper {
     const pageKey = this.getPageKey(targetLang);
     let translations: TranslationContent = this.getItem(pageKey) || {};
     translations[originalText] = translatedText;
-    this.setItem(pageKey, translations  );
+    this.setItem(pageKey, translations);
   }
 
-  setBatchNodeTranslationsArray(
-    targetLang: string,
-    batch: Array<{ originalText: string; translatedText: string }>
-  ): void {
+  setBatchNodeTranslationsArray(targetLang: string, batch: Array<{ originalText: string; translatedText: string }>): void {
     const pageKey = this.getPageKey(targetLang);
     const existing: TranslationContent = this.getItem(pageKey) || {};
 

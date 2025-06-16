@@ -34,7 +34,6 @@ export interface TranslationWidgetOptions {
   config?: TranslationConfig;
 }
 
-
 export interface WidgetElements {
   trigger: HTMLDivElement | null;
   dropdown: HTMLDivElement | null;
@@ -69,5 +68,7 @@ export enum ATTRIBUTES {
   ORIGINAL_FONT_SIZE = "data-original-font-size",
 }
 
-export const LANG_PARAM = "lang"
-export interface TranslationContent { [key: string]: string }
+export const LANG_PARAM = "lang";
+export interface TranslationContent {
+  [key: string]: string;
+}
