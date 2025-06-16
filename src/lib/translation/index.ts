@@ -10,25 +10,17 @@ interface TranslationError extends Error {
   response?: Response;
 }
 
-interface CacheMetrics {
-  hits: number;
-  misses: number;
-}
-
 export class TranslationService {
   private readonly publicKey: string;
-  private cacheMetrics: CacheMetrics = { hits: 0, misses: 0 };
   private readonly apiUrl = "https://api.jigsawstack.com/v1/ai/translate";
 
   constructor(publicKey: string) {
     this.publicKey = publicKey;
   }
 
-  getCacheMetrics(): CacheMetrics {
-    return { ...this.cacheMetrics };
-  }
+  async translateBatchText(texts: string[], targetLang: string, maxRetries = 2, retryDelay = 100): Promise<string[] | null> {
 
-  async translateBatchText(texts: string[], targetLang: string, maxRetries = 2, retryDelay = 100): Promise<string[]> {
+
     let attempt = 0;
     while (attempt < maxRetries) {
       try {
@@ -59,12 +51,11 @@ export class TranslationService {
         attempt++;
         if (attempt >= maxRetries) {
           console.error("Translation error after retries:", error);
-          return texts; // Return original texts on error
+          return null;
         }
-        // Wait before retrying
         await new Promise((res) => setTimeout(res, retryDelay));
       }
     }
-    return texts;
+    return null;
   }
 }

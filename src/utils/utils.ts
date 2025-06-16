@@ -94,10 +94,37 @@ function generateNodeHash(text: string): string {
 
 function generateChunkHash(texts: string[]): string {
   const content = texts
-    .map(text => text.replace(/\s+/g, " ").trim().toLocaleLowerCase())
+    .map((text) => text.replace(/\s+/g, " ").trim().toLocaleLowerCase())
     .join(" ")
     .trim();
   return murmurhash3_32_gc(content.toLowerCase(), 42).toString(16);
 }
 
-export { generateHashForContent, generateNodeHash, generateChunkHash, getVisibleTextContent, removeEmojis, getUserLanguage };
+type ValidationResult = { isValid: true } | { isValid: false; message: string };
+
+function validatePublicApiKey(publicKey: string): ValidationResult {
+  if (!publicKey) {
+    return {
+      isValid: false,
+      message: "Public key is required to initialize the translation widget",
+    };
+  }
+
+  if (publicKey.startsWith("sk_")) {
+    return {
+      isValid: false,
+      message: "Please use public api key for security reasons. You can get one from https://jigsawstack.com",
+    };
+  }
+
+  if (!publicKey.startsWith("pk_")) {
+    return {
+      isValid: false,
+      message: "Please use proper api key. You can get one from https://jigsawstack.com",
+    };
+  }
+
+  return { isValid: true };
+}
+
+export { generateHashForContent, generateNodeHash, generateChunkHash, getVisibleTextContent, removeEmojis, getUserLanguage, validatePublicApiKey };

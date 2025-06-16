@@ -2,13 +2,11 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
+import { Language, TranslationConfig, WidgetElements, TranslationResult, Position, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
-import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/utils";
+import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
-
-
 
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
@@ -30,29 +28,27 @@ export class TranslationWidget {
   private lastRequestedLanguage: string | null = null;
   private translationRequestId: number = 0;
 
+  /**
+   * @param publicKey - The public api key for the translation widget
+   * @param config - The configuration for the translation widget
+   */
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
-
-    const allowedPositions = ["top-right", "top-left", "bottom-left", "bottom-right"] as const;
+    const allowedPositions: Position[] = [Position.TopRight, Position.TopLeft, Position.BottomLeft, Position.BottomRight];
 
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
-    
+
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
-      safeConfig.position = "top-right";
+      safeConfig.position = Position.TopRight;
     }
 
     this.config = safeConfig as Required<TranslationConfig>;
 
-    if (!publicKey) {
-      throw new Error("Public key is required to initialize the translation widget");
-    }
+    // Validate public api key
+    const apiValidationResult = validatePublicApiKey(publicKey);
 
-    if (publicKey.startsWith("sk_")) {
-      throw new Error("Please use public api key for security reasons. You can get one from https://jigsawstack.com");
-    }
-
-    if (!publicKey.startsWith("pk_")) {
-      throw new Error("Please use proper api key. You can get one from https://jigsawstack.com");
+    if (!apiValidationResult.isValid) {
+      throw new Error(apiValidationResult.message);
     }
 
     this.translationService = new TranslationService(publicKey);
@@ -73,32 +69,39 @@ export class TranslationWidget {
     TranslationWidget.instance = this;
   }
 
+  /**
+   * Initializes the translation widget
+   */
   private initialize(): void {
-    if (!this.validateConfig()) return;
-
-    const urlLang = this.getUrlParameter("lang");
-
+    const urlLang = this.getUrlParameter(LANG_PARAM);
     let initialLang = this.config.pageLanguage;
-
+    // Check if a language is specified in the URL
     if (urlLang) {
       const supportedLang = languages.find((lang) => lang.code === urlLang);
       if (supportedLang) {
         initialLang = urlLang;
       }
-    } else if (localStorage.getItem("jss-pref")) {
-      initialLang = localStorage.getItem("jss-pref") as string;
-    } else if (this.autoDetectLanguage) {
+    }
+    // Check if a preferred language is stored in localStorage
+    else if (localStorage.getItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE)) {
+      initialLang = localStorage.getItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE) as string;
+    }
+    // Use auto-detected language if enabled
+    else if (this.autoDetectLanguage) {
       initialLang = this.userLanguage;
-    } else if (!this.config.pageLanguage) {
+    }
+    // Fallback to the page's language or default to English
+    else if (!this.config.pageLanguage) {
       const htmlTag = document.querySelector("html");
-      if (htmlTag && htmlTag.getAttribute("lang")) {
-        initialLang = htmlTag.getAttribute("lang") as string;
+      if (htmlTag && htmlTag.getAttribute(LANG_PARAM)) {
+        initialLang = htmlTag.getAttribute(LANG_PARAM) as string;
       } else {
         initialLang = "en";
       }
     }
 
     this.currentLanguage = initialLang;
+
     if (this.showUI) {
       this.createWidget();
       const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -119,39 +122,77 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Gets the value of a URL parameter
+   * @param name - The name of the URL parameter
+   * @returns The value of the URL parameter
+   */
   private getUrlParameter(name: string): string | null {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
   }
 
+  /**
+   * Sets up the content observer
+   */
   private setupContentObserver(): void {
-    this.observer = new MutationObserver(() => {
-      if (this.isTranslating) return;
-      this.scheduleTranslation();
-    });
-    this.observeBody();
+    if (!this.observer) {
+      this.observer = new MutationObserver((mutations) => {
+        if (this.isTranslating) return;
+        const widgetContainer = this.widget;
+
+        // Filter out mutations that occur within the widget container
+        const relevantMutations = mutations.filter((mutation) => {
+          if (widgetContainer.contains(mutation.target)) return false;
+
+          if (mutation.type === "childList") {
+            const addedScripts = Array.from(mutation.addedNodes).some((node) => node.nodeName === "SCRIPT");
+            const removedScripts = Array.from(mutation.removedNodes).some((node) => node.nodeName === "SCRIPT");
+            return !addedScripts && !removedScripts;
+          }
+
+          return true;
+        });
+
+        if (relevantMutations.length > 0) {
+          this.scheduleTranslation();
+        }
+      });
+      this.observeBody();
+    } else {
+      console.warn("Observer already exists. Skipping setupContentObserver");
+    }
   }
 
-
+  /**
+   * Observes the body for changes
+   */
   private observeBody() {
     this.observer?.observe(document.body, {
       childList: true,
       subtree: true,
-      attributes: true,
       characterData: true,
+      // this is needed to detect changes for "mobile-only" elements
+      attributes: true,
     });
   }
 
+  /**
+   * Handles the URL change
+   */
   private onUrlChange = () => {
     this.scheduleTranslation();
   };
 
+  /**
+   * Sets up the URL observer
+   */
   private setupURLObserver(): void {
     const historyMethods = ["pushState", "replaceState"] as const;
 
     historyMethods.forEach((method) => {
       const original = history[method];
-      history[method] = function (state: any, title: string, url?: string | URL | null) {
+      history[method] = function (state: unknown, title: string, url?: string | URL | null) {
         const result = original.call(this, state, title, url);
         window.dispatchEvent(new Event(method));
         return result;
@@ -163,14 +204,9 @@ export class TranslationWidget {
     window.addEventListener("popstate", this.onUrlChange);
   }
 
-  private validateConfig(): boolean {
-    if (!this.translationService) {
-      console.error("Translation service is required to initialize the translation widget");
-      return false;
-    }
-    return true;
-  }
-
+  /**
+   * Creates the widget
+   */
   private createWidget(): void {
     const currentLanguageLabel = this.getCurrentLanguageLabel();
 
@@ -190,7 +226,7 @@ export class TranslationWidget {
 
     this.widget.innerHTML = this.createWidgetHTML(currentLanguageLabel);
 
-    // Cache element references
+    //  element references
     this.elements = {
       trigger: this.widget.querySelector<HTMLDivElement>(".jigts-widget-trigger"),
       dropdown: this.widget.querySelector<HTMLDivElement>(".jigts-widget-dropdown"),
@@ -207,10 +243,19 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Gets the current language label
+   * @returns The current language label
+   */
   private getCurrentLanguageLabel(): string {
     return languages.find((language: Language) => language.code === this.currentLanguage)?.native || "English";
   }
 
+  /**
+   * Creates the widget HTML
+   * @param currentLanguageLabel - The current language label
+   * @returns The widget HTML
+   */
   private createWidgetHTML(currentLanguageLabel: string): string {
     const languageOptions = this.createLanguageOptions();
     const languageCount = languages.length;
@@ -220,6 +265,10 @@ export class TranslationWidget {
       .replace("{{languageCount}}", languageCount.toString());
   }
 
+  /**
+   * Creates the language options
+   * @returns The language options
+   */
   private createLanguageOptions(): string {
     const currentLang = this.currentLanguage;
     const currentLanguage = languages.find((lang: Language) => lang.code === currentLang);
@@ -252,55 +301,71 @@ export class TranslationWidget {
         `;
   }
 
+  /**
+   * Updates the trigger text
+   * @param newText - The new text
+   */
   private async updateTriggerText(newText: string): Promise<void> {
     const triggerSpan = this.elements.trigger?.querySelector("span");
     if (!triggerSpan) return;
-
-    // Force a reflow to ensure the animation plays
     triggerSpan.offsetHeight;
-
-    // Start fade out
     triggerSpan.classList.remove("jigts-fade-in");
     triggerSpan.classList.add("jigts-fade-out");
 
-    // Wait for fade out
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Update text
     triggerSpan.textContent = newText;
-
-    // Force a reflow
     triggerSpan.offsetHeight;
-
-    // Start fade in
     triggerSpan.classList.remove("jigts-fade-out");
     triggerSpan.classList.add("jigts-fade-in");
   }
 
-    private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
-    if (!parent.hasAttribute("data-original-text")) {
+  /**
+   * Gets the text to translate
+   * @param node - The node to translate
+   * @param parent - The parent element
+   * @param targetLang - The target language
+   * @returns The text to translate
+   */
+  private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
+    if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT)) {
       const originalText = node.text?.trim();
       if (originalText) {
-        parent.setAttribute("data-translated-lang", targetLang);
-        parent.setAttribute("data-original-text", originalText);
+        parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
+        parent.setAttribute(ATTRIBUTES.ORIGINAL_TEXT, originalText);
         // Store original font size if not already stored
-        if (!parent.hasAttribute("data-original-font-size")) {
+        if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE)) {
           const computedStyle = window.getComputedStyle(parent);
-          parent.setAttribute("data-original-font-size", computedStyle.fontSize);
+          parent.setAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE, computedStyle.fontSize);
         }
         return originalText;
       }
     } else {
       const textToTranslate = node.text?.trim();
-      if (this.currentLanguage !== "en" && targetLang !== "en") {
-        parent.setAttribute("data-translated-lang", targetLang);
-        return parent.getAttribute("data-original-text");
+
+      /**
+       * Check for this case: LOC 409
+       * Here is it added as an extra measure to check if the text is already translated to the target language
+       */
+      if (this.currentLanguage !== targetLang) {
+        parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
+        let originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+        if (originalText) {
+          return originalText;
+        }
       }
       return textToTranslate || null;
     }
     return null;
   }
 
+  /**
+   * Calculates the font size
+   * @param text - The text to calculate the font size for
+   * @param originalFontSize - The original font size
+   * @param originalText - The original text
+   * @returns The font size
+   */
   private calculateFontSize(text: string, originalFontSize: string, originalText: string): string {
     const baseFontSize = 12; // Minimum font size in pixels
     const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
@@ -312,14 +377,20 @@ export class TranslationWidget {
       return originalFontSize;
     }
 
-    // Calculate font size based on text length
-    // The longer the text, the smaller the font size
-    // We use a logarithmic scale to make the reduction more gradual
+    /**
+     * Calculate font size based on text length
+     * The longer the text, the smaller the font size
+     * Using logarithmic scale to make the reduction more gradual
+     */
     const fontSize = Math.max(baseFontSize, Math.min(maxFontSize, maxFontSize * (1 - Math.log(textLength) / 10)));
 
     return `${fontSize}px`;
   }
 
+  /**
+   * Updates the loading state
+   * @param isLoading - Whether the widget is loading
+   */
   private updateLoadingState(isLoading: boolean): void {
     const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-content");
     const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-loading");
@@ -334,6 +405,18 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Main function to translate the page
+   *
+   * Handles the translation of the page for multiple languages
+   *
+   * 1. Increments the request ID for each new translation
+   * 2. Waits for the current translation to complete
+   * 3. If the target language is the default page language, resets the translations
+   * 4. Creates a new promise for each translation and awaits it
+   *
+   * @param targetLang - The target language
+   */
   private async translatePage(targetLang: string): Promise<void> {
     // Increment the request ID for each new translation
     const requestId = ++this.translationRequestId;
@@ -352,16 +435,15 @@ export class TranslationWidget {
       }
       return;
     }
+
     // Create a new promise for this translation
     this.currentTranslationPromise = this._translatePage(targetLang);
     try {
       await this.currentTranslationPromise;
     } catch (error) {
       console.error("Translation failed:", error);
-      // If translation fails, reset to default language
       this.resetToDefaultLanguage();
     } finally {
-      // Only hide loader if this is the latest request
       if (requestId === this.translationRequestId) {
         this.currentTranslationPromise = null;
         this.updateLoadingState(false);
@@ -369,16 +451,18 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Reset to default Page language
+   * @returns
+   */
   resetToDefaultLanguage(): void {
     if (this.isTranslating) {
       return;
     }
-    // Reset translations
     this.resetTranslations();
-
-    // Update language states
     this.lastRequestedLanguage = this.config.pageLanguage;
     this.currentLanguage = this.config.pageLanguage;
+
 
     // Update UI
     const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
@@ -389,7 +473,7 @@ export class TranslationWidget {
     });
 
     // Update localStorage preference to original language
-    localStorage.setItem("jss-pref", this.config.pageLanguage);
+    localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, this.config.pageLanguage);
 
     // Update trigger icon
     const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -409,113 +493,144 @@ export class TranslationWidget {
     try {
       // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
-      // Divide nodes into batches for processing
-      const batches = DocumentNavigator.divideIntoGroups(nodes, BATCH_SIZE);
+      // get the visible nodes
+      const visibleNodes = nodes.filter((node) => {
+        const rect = node.element.getBoundingClientRect();
+        return rect.height > 0 && rect.top < window.innerHeight;
+      });
 
+      const nonVisibleNodes = nodes.filter((node) => {
+        const rect = node.element.getBoundingClientRect();
+        return rect.height === 0 || rect.top > window.innerHeight;
+      });
+
+      const visibleBatches = DocumentNavigator.divideIntoGroups(visibleNodes, BATCH_SIZE);
+      const nonVisibleBatches = DocumentNavigator.divideIntoGroups(nonVisibleNodes, BATCH_SIZE);
       // Initialize cache for storing translations
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
 
-      // Arrays to store nodes and texts for each batch
-      const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
-      const allBatchTexts: string[][] = [];
-      const allBatchNodeHashes: string[][] = [];
+      // Helper function to process batches
+      const processBatches = async (batches: { element: HTMLElement; text: string }[][]) => {
 
-      // Prepare batches by filtering nodes that need translation
-      batches.forEach((batch) => {
-        const textsToTranslate: string[] = [];
-        const batchNodes: { element: HTMLElement; text: string }[] = [];
-        const batchNodeHashes: string[] = [];
+        const startTime = performance.now();
+        const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
+        const allBatchTexts: string[][] = [];
 
-        batch.forEach((node) => {
-          const parent = node.element;
-          if (!parent) return;
-          const translatedLang = parent.getAttribute("data-translated-lang");
+        batches.forEach((batch) => {
+          const textsToTranslate: string[] = [];
+          const batchNodes: { element: HTMLElement; text: string }[] = [];
 
-          // Skip nodes that are already translated to the target language
-          if (parent.hasAttribute("data-original-text") && targetLang === translatedLang) {
-            return;
-          }
-
-          // Get text to translate and remove emojis
-          let textToTranslate = this.getTextToTranslate(node, parent, targetLang);
-          textToTranslate = removeEmojis(textToTranslate || "");
-          if (textToTranslate.length === 0 || textToTranslate.length === 1) {
-            return;
-          }
-
-          // Add text and node to the batch if valid
-          if (textToTranslate) {
-            const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
-            const cachedTranslation = cacheObject[textToTranslate] || null;
-            
-            if (cachedTranslation) {
-              // Use cached translation
-              if (this.lastRequestedLanguage === targetLang) {
-                const originalText = textToTranslate;
-                const translatedText = cachedTranslation;
-                const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
-                const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-                parent.style.fontSize = newFontSize;
-                parent.textContent = translatedText;
-              }
+          batch.forEach((node) => {
+            const parent = node.element;
+            if (!parent) return;
+            const translatedLang = parent.getAttribute(ATTRIBUTES.TRANSLATED_LANG);
+            // Skip nodes that are already translated to the target language
+            if (parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT) && targetLang === translatedLang) {
               return;
             }
 
-            textsToTranslate.push(textToTranslate.trim());
-            batchNodes.push(node);
-          }
-        });
-
-        if (textsToTranslate.length > 0) {
-          allBatchNodes.push(batchNodes);
-          allBatchTexts.push(textsToTranslate);
-          allBatchNodeHashes.push(batchNodeHashes);
-        }
-      });
-
-      // If no nodes need translation, we're done
-      if (allBatchTexts.length === 0) {
-        if (this.lastRequestedLanguage === targetLang) {
-          this.isTranslated = true;
-          this.updateResetButtonVisibility();
-        }
-        return;
-      }
-
-      // Translate all batches in parallel
-      const allTranslatedTexts = await Promise.all(
-        allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
-      );
-
-      // Process translated batches
-      const batchArray: Array<{ originalText: string; translatedText: string }> = [];
-      allTranslatedTexts.forEach((translations, batchIndex) => {
-        const batchNodes = allBatchNodes[batchIndex];
-
-        batchNodes.forEach((node, nodeIndex) => {
-          const parent = node.element;
-          if (parent) {
-            const originalText = node.text;
-            const translatedText = translations[nodeIndex];
-
-            // Collect the translation for batch saving
-            batchArray.push({ originalText, translatedText });
-
-            // Update DOM if this is the most recent request
-            if (this.lastRequestedLanguage === targetLang) {
-              const originalFontSize = parent.getAttribute("data-original-font-size") || "16px";
-              const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-              parent.style.fontSize = newFontSize;
-              parent.textContent = translatedText;
+            // Get text to translate and remove emojis
+            let textToTranslate = this.getTextToTranslate(node, parent, targetLang);
+            textToTranslate = removeEmojis(textToTranslate || "");
+            if (textToTranslate.length === 0 || textToTranslate.length === 1) {
+              return;
             }
+
+            // Add text and node to the batch if valid
+            if (textToTranslate) {
+              const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
+              const cachedTranslation = cacheObject[textToTranslate] || null;
+              if (cachedTranslation) {
+                // Use cached translation
+                if (this.lastRequestedLanguage === targetLang) {
+                  const originalText = textToTranslate;
+                  const translatedText = cachedTranslation;
+                  const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                  const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                  parent.style.fontSize = newFontSize;
+                  parent.textContent = translatedText;
+                }
+                return;
+              }
+
+              textsToTranslate.push(textToTranslate.trim());
+              batchNodes.push(node);
+            }
+          });
+
+          if (textsToTranslate.length > 0) {
+            allBatchNodes.push(batchNodes);
+            allBatchTexts.push(textsToTranslate);
           }
         });
-      });
 
-      // Save all translations in one batch
-      if (batchArray.length > 0) {
-        cache.setBatchNodeTranslationsArray(targetLang, batchArray);
-      }
+        if (allBatchTexts.length > 0) {
+          const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
+
+          // Filter out failed batches and create a mapping of successful translations
+          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string }[] }> = [];
+          
+          allTranslatedTexts.forEach((translations, batchIndex) => {
+            if (translations !== null && translations.length > 0) {
+              successfulBatches.push({
+                translations,
+                nodes: allBatchNodes[batchIndex]
+              });
+            }
+          });
+
+          // If no successful batches, reset to default language
+          if (successfulBatches.length === 0) {
+            this.updateLoadingState(false);
+            this.isTranslating = false;
+            this.resetToDefaultLanguage();
+            return;
+          }
+
+          const batchArray: Array<{ originalText: string; translatedText: string }> = [];
+
+          // Process successful batches
+          successfulBatches.forEach(({ translations, nodes }) => {
+            nodes.forEach((node, nodeIndex) => {
+              const parent = node.element;
+              if (parent && translations[nodeIndex]) {
+                const originalText = node.text || "";
+                const translatedText = translations[nodeIndex];
+                const originalTextWithoutEmojis = removeEmojis(originalText);
+
+                // Only process if we have valid text
+                if (originalTextWithoutEmojis && translatedText) {
+                  batchArray.push({
+                    originalText: originalTextWithoutEmojis,
+                    translatedText
+                  });
+
+                  // Update DOM only if this is the most recent translation request
+                  if (this.lastRequestedLanguage === targetLang) {
+                    const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                    const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                    parent.style.fontSize = newFontSize;
+                    parent.textContent = translatedText;
+                  }
+                }
+              }
+            });
+          });
+
+          // Cache successful translations
+          if (batchArray.length > 0) {
+            cache.setBatchNodeTranslationsArray(targetLang, batchArray);
+          }
+        }
+
+        const endTime = performance.now();
+      };
+
+      // Process both visible and non-visible batches concurrently
+      await Promise.allSettled([
+        processBatches(visibleBatches),
+        processBatches(nonVisibleBatches)
+      ]);
 
       // Update UI state if this is the most recent request
       if (this.lastRequestedLanguage === targetLang) {
@@ -529,6 +644,9 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Updates the visibility of the reset button
+   */
   private updateResetButtonVisibility(): void {
     const resetButton = this.widget.querySelector<HTMLElement>(".jigts-reset-option");
     if (resetButton) {
@@ -536,27 +654,30 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Resets the translations
+   */
   private resetTranslations(): void {
     if (this.observer) {
       this.observer.disconnect();
     }
-    const elements = document.querySelectorAll<HTMLElement>("[data-original-text]");
+    const elements = document.querySelectorAll<HTMLElement>(`[${ATTRIBUTES.ORIGINAL_TEXT}]`);
     elements.forEach((element) => {
       const textNodes = Array.from(element.childNodes).filter((node): node is Text => node.nodeType === Node.TEXT_NODE);
       if (textNodes.length > 0) {
-        const originalText = element.getAttribute("data-original-text");
+        const originalText = element.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
-          element.innerHTML = originalText;
+          element.textContent = originalText;
         }
       }
       // Restore original font size
-      const originalFontSize = element.getAttribute("data-original-font-size");
+      const originalFontSize = element.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE);
       if (originalFontSize) {
         element.style.fontSize = originalFontSize;
       }
-      element.removeAttribute("data-original-text");
-      element.removeAttribute("data-translated-lang");
-      element.removeAttribute("data-original-font-size");
+      element.removeAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+      element.removeAttribute(ATTRIBUTES.TRANSLATED_LANG);
+      element.removeAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE);
     });
     this.isTranslated = false;
 
@@ -574,6 +695,9 @@ export class TranslationWidget {
     this.observeBody(); // Reconnect observer
   }
 
+  /**
+   * Adjusts the dropdown position
+   */
   private adjustDropdownPosition(): void {
     const { dropdown, trigger } = this.elements;
     if (!dropdown || !trigger) return;
@@ -629,6 +753,9 @@ export class TranslationWidget {
     }
   }
 
+  /**
+   * Sets up the event listeners
+   */
   private setupEventListeners(): void {
     const { trigger, dropdown, searchInput, clearSearch, languageItems } = this.elements;
 
@@ -762,7 +889,7 @@ export class TranslationWidget {
         }
 
         if (langCode) {
-          localStorage.setItem("jss-pref", langCode);
+          localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
         }
 
         const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
@@ -896,7 +1023,7 @@ export class TranslationWidget {
     }
 
     try {
-      localStorage.setItem("jss-pref", langCode);
+      localStorage.setItem(LOCALSTORAGE_KEYS.PREFERRED_LANGUAGE, langCode);
       await this.translatePage(langCode);
       // Update the current language
       this.currentLanguage = langCode;
@@ -920,7 +1047,7 @@ export class TranslationWidget {
       }
 
       const endTime = Date.now();
-      const translatedNodes = document.querySelectorAll("[data-translated-lang]").length;
+      const translatedNodes = document.querySelectorAll(`[${ATTRIBUTES.TRANSLATED_LANG}]`).length;
       onComplete?.({
         success: true,
         targetLanguage: langCode,
