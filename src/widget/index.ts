@@ -512,7 +512,6 @@ export class TranslationWidget {
       // Helper function to process batches
       const processBatches = async (batches: { element: HTMLElement; text: string }[][]) => {
 
-        const startTime = performance.now();
         const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
         const allBatchTexts: string[][] = [];
 
@@ -623,7 +622,6 @@ export class TranslationWidget {
           }
         }
 
-        const endTime = performance.now();
       };
 
       // Process both visible and non-visible batches concurrently

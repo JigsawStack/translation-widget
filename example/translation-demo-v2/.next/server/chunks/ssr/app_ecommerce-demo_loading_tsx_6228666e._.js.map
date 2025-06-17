@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/vineetagarwal/Development/jigsawstack/translation/translation-demo-v2/app/ecommerce-demo/loading.tsx"],"sourcesContent":["export default function Loading() {\n  return null\n}\n"],"names":[],"mappings":";;;AAAe,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}
