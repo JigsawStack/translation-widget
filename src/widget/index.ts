@@ -8,7 +8,6 @@ import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicAp
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
-// translation widget class
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
   private translationService: TranslationService;
