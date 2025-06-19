@@ -53,14 +53,14 @@ Create a React component to initialize the widget:
 ```tsx
 "use client";
 import { useEffect } from "react";
-import TranslationWidget from "translation-widget";
+import TranslationWidget, { Position } from "translation-widget";
 
 export default function Translation() {
   useEffect(() => {
     TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
       showUI: true,
       pageLanguage: "en",
-      position: "top-right",
+      position: Position.TopRight,
       autoDetectLanguage: false,
     });
   }, []);
