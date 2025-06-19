@@ -37,3 +37,4 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
 };
 
 export default initializeTranslationWidget;
+export { TranslationWidget, TranslationConfig };
