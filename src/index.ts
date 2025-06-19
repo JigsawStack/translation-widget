@@ -1,6 +1,6 @@
 import styles from "./translation-widget.css?inline";
 import { TranslationWidget } from "./widget";
-import type { TranslationConfig } from "./types";
+import type { TranslationConfig, Position  } from "./types";
 
 declare global {
   interface Window {
@@ -37,4 +37,4 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
 };
 
 export default initializeTranslationWidget;
-export { TranslationWidget, TranslationConfig };
+export { TranslationWidget, TranslationConfig, Position };
