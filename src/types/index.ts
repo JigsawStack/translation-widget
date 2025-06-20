@@ -8,7 +8,7 @@ export interface Language {
 
 export interface TranslationConfig {
   pageLanguage?: string;
-  position?: Position;
+  position?: "top-right" | "top-left" | "bottom-left" | "bottom-right";
   autoDetectLanguage?: boolean;
   theme?: {
     baseColor?: string;

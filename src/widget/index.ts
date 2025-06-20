@@ -2,7 +2,7 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import { Language, TranslationConfig, WidgetElements, TranslationResult, Position, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
+import { Language, TranslationConfig, WidgetElements, TranslationResult, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
@@ -33,13 +33,13 @@ export class TranslationWidget {
    * @param config - The configuration for the translation widget
    */
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
-    const allowedPositions: Position[] = [Position.TopRight, Position.TopLeft, Position.BottomLeft, Position.BottomRight];
+    const allowedPositions: string[] = ["top-right", "top-left", "bottom-left", "bottom-right"];
 
     let safeConfig = { ...DEFAULT_CONFIG, ...config };
 
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
-      safeConfig.position = Position.TopRight;
+      safeConfig.position = "top-right";
     }
 
     this.config = safeConfig as Required<TranslationConfig>;
