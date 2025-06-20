@@ -10,13 +10,13 @@ import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
-  private translationService: TranslationService;
-  private currentLanguage: string;
-  private widget: HTMLDivElement;
-  private elements: WidgetElements;
-  private autoDetectLanguage: boolean;
+  private translationService!: TranslationService;
+  private currentLanguage!: string;
+  private widget!: HTMLDivElement;
+  private elements!: WidgetElements;
+  private autoDetectLanguage!: boolean;
   private isTranslated: boolean = false;
-  private userLanguage: string;
+  private userLanguage!: string;
   private isTranslating: boolean = false;
   private observer: MutationObserver | null = null;
   private translationScheduled: boolean = false;
@@ -48,7 +48,8 @@ export class TranslationWidget {
     const apiValidationResult = validatePublicApiKey(publicKey);
 
     if (!apiValidationResult.isValid) {
-      throw new Error(apiValidationResult.message);
+       console.error("Error initializing TranslationWidget: ", apiValidationResult.message);
+       return;
     }
 
     this.translationService = new TranslationService(publicKey);

@@ -2582,10 +2582,10 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-translation-widget@^1.0.11, translation-widget@^1.0.9:
+translation-widget@^1.0.9, "translation-widget@file:../../translation-widget-1.0.11.tgz":
   version "1.0.11"
-  resolved "https://registry.npmjs.org/translation-widget/-/translation-widget-1.0.11.tgz"
-  integrity sha512-pszSpFvSDYoJjPdoVBjq0uEMqvF8BtHO4AVc/81K30M19pxb6lUAd7gHshsfaZpyr+g4J2JRl7NVo2bhEut1oQ==
+  resolved "file:../../translation-widget-1.0.11.tgz"
+  integrity sha512-nP47FUziUVnpebDNkXEkQGDg/1W+DoUspwYITW2CYyFZMXERXz0/IVTwFUTx155/XuZg5N3l2C2LGwhaE27GgQ==
   dependencies:
     lz-string "^1.5.0"
     translation-widget "^1.0.9"
