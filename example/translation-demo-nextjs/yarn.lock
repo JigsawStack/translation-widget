@@ -2585,7 +2585,7 @@ to-regex-range@^5.0.1:
 translation-widget@^1.0.9, "translation-widget@file:../../translation-widget-1.0.11.tgz":
   version "1.0.11"
   resolved "file:../../translation-widget-1.0.11.tgz"
-  integrity sha512-nP47FUziUVnpebDNkXEkQGDg/1W+DoUspwYITW2CYyFZMXERXz0/IVTwFUTx155/XuZg5N3l2C2LGwhaE27GgQ==
+  integrity sha512-FkZZ6Zo+FXG/1loyGQhvPL/7MYXddico9NJ3FnOk6Nd0eaahgd7xG7tDb+2QAUbkf6eWhJjUsvvVQSdinDdvsA==
   dependencies:
     lz-string "^1.5.0"
     translation-widget "^1.0.9"
