@@ -10,10 +10,10 @@ import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
-  private translationService: TranslationService;
+  private translationService?: TranslationService;
   private currentLanguage: string;
   private widget: HTMLDivElement;
-  private elements: WidgetElements;
+  private elements  : WidgetElements;
   private autoDetectLanguage: boolean;
   private isTranslated: boolean = false;
   private userLanguage: string;
@@ -47,11 +47,6 @@ export class TranslationWidget {
     // Validate public api key
     const apiValidationResult = validatePublicApiKey(publicKey);
 
-    if (!apiValidationResult.isValid) {
-      throw new Error(apiValidationResult.message);
-    }
-
-    this.translationService = new TranslationService(publicKey);
     this.autoDetectLanguage = this.config.autoDetectLanguage || false;
     this.currentLanguage = this.config.pageLanguage;
     this.userLanguage = getUserLanguage();
@@ -65,6 +60,13 @@ export class TranslationWidget {
       languageItems: null,
       loadingIndicator: null,
     };
+    if (!apiValidationResult.isValid) {
+      console.error("Error initializing TranslationWidget: ", apiValidationResult.message);
+      // return and stop the execution of the constructor
+      return;
+    }
+    this.translationService = new TranslationService(publicKey);
+   
     this.initialize();
     TranslationWidget.instance = this;
   }
@@ -564,13 +566,13 @@ export class TranslationWidget {
         });
 
         if (allBatchTexts.length > 0) {
-          const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
+          const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService?.translateBatchText(texts, targetLang)));
 
           // Filter out failed batches and create a mapping of successful translations
           const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string }[] }> = [];
           
           allTranslatedTexts.forEach((translations, batchIndex) => {
-            if (translations !== null && translations.length > 0) {
+            if (translations  && translations.length > 0) {
               successfulBatches.push({
                 translations,
                 nodes: allBatchNodes[batchIndex]
