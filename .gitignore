@@ -39,3 +39,5 @@ coverage/
 .cache/
 
 dist
+bun.lock
+package-lock.json

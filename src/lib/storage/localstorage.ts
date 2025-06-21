@@ -3,20 +3,21 @@ import { TranslationContent } from "../../types";
 
 export class LocalStorageWrapper {
   private prefix: string;
-  private readonly COMPRESSION_THRESHOLD = 100000;
+  private readonly COMPRESSION_THRESHOLD = 10000;
   private readonly COMPRESSION_MARKER = "__COMPRESSED__";
+  private cache: { [key: string]: TranslationContent } = {};
 
   constructor(prefix = "") {
     this.prefix = prefix;
   }
 
   getPageKey(targetLang: string): string {
-    return `${this.prefix}-${targetLang}`;
+    return `${this.prefix}${targetLang}`;
   }
 
   private shouldCompress(value: string): boolean {
     return value.length > this.COMPRESSION_THRESHOLD;
-  }
+  } 
 
   private compress(value: string): string {
     try {
@@ -37,12 +38,18 @@ export class LocalStorageWrapper {
   }
 
   getItem(key: string): TranslationContent | null {
+    if (this.cache[key]) {
+      return this.cache[key];
+    }
+
     const item = localStorage.getItem(key);
     if (!item) return null;
 
     try {
       const decompressed = item.startsWith(this.COMPRESSION_MARKER) ? this.decompress(item.slice(this.COMPRESSION_MARKER.length)) : item;
-      return JSON.parse(decompressed);
+      const parsed = JSON.parse(decompressed);
+      this.cache[key] = parsed;
+      return parsed;
     } catch (e) {
       console.error("Error parsing cached item:", e);
       return null;
@@ -55,9 +62,11 @@ export class LocalStorageWrapper {
       try {
         const finalValue = this.shouldCompress(stringified) ? `${this.COMPRESSION_MARKER}${this.compress(stringified)}` : stringified;
         localStorage.setItem(key, finalValue);
+        this.cache[key] = value; // Update the cache with the new value
       } catch (error) {
         console.error("Error storing item:", error);
         localStorage.setItem(key, stringified);
+        this.cache[key] = value; // Update the cache with the new value
       }
     };
     if (typeof requestIdleCallback !== "undefined") {
@@ -79,13 +88,10 @@ export class LocalStorageWrapper {
     const pageKey = this.getPageKey(targetLang);
     let translations: TranslationContent = this.getItem(pageKey) || {};
     translations[originalText] = translatedText;
-    this.setItem(pageKey, translations  );
+    this.setItem(pageKey, translations);
   }
 
-  setBatchNodeTranslationsArray(
-    targetLang: string,
-    batch: Array<{ originalText: string; translatedText: string }>
-  ): void {
+  setBatchNodeTranslationsArray(targetLang: string, batch: Array<{ originalText: string; translatedText: string }>): void {
     const pageKey = this.getPageKey(targetLang);
     const existing: TranslationContent = this.getItem(pageKey) || {};
 
@@ -99,6 +105,7 @@ export class LocalStorageWrapper {
 
   removeItem(key: string): void {
     localStorage.removeItem(key);
+    delete this.cache[key]; // Invalidate the cache for this key
   }
 
   clear(langArr: string[] = []): void {
@@ -115,10 +122,12 @@ export class LocalStorageWrapper {
       for (let key in localStorage) {
         if (langArr.includes(key.split("--")[1])) {
           localStorage.removeItem(key);
+          delete this.cache[key];
         }
       }
     } else {
       localStorage.clear();
+      this.cache = {};
     }
   }
 

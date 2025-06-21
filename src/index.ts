@@ -1,6 +1,6 @@
 import styles from "./translation-widget.css?inline";
 import { TranslationWidget } from "./widget";
-import type { TranslationConfig } from "./types";
+import type { TranslationConfig  } from "./types";
 
 declare global {
   interface Window {
@@ -28,6 +28,7 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
     return widgetInstance;
   };
 
+  // If the document is not ready, wait for it to be ready
   if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", initWidget);
     return undefined as unknown as TranslationWidget;
