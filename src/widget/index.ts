@@ -2,7 +2,8 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import { Language, TranslationConfig, WidgetElements, TranslationResult, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
+import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
+import { LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
@@ -35,7 +36,7 @@ export class TranslationWidget {
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
     const allowedPositions: string[] = ["top-right", "top-left", "bottom-left", "bottom-right"];
 
-    let safeConfig = { ...DEFAULT_CONFIG, ...config };
+    const safeConfig = { ...DEFAULT_CONFIG, ...config };
 
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
@@ -95,7 +96,7 @@ export class TranslationWidget {
     // Fallback to the page's language or default to English
     else if (!this.config.pageLanguage) {
       const htmlTag = document.querySelector("html");
-      if (htmlTag && htmlTag.getAttribute(LANG_PARAM)) {
+      if (htmlTag?.getAttribute(LANG_PARAM)) {
         initialLang = htmlTag.getAttribute(LANG_PARAM) as string;
       } else {
         initialLang = "en";
@@ -351,7 +352,7 @@ export class TranslationWidget {
        */
       if (this.currentLanguage !== targetLang) {
         parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
-        let originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+        const originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
           return originalText;
         }

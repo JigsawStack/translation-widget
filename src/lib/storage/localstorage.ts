@@ -1,5 +1,5 @@
 import LZString from "lz-string";
-import { TranslationContent } from "../../types";
+import type { TranslationContent } from "../../types";
 
 export class LocalStorageWrapper {
   private prefix: string;
@@ -86,7 +86,7 @@ export class LocalStorageWrapper {
   // Store translation for a node in the page cache (object of originalText)
   setNodeTranslation(originalText: string, targetLang: string, translatedText: string): void {
     const pageKey = this.getPageKey(targetLang);
-    let translations: TranslationContent = this.getItem(pageKey) || {};
+    const translations: TranslationContent = this.getItem(pageKey) || {};
     translations[originalText] = translatedText;
     this.setItem(pageKey, translations);
   }
@@ -110,7 +110,7 @@ export class LocalStorageWrapper {
 
   clear(): void {
     if (this.prefix) {
-      for (let key in localStorage) {
+      for (const key in localStorage) {
         if (key.startsWith(this.prefix)) {
           localStorage.removeItem(key);
           delete this.cache[key];
