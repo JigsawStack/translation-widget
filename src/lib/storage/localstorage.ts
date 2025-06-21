@@ -17,7 +17,7 @@ export class LocalStorageWrapper {
 
   private shouldCompress(value: string): boolean {
     return value.length > this.COMPRESSION_THRESHOLD;
-  } 
+  }
 
   private compress(value: string): string {
     try {

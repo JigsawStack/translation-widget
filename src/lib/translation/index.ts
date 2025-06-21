@@ -19,8 +19,6 @@ export class TranslationService {
   }
 
   async translateBatchText(texts: string[], targetLang: string, maxRetries = 2, retryDelay = 100): Promise<string[] | null> {
-
-
     let attempt = 0;
     while (attempt < maxRetries) {
       try {
