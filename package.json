@@ -35,11 +35,15 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "format": "biome format --write ./src",
+    "lint": "biome lint ./src",
     "dev": "vite",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
+    "husky": "^9.1.7",
+    "pinst": "^3.0.0",
     "terser": "^5.39.0",
     "typescript": "~5.7.2",
     "vite": "^6.1.0",

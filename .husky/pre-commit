@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "[PRE-COMMIT] Running yarn lint..."
+if yarn lint; then
+    echo "[PRE-COMMIT] ✅ Linting passed successfully"
+else
+    echo "[PRE-COMMIT] ❌ Linting failed with exit code $?"
+    exit 1
+fi
+
+echo "[PRE-COMMIT] Running yarn format..."
+if yarn format; then
+    echo "[PRE-COMMIT] ✅ Formatting completed successfully"
+else
+    echo "[PRE-COMMIT] ❌ Formatting failed with exit code $?"
+    exit 1
+fi
+
+echo "[PRE-COMMIT] ✅ All pre-commit checks passed!"
