@@ -438,18 +438,17 @@ window.clearCache([], () => {
   console.log('All translation cache cleared successfully');
 }, (err) => {
   console.error('Error clearing cache:', err);
-});
+});  // Clears all translation cache
 ```
 
 #### Clear Specific Languages Cache
 
 ```js
-// Clear cache for specific languages only
 window.clearCache(['es', 'fr', 'de'], () => {
   console.log('Cache cleared for Spanish, French, and German');
 }, (err) => {
   console.error('Error clearing cache:', err);
-});
+});  // Clear cache for specific languages only
 ```
 
 ----------
