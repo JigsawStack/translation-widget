@@ -980,7 +980,7 @@ if (typeof window !== "undefined") {
    * @param defaultLang The default language to reset to
    * @param onComplete Callback function that will be called when the translation is complete
    * @param onError Callback function that will be called if the translation fails
-   * @returns A promise that resolves to the translation result
+   * @returns void
    */
   window.resetTranslation = (
     defaultLang: string,
@@ -1041,6 +1041,12 @@ if (typeof window !== "undefined") {
     }
   };
 
+   /**
+   * @param langArr Array of language codes to clear cache for. Empty array clears all languages.
+   * @param onComplete Callback function that will be called when the translation is complete
+   * @param onError Callback function that will be called if the translation fails
+   * @returns void
+   */
   window.clearCache = (
     langArr: string[] = [],
     onComplete?: () => void,
