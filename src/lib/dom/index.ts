@@ -10,6 +10,9 @@ export type TranslatableContent = {
   isNested: boolean;
 }[];
 export class DocumentNavigator {
+  // Dummy instance method to avoid linter warning about static-only classesAdd commentMore actions
+  public init() {}
+
   /**
    * Retrieves text nodes eligible for translation from the document
    * @returns Collection of text nodes ready for translation
@@ -39,15 +42,22 @@ export class DocumentNavigator {
     const navigator = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, validator);
     const groupedText = new Map<HTMLElement, Text[]>();
 
-    let currentNode: Node | null;
-    while ((currentNode = navigator.nextNode())) {
+    let currentNode: Node | null = navigator.nextNode();
+    while (currentNode) {
       const parentElement = (currentNode as Text).parentElement;
-      if (!parentElement) continue;
+      if (!parentElement) {
+        currentNode = navigator.nextNode();
+        continue;
+      }
 
       if (!groupedText.has(parentElement)) {
         groupedText.set(parentElement, []);
       }
-      groupedText.get(parentElement)!.push(currentNode as Text);
+      const textArray = groupedText.get(parentElement);
+      if (textArray) {
+        textArray.push(currentNode as Text);
+      }
+      currentNode = navigator.nextNode();
     }
 
     const results: TranslatableContent = [];

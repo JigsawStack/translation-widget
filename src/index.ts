@@ -1,6 +1,6 @@
 import styles from "./translation-widget.css?inline";
 import { TranslationWidget } from "./widget";
-import type { TranslationConfig  } from "./types";
+import type { TranslationConfig } from "./types";
 
 declare global {
   interface Window {
