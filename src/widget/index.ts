@@ -970,7 +970,7 @@ declare global {
       onError?: (error: Error) => void
     ) => void;
     translate: (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
-    clearCache: (onComplete?: () => void, onError?: (error: Error) => void) => void;
+    clearCache: (langArr:string[], onComplete?: () => void, onError?: (error: Error) => void) => void;
   }
 }
 
@@ -1042,12 +1042,13 @@ if (typeof window !== "undefined") {
   };
 
   window.clearCache = (
+    langArr: string[] = [],
     onComplete?: () => void,
     onError?: (error: Error) => void
   ) => {
     const localStorageWrapper = new LocalStorageWrapper(CACHE_PREFIX);
     try {
-      localStorageWrapper.clear();
+      localStorageWrapper.clear(langArr);
       onComplete?.();
     } catch (error) {
       onError?.(error as Error);

@@ -101,10 +101,19 @@ export class LocalStorageWrapper {
     localStorage.removeItem(key);
   }
 
-  clear(): void {
+  clear(langArr: string[] = []): void {
     if (this.prefix) {
       for (let key in localStorage) {
-        if (key.startsWith(this.prefix)) {
+        if (
+          key.startsWith(this.prefix) &&
+          (!langArr.length || langArr.includes(key.split("--")[1]))
+        ) {
+          localStorage.removeItem(key);
+        }
+      }
+    } else if (langArr && langArr.length > 0) {
+      for (let key in localStorage) {
+        if (langArr.includes(key.split("--")[1])) {
           localStorage.removeItem(key);
         }
       }

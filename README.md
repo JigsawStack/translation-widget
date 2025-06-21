@@ -429,15 +429,27 @@ window.resetTranslation('en', (res) => {
 
 ### 5. 🗑️ Clear Cache with `window.clearCache()`
 
-Clear the translation cache from localstorage:
+Clear translation cache from localStorage. You can clear cache for all languages or selectively for specific languages:
+
+#### Clear All Languages Cache
 
 ```js
-window.clearCache(() => {
-  console.log('success');
+window.clearCache([], () => {
+  console.log('All translation cache cleared successfully');
 }, (err) => {
-  console.error(err);
-}); // Clears translation cache
+  console.error('Error clearing cache:', err);
+});
+```
 
+#### Clear Specific Languages Cache
+
+```js
+// Clear cache for specific languages only
+window.clearCache(['es', 'fr', 'de'], () => {
+  console.log('Cache cleared for Spanish, French, and German');
+}, (err) => {
+  console.error('Error clearing cache:', err);
+});
 ```
 
 ----------
