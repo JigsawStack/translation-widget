@@ -87,9 +87,9 @@ export class LocalStorageWrapper {
     const existing: TranslationContent = this.getItem(pageKey) || {};
 
     // Add/overwrite with new batch
-    batch.forEach(({ originalText, translatedText }) => {
+    for (const { originalText, translatedText } of batch) {
       existing[originalText] = translatedText;
-    });
+    }
 
     this.setItem(pageKey, existing);
   }

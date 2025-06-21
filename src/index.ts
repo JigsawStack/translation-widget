@@ -31,9 +31,8 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
   if (document.readyState === "loading") {
     window.addEventListener("DOMContentLoaded", initWidget);
     return undefined as unknown as TranslationWidget;
-  } else {
-    return initWidget();
   }
+  return initWidget();
 };
 
 export default initializeTranslationWidget;

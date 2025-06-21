@@ -13,11 +13,11 @@ function generateHashForContent(nodes: TranslatableContent): string {
 }
 
 function murmurhash3_32_gc(key: string, seed: number) {
-  const remainder = key.length & 3,
-    bytes = key.length - remainder;
-  let h1 = seed,
-    c1 = 0xcc9e2d51,
-    c2 = 0x1b873593;
+  const remainder = key.length & 3;
+  const bytes = key.length - remainder;
+  let h1 = seed;
+  const c1 = 0xcc9e2d51;
+  const c2 = 0x1b873593;
   let i = 0;
 
   while (i < bytes) {
@@ -39,9 +39,11 @@ function murmurhash3_32_gc(key: string, seed: number) {
 
   switch (remainder) {
     //@ts-expect-error - this is a valid case
+    // biome-ignore lint/suspicious/noFallthroughSwitchClause: intentional fallthrough in MurmurHash algorithm
     case 3:
       k1 ^= key.charCodeAt(i + 2) << 16;
     //@ts-expect-error - this is a valid case
+    // biome-ignore lint/suspicious/noFallthroughSwitchClause: intentional fallthrough in MurmurHash algorithm
     case 2:
       k1 ^= key.charCodeAt(i + 1) << 8;
     case 1:
@@ -64,7 +66,7 @@ function murmurhash3_32_gc(key: string, seed: number) {
 
 function getVisibleTextContent(element: HTMLElement): string {
   let text = "";
-  element.childNodes.forEach((node) => {
+  for (const node of element.childNodes) {
     if (node.nodeType === Node.TEXT_NODE && !(element.classList.contains("sr-only") || element.getAttribute("aria-hidden") === "true")) {
       text += node.textContent;
     }
@@ -75,7 +77,7 @@ function getVisibleTextContent(element: HTMLElement): string {
     ) {
       text += getVisibleTextContent(node as HTMLElement);
     }
-  });
+  }
   return text.trim();
 }
 

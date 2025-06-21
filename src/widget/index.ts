@@ -88,7 +88,7 @@ export class TranslationWidget {
       initialLang = this.userLanguage;
     } else if (!this.config.pageLanguage) {
       const htmlTag = document.querySelector("html");
-      if (htmlTag && htmlTag.getAttribute("lang")) {
+      if (htmlTag?.getAttribute("lang")) {
         initialLang = htmlTag.getAttribute("lang") as string;
       } else {
         initialLang = "en";
@@ -145,15 +145,15 @@ export class TranslationWidget {
   private setupURLObserver(): void {
     const historyMethods = ["pushState", "replaceState"] as const;
 
-    historyMethods.forEach((method) => {
+    for (const method of historyMethods) {
       const original = history[method];
-      history[method] = function (state: any, title: string, url?: string | URL | null) {
+      history[method] = function (state: unknown, title: string, url?: string | URL | null) {
         const result = original.call(this, state, title, url);
         window.dispatchEvent(new Event(method));
         return result;
       };
       window.addEventListener(method, this.onUrlChange);
-    });
+    }
 
     // Also listen for popstate events (browser back/forward)
     window.addEventListener("popstate", this.onUrlChange);
@@ -378,11 +378,11 @@ export class TranslationWidget {
 
     // Update UI
     const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
-    languageItems.forEach((item) => {
+    for (const item of languageItems) {
       const isSelected = item.getAttribute("data-language-code") === this.config.pageLanguage;
       item.classList.toggle("jigts-selected", isSelected);
       item.setAttribute("aria-selected", isSelected.toString());
-    });
+    }
 
     // Update localStorage preference to original language
     localStorage.setItem("jss-pref", this.config.pageLanguage);
@@ -417,12 +417,12 @@ export class TranslationWidget {
       const allBatchNodeHashes: string[][] = [];
 
       // Prepare batches by filtering nodes that need translation
-      batches.forEach((batch) => {
+      for (const batch of batches) {
         const textsToTranslate: string[] = [];
         const batchNodes: { element: HTMLElement; text: string }[] = [];
         const batchNodeHashes: string[] = [];
 
-        batch.forEach((node) => {
+        for (const node of batch) {
           const parent = node.element;
           if (!parent) return;
           const translatedLang = parent.getAttribute("data-translated-lang");
@@ -460,14 +460,14 @@ export class TranslationWidget {
             textsToTranslate.push(textToTranslate.trim());
             batchNodes.push(node);
           }
-        });
+        }
 
         if (textsToTranslate.length > 0) {
           allBatchNodes.push(batchNodes);
           allBatchTexts.push(textsToTranslate);
           allBatchNodeHashes.push(batchNodeHashes);
         }
-      });
+      }
 
       // If no nodes need translation, we're done
       if (allBatchTexts.length === 0) {
@@ -535,7 +535,7 @@ export class TranslationWidget {
       this.observer.disconnect();
     }
     const elements = document.querySelectorAll<HTMLElement>("[data-original-text]");
-    elements.forEach((element) => {
+    for (const element of elements) {
       const textNodes = Array.from(element.childNodes).filter((node): node is Text => node.nodeType === Node.TEXT_NODE);
       if (textNodes.length > 0) {
         const originalText = element.getAttribute("data-original-text");
@@ -551,7 +551,7 @@ export class TranslationWidget {
       element.removeAttribute("data-original-text");
       element.removeAttribute("data-translated-lang");
       element.removeAttribute("data-original-font-size");
-    });
+    }
     this.isTranslated = false;
 
     this.currentLanguage = this.config.pageLanguage;
@@ -642,11 +642,11 @@ export class TranslationWidget {
         this.updateResetButtonVisibility();
         // Reset language selector to page language
         const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
-        languageItems.forEach((item) => {
+        for (const item of languageItems) {
           const isSelected = item.getAttribute("data-language-code") === this.config.pageLanguage;
           item.classList.toggle("jigts-selected", isSelected);
           item.setAttribute("aria-selected", isSelected.toString());
-        });
+        }
         // Restore SVG icon
         const triggerIcon = this.elements.trigger?.querySelector(".jigts-trigger-icon");
         if (triggerIcon) {
@@ -700,7 +700,7 @@ export class TranslationWidget {
       const noResults = this.widget.querySelector<HTMLElement>(".jigts-no-results");
       let visibleCount = 0;
 
-      items.forEach((item) => {
+      for (const item of items) {
         const name = item.querySelector(".jigts-language-name")?.textContent?.toLowerCase() || "";
         const native = item.querySelector(".jigts-language-native")?.textContent?.toLowerCase() || "";
         const code = item.querySelector(".jigts-language-code")?.textContent?.toLowerCase() || "";
@@ -710,7 +710,7 @@ export class TranslationWidget {
 
         item.style.display = matches ? "" : "none";
         if (matches) visibleCount++;
-      });
+      }
 
       if (noResults) {
         noResults.style.display = visibleCount === 0 ? "flex" : "none";
@@ -725,21 +725,21 @@ export class TranslationWidget {
       const items = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
       const noResults = this.widget.querySelector<HTMLElement>(".jigts-no-results");
 
-      items.forEach((item) => {
+      for (const item of items) {
         item.style.display = "";
-      });
+      }
 
       if (noResults) {
         noResults.style.display = "none";
       }
     });
 
-    languageItems.forEach((item) => {
+    for (const item of languageItems) {
       item.addEventListener("click", async () => {
-        languageItems.forEach((i) => {
+        for (const i of languageItems) {
           i.classList.remove("jigts-selected");
           i.setAttribute("aria-selected", "false");
-        });
+        }
 
         item.classList.add("jigts-selected");
         item.setAttribute("aria-selected", "true");
@@ -784,7 +784,7 @@ export class TranslationWidget {
           triggerContent.classList.remove("jigts-has-translation");
         }
       });
-    });
+    }
 
     document.addEventListener("keydown", (e: KeyboardEvent) => {
       if (!dropdown.classList.contains("jigts-open")) return;
@@ -826,11 +826,11 @@ export class TranslationWidget {
         this.translatePage(this.currentLanguage)
           .then(() => {
             const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
-            languageItems.forEach((item) => {
+            for (const item of languageItems) {
               const isSelected = item.getAttribute("data-language-code") === this.currentLanguage;
               item.classList.toggle("jigts-selected", isSelected);
               item.setAttribute("aria-selected", isSelected.toString());
-            });
+            }
           })
           .catch((error) => {
             console.error("Auto-translation error:", error);
