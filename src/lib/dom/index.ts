@@ -7,6 +7,7 @@ import { removeEmojis } from "../../utils/utils";
 export type TranslatableContent = {
   element: HTMLElement;
   text: string;
+  isNested: boolean;
 }[];
 export class DocumentNavigator {
   /**
@@ -49,10 +50,26 @@ export class DocumentNavigator {
       groupedText.get(parentElement)!.push(currentNode as Text);
     }
 
-    const results: { element: HTMLElement; text: string }[] = [];
+    const results: TranslatableContent = [];
+
+    // so for the elemnt for which the isNested is true, can we like copy the whole html strucuture down to its last child >
+    let isNested = false;
+    const processedNestedElements = new Set<HTMLElement>();
 
     for (const [element, textNodes] of groupedText.entries()) {
+      isNested = false; // Reset flag for each element
       let combinedText = "";
+
+      // Skip if this element is a descendant of a nested element that was already processed
+      let isDescendantOfNested = false;
+      for (const nestedElement of processedNestedElements) {
+        if (nestedElement.contains(element)) {
+          isDescendantOfNested = true;
+          break;
+        }
+      }
+
+      if (isDescendantOfNested) continue;
 
       for (const node of textNodes) {
         let text = node.textContent?.trim() || "";
@@ -63,10 +80,21 @@ export class DocumentNavigator {
         if (text.length === 0 || text.length === 1 || textWithoutEmojis.length === 0) continue;
 
         combinedText += (combinedText ? " " : "") + text;
+
+        if (element.children.length > 0) {
+          isNested = true;
+        }
       }
 
       if (combinedText.length > 0) {
-        results.push({ element, text: combinedText });
+        // If element is nested, include the full HTML structure
+        if (isNested) {
+          const fullHtml = element.outerHTML;
+          results.push({ element, text: fullHtml, isNested });
+          processedNestedElements.add(element);
+        } else {
+          results.push({ element, text: combinedText, isNested });
+        }
       }
     }
 
