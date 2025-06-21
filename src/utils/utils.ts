@@ -1,5 +1,5 @@
 import { languages } from "../constants/languages";
-import { TranslatableContent } from "../lib/dom";
+import type { TranslatableContent } from "../lib/dom";
 function generateHashForContent(nodes: TranslatableContent): string {
   const content = nodes
     .map((node) => {
@@ -13,7 +13,7 @@ function generateHashForContent(nodes: TranslatableContent): string {
 }
 
 function murmurhash3_32_gc(key: string, seed: number) {
-  let remainder = key.length & 3,
+  const remainder = key.length & 3,
     bytes = key.length - remainder;
   let h1 = seed,
     c1 = 0xcc9e2d51,
@@ -94,7 +94,7 @@ function generateNodeHash(text: string): string {
 
 function generateChunkHash(texts: string[]): string {
   const content = texts
-    .map(text => text.replace(/\s+/g, " ").trim().toLocaleLowerCase())
+    .map((text) => text.replace(/\s+/g, " ").trim().toLocaleLowerCase())
     .join(" ")
     .trim();
   return murmurhash3_32_gc(content.toLowerCase(), 42).toString(16);

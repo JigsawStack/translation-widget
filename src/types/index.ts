@@ -34,7 +34,6 @@ export interface TranslationWidgetOptions {
   config?: TranslationConfig;
 }
 
-
 export interface WidgetElements {
   trigger: HTMLDivElement | null;
   dropdown: HTMLDivElement | null;
@@ -52,4 +51,6 @@ export interface TranslationResult {
   duration?: number;
 }
 
-export interface TranslationContent { [key: string]: string }
+export interface TranslationContent {
+  [key: string]: string;
+}

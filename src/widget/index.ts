@@ -8,8 +8,6 @@ import { generateHashForContent, getUserLanguage, removeEmojis } from "../utils/
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
-
-
 export class TranslationWidget {
   private config: Required<TranslationConfig>;
   private translationService: TranslationService;
@@ -17,25 +15,24 @@ export class TranslationWidget {
   private widget: HTMLDivElement;
   private elements: WidgetElements;
   private autoDetectLanguage: boolean;
-  private isTranslated: boolean = false;
+  private isTranslated = false;
   private userLanguage: string;
-  private isTranslating: boolean = false;
+  private isTranslating = false;
   private observer: MutationObserver | null = null;
-  private translationScheduled: boolean = false;
+  private translationScheduled = false;
   private scheduleTimeout: number | null = null;
   private showUI = true;
   private lastTranslated: { url: string; lang: string; hash: string } | null = null;
   private static instance: TranslationWidget | null = null;
   private currentTranslationPromise: Promise<void> | null = null;
   private lastRequestedLanguage: string | null = null;
-  private translationRequestId: number = 0;
+  private translationRequestId = 0;
 
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
-
     const allowedPositions = ["top-right", "top-left", "bottom-left", "bottom-right"] as const;
 
-    let safeConfig = { ...DEFAULT_CONFIG, ...config };
-    
+    const safeConfig = { ...DEFAULT_CONFIG, ...config };
+
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
       safeConfig.position = "top-right";
@@ -131,7 +128,6 @@ export class TranslationWidget {
     });
     this.observeBody();
   }
-
 
   private observeBody() {
     this.observer?.observe(document.body, {
@@ -229,7 +225,7 @@ export class TranslationWidget {
 
     if (!currentLanguage) return "";
 
-    const createLanguageItem = (lang: Language, isSelected: boolean = false) => `
+    const createLanguageItem = (lang: Language, isSelected = false) => `
             <div class="jigts-language-item ${isSelected ? "jigts-selected" : ""}" tabindex="0" role="option" aria-selected="${isSelected}" data-language-code="${lang.code}">
                 <div class="jigts-language-info">
                     <div class="jigts-language-main">
@@ -277,7 +273,7 @@ export class TranslationWidget {
     triggerSpan.classList.add("jigts-fade-in");
   }
 
-    private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
+  private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
     if (!parent.hasAttribute("data-original-text")) {
       const originalText = node.text?.trim();
       if (originalText) {
@@ -303,7 +299,7 @@ export class TranslationWidget {
 
   private calculateFontSize(text: string, originalFontSize: string, originalText: string): string {
     const baseFontSize = 12; // Minimum font size in pixels
-    const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
+    const maxFontSize = Number.parseInt(originalFontSize); // Maximum font size is the original size
     const textLength = text.length;
     const originalLength = originalText.length;
 
@@ -447,7 +443,7 @@ export class TranslationWidget {
           if (textToTranslate) {
             const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
             const cachedTranslation = cacheObject[textToTranslate] || null;
-            
+
             if (cachedTranslation) {
               // Use cached translation
               if (this.lastRequestedLanguage === targetLang) {
@@ -483,9 +479,7 @@ export class TranslationWidget {
       }
 
       // Translate all batches in parallel
-      const allTranslatedTexts = await Promise.all(
-        allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang))
-      );
+      const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService.translateBatchText(texts, targetLang)));
 
       // Process translated batches
       const batchArray: Array<{ originalText: string; translatedText: string }> = [];

@@ -5,7 +5,14 @@
   "homepage": "https://github.com/JigsawStack/translation-widget",
   "author": "JigsawStack",
   "license": "Apache-2.0",
-  "keywords": ["translation", "widget", "translation-widget", "google-translate", "translation api", "translation widget api"],
+  "keywords": [
+    "translation",
+    "widget",
+    "translation-widget",
+    "google-translate",
+    "translation api",
+    "translation widget api"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JigsawStack/translation-widget.git"
@@ -22,7 +29,9 @@
     "import": "./dist/index.js"
   },
   "unpkg": "./dist/index.min.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "types": "./dist/index.d.ts",
   "scripts": {
     "format": "biome format --write ./src",
