@@ -248,7 +248,7 @@ export default function RootLayout({
 
 ### Pages Router (Next.js ≤12)
 
-#### Option 1: Add in `_app.tsx`
+#### Add in `_app.tsx`
 
 ```tsx
 import type { AppProps } from "next/app";
@@ -270,42 +270,6 @@ export default function App({ Component, pageProps }: AppProps) {
   );
 }
 ```
-
-#### Option 2: Add in `_document.tsx`
-
-```tsx
-import { Html, Head, Main, NextScript } from "next/document";
-
-export default function Document() {
-  return (
-    <Html>
-      <Head />
-      <body>
-        <Main />
-        <NextScript />
-        <script
-          src="https://unpkg.com/translation-widget@latest/dist/index.min.js"
-          defer
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.addEventListener('load', function () {
-                if (window.TranslationWidget) {
-                  window.TranslationWidget("YOUR_PUBLIC_KEY_HERE", {
-                     // configuration options 
-                  });
-                }
-              });
-            `,
-          }}
-        />
-      </body>
-    </Html>
-  );
-}
-```
-
 ---
 
 ## 🧠 TypeScript Support
