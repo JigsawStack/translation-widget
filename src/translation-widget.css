@@ -686,3 +686,35 @@ Base Styles :root {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Translation Content Styles */
+.jigts-translated-content {
+  /* Add any specific styling for translated content */
+  transition: all 0.3s ease;
+}
+
+.jigts-translated-content.jigts-has-html {
+  /* Specific styling for content that contains HTML */
+  line-height: 1.5;
+}
+
+.jigts-translated-content.jigts-font-adjusted {
+  /* Styling for content with adjusted font size */
+  transition: font-size 0.3s ease;
+}
+
+/* Animation for content changes */
+.jigts-content-transition {
+  animation: jigtsContentFade 0.3s ease-in-out;
+}
+
+@keyframes jigtsContentFade {
+  0% {
+    opacity: 0.7;
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

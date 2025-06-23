@@ -512,14 +512,14 @@ export class TranslationWidget {
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
 
       // Helper function to process batches
-      const processBatches = async (batches: { element: HTMLElement; text: string }[][]) => {
+      const processBatches = async (batches: { element: HTMLElement; text: string, isNested: boolean   }[][]) => {
 
-        const allBatchNodes: { element: HTMLElement; text: string }[][] = [];
+        const allBatchNodes: { element: HTMLElement; text: string, isNested: boolean }[][] = [];
         const allBatchTexts: string[][] = [];
 
         batches.forEach((batch) => {
           const textsToTranslate: string[] = [];
-          const batchNodes: { element: HTMLElement; text: string }[] = [];
+          const batchNodes: { element: HTMLElement; text: string, isNested: boolean }[] = [];
 
           batch.forEach((node) => {
             const parent = node.element;
@@ -538,6 +538,7 @@ export class TranslationWidget {
             }
 
             // Add text and node to the batch if valid
+
             if (textToTranslate) {
               const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
               const cachedTranslation = cacheObject[textToTranslate] || null;
@@ -549,7 +550,8 @@ export class TranslationWidget {
                   const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
                   const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                   parent.style.fontSize = newFontSize;
-                  parent.textContent = translatedText;
+                  // Use the helper method to safely set translated content
+                  this.setTranslatedContent(parent, translatedText);
                 }
                 return;
               }
@@ -569,7 +571,7 @@ export class TranslationWidget {
           const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService?.translateBatchText(texts, targetLang)));
 
           // Filter out failed batches and create a mapping of successful translations
-          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string }[] }> = [];
+          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string, isNested: boolean }[] }> = [];
           
           allTranslatedTexts.forEach((translations, batchIndex) => {
             if (translations  && translations.length > 0) {
@@ -590,6 +592,7 @@ export class TranslationWidget {
 
           const batchArray: Array<{ originalText: string; translatedText: string }> = [];
 
+          console.log(successfulBatches);
           // Process successful batches
           successfulBatches.forEach(({ translations, nodes }) => {
             nodes.forEach((node, nodeIndex) => {
@@ -611,7 +614,8 @@ export class TranslationWidget {
                     const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
                     const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
                     parent.style.fontSize = newFontSize;
-                    parent.textContent = translatedText;
+                    // Use the helper method to safely set translated content
+                    this.setTranslatedContent(parent, translatedText);
                   }
                 }
               }
@@ -667,7 +671,7 @@ export class TranslationWidget {
       if (textNodes.length > 0) {
         const originalText = element.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
-          element.textContent = originalText;
+          this.setTranslatedContent(element, originalText);
         }
       }
       // Restore original font size
@@ -1085,6 +1089,35 @@ export class TranslationWidget {
   // Add this helper method to the class
   private getLanguageSVG(): string {
     return `\n            <svg class=\"jigts-languages-icon\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"\n                    d=\"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129\">\n                </path>\n            </svg>\n        `;
+  }
+
+  /**
+   * Safely sets HTML content for translated text, handling nested HTML structures
+   * @param element - The element to update
+   * @param translatedText - The translated text that may contain HTML
+   */
+  private setTranslatedContent(element: HTMLElement, translatedText: string): void {
+    // Check if the translated text contains HTML tags
+    const hasHtmlTags = /<[^>]*>/g.test(translatedText);
+    
+    if (hasHtmlTags) {
+      // Create a temporary container to parse the HTML
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = translatedText;
+      
+      // If the translated text is a single element that matches the current element's tag
+      if (tempContainer.children.length === 1 && 
+          tempContainer.firstElementChild?.tagName.toLowerCase() === element.tagName.toLowerCase()) {
+        // Replace the element's content with the inner content of the translated HTML
+        element.innerHTML = tempContainer.firstElementChild.innerHTML;
+      } else {
+        // For other cases, replace the entire element content
+        element.innerHTML = translatedText;
+      }
+    } else {
+      // No HTML tags, use textContent for safety
+      element.textContent = translatedText;
+    }
   }
 }
 
