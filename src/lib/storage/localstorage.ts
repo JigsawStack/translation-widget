@@ -108,19 +108,19 @@ export class LocalStorageWrapper {
     delete this.cache[key]; // Invalidate the cache for this key
   }
 
-  clear(langArr: string[] = []): void {
+  clear(lang_code: string[] = []): void {
     if (this.prefix) {
       for (let key in localStorage) {
         if (
           key.startsWith(this.prefix) &&
-          (!langArr.length || langArr.includes(key.split("--")[1]))
+          (!lang_code.length || lang_code.includes(key.split("--")[1]))
         ) {
           localStorage.removeItem(key);
         }
       }
-    } else if (langArr && langArr.length > 0) {
+    } else if (lang_code && lang_code.length > 0) {
       for (let key in localStorage) {
-        if (langArr.includes(key.split("--")[1])) {
+        if (lang_code.includes(key.split("--")[1])) {
           localStorage.removeItem(key);
           delete this.cache[key];
         }
