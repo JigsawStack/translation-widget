@@ -52,7 +52,18 @@ Go to your fork on GitHub and click "Compare & pull request".
 
 ## Running Locally
 
-1. **Install dependencies:**
+1. **Install Biome globally:**
+   Make sure you have Biome installed globally for code formatting and linting:
+   ```bash
+   npm install -g @biomejs/biome
+   ```
+   or
+   ```bash
+   yarn global add @biomejs/biome
+   ```
+   Learn more at: https://biomejs.dev/
+
+2. **Install dependencies:**
    ```bash
    npm install
    ```
@@ -60,7 +71,7 @@ Go to your fork on GitHub and click "Compare & pull request".
    ```bash
    yarn install
    ```
-2. **Add Env**
+3. **Add Env**
    Create a `.env` file in the root directory with the following variables:
    ```bash
    # Required: Your JigsawStack Public API key
@@ -68,7 +79,7 @@ Go to your fork on GitHub and click "Compare & pull request".
    ```
    You can get your Public API key from the [JigsawStack Dashboard](https://jigsawstack.com).
 
-3. **Start the development server:**
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
@@ -77,7 +88,7 @@ Go to your fork on GitHub and click "Compare & pull request".
    yarn dev
    ```
 
-3. **Open your browser and visit:**
+5. **Open your browser and visit:**
    ```
    http://localhost:5173
    ```

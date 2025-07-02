@@ -2,7 +2,8 @@ import { TranslationService } from "../lib/translation/index";
 import { DocumentNavigator } from "../lib/dom";
 import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
-import { Language, TranslationConfig, WidgetElements, TranslationResult, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
+import type { Language, TranslationConfig, WidgetElements, TranslationResult } from "../types";
+import { LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
 import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
@@ -13,7 +14,7 @@ export class TranslationWidget {
   private translationService?: TranslationService;
   private currentLanguage: string;
   private widget: HTMLDivElement;
-  private elements  : WidgetElements;
+  private elements: WidgetElements;
   private autoDetectLanguage: boolean;
   private isTranslated: boolean = false;
   private userLanguage: string;
@@ -35,7 +36,7 @@ export class TranslationWidget {
   constructor(publicKey: string, config: Partial<TranslationConfig> = {}) {
     const allowedPositions: string[] = ["top-right", "top-left", "bottom-left", "bottom-right"];
 
-    let safeConfig = { ...DEFAULT_CONFIG, ...config };
+    const safeConfig = { ...DEFAULT_CONFIG, ...config };
 
     if (safeConfig.position && !allowedPositions.includes(safeConfig.position)) {
       console.warn(`Invalid position '${safeConfig.position}' passed to TranslationWidget. Falling back to 'top-right'.`);
@@ -66,7 +67,7 @@ export class TranslationWidget {
       return;
     }
     this.translationService = new TranslationService(publicKey);
-   
+
     this.initialize();
     TranslationWidget.instance = this;
   }
@@ -95,7 +96,7 @@ export class TranslationWidget {
     // Fallback to the page's language or default to English
     else if (!this.config.pageLanguage) {
       const htmlTag = document.querySelector("html");
-      if (htmlTag && htmlTag.getAttribute(LANG_PARAM)) {
+      if (htmlTag?.getAttribute(LANG_PARAM)) {
         initialLang = htmlTag.getAttribute(LANG_PARAM) as string;
       } else {
         initialLang = "en";
@@ -351,7 +352,7 @@ export class TranslationWidget {
        */
       if (this.currentLanguage !== targetLang) {
         parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
-        let originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+        const originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
           return originalText;
         }
@@ -465,7 +466,6 @@ export class TranslationWidget {
     this.lastRequestedLanguage = this.config.pageLanguage;
     this.currentLanguage = this.config.pageLanguage;
 
-
     // Update UI
     const languageItems = this.widget.querySelectorAll<HTMLElement>(".jigts-language-item");
     languageItems.forEach((item) => {
@@ -512,14 +512,13 @@ export class TranslationWidget {
       const cache = new LocalStorageWrapper(CACHE_PREFIX);
 
       // Helper function to process batches
-      const processBatches = async (batches: { element: HTMLElement; text: string, isNested: boolean   }[][]) => {
-
-        const allBatchNodes: { element: HTMLElement; text: string, isNested: boolean }[][] = [];
+      const processBatches = async (batches: { element: HTMLElement; text: string; isNested: boolean }[][]) => {
+        const allBatchNodes: { element: HTMLElement; text: string; isNested: boolean }[][] = [];
         const allBatchTexts: string[][] = [];
 
         batches.forEach((batch) => {
           const textsToTranslate: string[] = [];
-          const batchNodes: { element: HTMLElement; text: string, isNested: boolean }[] = [];
+          const batchNodes: { element: HTMLElement; text: string; isNested: boolean }[] = [];
 
           batch.forEach((node) => {
             const parent = node.element;
@@ -571,13 +570,13 @@ export class TranslationWidget {
           const allTranslatedTexts = await Promise.all(allBatchTexts.map((texts) => this.translationService?.translateBatchText(texts, targetLang)));
 
           // Filter out failed batches and create a mapping of successful translations
-          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string, isNested: boolean }[] }> = [];
-          
+          const successfulBatches: Array<{ translations: string[]; nodes: { element: HTMLElement; text: string; isNested: boolean }[] }> = [];
+
           allTranslatedTexts.forEach((translations, batchIndex) => {
-            if (translations  && translations.length > 0) {
+            if (translations && translations.length > 0) {
               successfulBatches.push({
                 translations,
-                nodes: allBatchNodes[batchIndex]
+                nodes: allBatchNodes[batchIndex],
               });
             }
           });
@@ -606,7 +605,7 @@ export class TranslationWidget {
                 if (originalTextWithoutEmojis && translatedText) {
                   batchArray.push({
                     originalText: originalTextWithoutEmojis,
-                    translatedText
+                    translatedText,
                   });
 
                   // Update DOM only if this is the most recent translation request
@@ -627,14 +626,10 @@ export class TranslationWidget {
             cache.setBatchNodeTranslationsArray(targetLang, batchArray);
           }
         }
-
       };
 
       // Process both visible and non-visible batches concurrently
-      await Promise.allSettled([
-        processBatches(visibleBatches),
-        processBatches(nonVisibleBatches)
-      ]);
+      await Promise.allSettled([processBatches(visibleBatches), processBatches(nonVisibleBatches)]);
 
       // Update UI state if this is the most recent request
       if (this.lastRequestedLanguage === targetLang) {
@@ -1099,15 +1094,14 @@ export class TranslationWidget {
   private setTranslatedContent(element: HTMLElement, translatedText: string): void {
     // Check if the translated text contains HTML tags
     const hasHtmlTags = /<[^>]*>/g.test(translatedText);
-    
+
     if (hasHtmlTags) {
       // Create a temporary container to parse the HTML
-      const tempContainer = document.createElement('div');
+      const tempContainer = document.createElement("div");
       tempContainer.innerHTML = translatedText;
-      
+
       // If the translated text is a single element that matches the current element's tag
-      if (tempContainer.children.length === 1 && 
-          tempContainer.firstElementChild?.tagName.toLowerCase() === element.tagName.toLowerCase()) {
+      if (tempContainer.children.length === 1 && tempContainer.firstElementChild?.tagName.toLowerCase() === element.tagName.toLowerCase()) {
         // Replace the element's content with the inner content of the translated HTML
         element.innerHTML = tempContainer.firstElementChild.innerHTML;
       } else {
