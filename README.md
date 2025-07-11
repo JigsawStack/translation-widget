@@ -393,6 +393,32 @@ window.resetTranslation(
 
 ---
 
+### 5. 🗑️ Clear Cache with `window.clearCache()`
+
+Clear translation cache from localStorage. You can clear cache for all languages or selectively for specific languages:
+
+#### Clear All Languages Cache
+
+```js
+window.clearCache([], () => {
+  console.log('All translation cache cleared successfully');
+}, (err) => {
+  console.error('Error clearing cache:', err);
+});  // Clears all translation cache
+```
+
+#### Clear Specific Languages Cache
+
+```js
+window.clearCache(['es', 'fr', 'de'], () => {
+  console.log('Cache cleared for Spanish, French, and German');
+}, (err) => {
+  console.error('Error clearing cache:', err);
+});  // Clear cache for specific languages only
+```
+
+----------
+
 ### ✅ Tips:
 
 - Both `translate()` and `resetTranslation()` can be used to build your own custom language selector.
@@ -408,7 +434,7 @@ The widget determines which language to display using the following priority ord
 | 2        | User preference (selected language)    | Language the user selects in the widget     |
 | 3        | `pageLanguage` (default page language) | The default language set for the page       |
 
-### 5. Font Size Adjustment
+### 6. Font Size Adjustment
 
 The translation widget automatically adjusts font sizes when translating text to prevent overflow issues. This is particularly useful when translating to languages that typically have longer text lengths. The font size adjustment works as follows:
 
@@ -421,8 +447,10 @@ The translation widget automatically adjusts font sizes when translating text to
 - Original font sizes are preserved and restored when resetting translations
 
 The font size adjustment is automatic and requires no additional configuration. It helps maintain readability while preventing text overflow in translated content.
+  
 
-### 6. 🚀 Faster and More Accurate than Google Translate
+### 7. 🚀 Faster and More Accurate than Google Translate
+
 
 Our engine offers **contextual accuracy** and **lower latency**, especially for dynamic content.
 

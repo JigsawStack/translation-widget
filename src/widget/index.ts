@@ -1130,6 +1130,7 @@ declare global {
       onError?: (error: Error) => void
     ) => void;
     translate: (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
+    clearCache: (lang_code:string[], onComplete?: () => void, onError?: (error: Error) => void) => void;
   }
 }
 
@@ -1139,7 +1140,7 @@ if (typeof window !== "undefined") {
    * @param defaultLang The default language to reset to
    * @param onComplete Callback function that will be called when the translation is complete
    * @param onError Callback function that will be called if the translation fails
-   * @returns A promise that resolves to the translation result
+   * @returns void
    */
   window.resetTranslation = (
     defaultLang: string,
@@ -1197,6 +1198,26 @@ if (typeof window !== "undefined") {
         error: error instanceof Error ? error.message : "Unknown error occurred",
         duration: Date.now() - startTime,
       };
+    }
+  };
+
+   /**
+   * @param langArr Array of language codes to clear cache for. Empty array clears all languages.
+   * @param onComplete Callback function that will be called when the translation is complete
+   * @param onError Callback function that will be called if the translation fails
+   * @returns void
+   */
+  window.clearCache = (
+    lang_code: string[] = [],
+    onComplete?: () => void,
+    onError?: (error: Error) => void
+  ) => {
+    const localStorageWrapper = new LocalStorageWrapper(CACHE_PREFIX);
+    try {
+      localStorageWrapper.clear(lang_code);
+      onComplete?.();
+    } catch (error) {
+      onError?.(error as Error);
     }
   };
 }
