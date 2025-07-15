@@ -4,7 +4,7 @@ import { languages } from "../constants/languages";
 import { BATCH_SIZE, DEFAULT_CONFIG } from "../constants";
 import { Language, TranslationConfig, WidgetElements, TranslationResult, LANG_PARAM, LOCALSTORAGE_KEYS, ATTRIBUTES } from "../types";
 import widgetTemplate from "../templates/html/widget.html?raw";
-import { generateHashForContent, getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
+import {  getUserLanguage, removeEmojis, validatePublicApiKey } from "../utils/utils";
 import { CACHE_PREFIX } from "../constants";
 import { LocalStorageWrapper } from "../lib/storage/localstorage";
 
@@ -22,7 +22,7 @@ export class TranslationWidget {
   private translationScheduled: boolean = false;
   private scheduleTimeout: number | null = null;
   private showUI = true;
-  private lastTranslated: { url: string; lang: string; hash: string } | null = null;
+  // private lastTranslated: { url: string; lang: string; hash: string } | null = null;
   private static instance: TranslationWidget | null = null;
   private currentTranslationPromise: Promise<void> | null = null;
   private lastRequestedLanguage: string | null = null;
@@ -330,6 +330,7 @@ export class TranslationWidget {
    * @returns The text to translate
    */
   private getTextToTranslate(node: { element: HTMLElement; text: string }, parent: HTMLElement, targetLang: string): string | null {
+   
     if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT)) {
       const originalText = node.text?.trim();
       if (originalText) {
@@ -343,7 +344,18 @@ export class TranslationWidget {
         return originalText;
       }
     } else {
-      const textToTranslate = node.text?.trim();
+
+      const textToTranslate = node.element.textContent?.trim();
+      const originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+
+      // Check if the current text differs from the original text
+      // This can happen when React state changes override translated content
+      if (textToTranslate && originalText && textToTranslate !== originalText) {
+        // Update the original text to the new current text
+        parent.setAttribute(ATTRIBUTES.ORIGINAL_TEXT, textToTranslate);
+        parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
+        return textToTranslate;
+      }
 
       /**
        * Check for this case: LOC 409
@@ -351,7 +363,6 @@ export class TranslationWidget {
        */
       if (this.currentLanguage !== targetLang) {
         parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
-        let originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
         if (originalText) {
           return originalText;
         }
@@ -420,6 +431,8 @@ export class TranslationWidget {
    * @param targetLang - The target language
    */
   private async translatePage(targetLang: string): Promise<void> {
+
+    console.log("translatePage request id", this.translationRequestId);
     // Increment the request ID for each new translation
     const requestId = ++this.translationRequestId;
     this.lastRequestedLanguage = targetLang;
@@ -439,6 +452,7 @@ export class TranslationWidget {
     }
 
     // Create a new promise for this translation
+    console.log("create new promise for this translation");
     this.currentTranslationPromise = this._translatePage(targetLang);
     try {
       await this.currentTranslationPromise;
@@ -495,6 +509,8 @@ export class TranslationWidget {
     try {
       // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
+
+      console.log("nodes", nodes);
       // get the visible nodes
       const visibleNodes = nodes.filter((node) => {
         const rect = node.element.getBoundingClientRect();
@@ -526,7 +542,10 @@ export class TranslationWidget {
             if (!parent) return;
             const translatedLang = parent.getAttribute(ATTRIBUTES.TRANSLATED_LANG);
             // Skip nodes that are already translated to the target language
-            if (parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT) && targetLang === translatedLang) {
+            // add a check to see if the node text content is the same as the original text
+            const originalText = parent.getAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+
+            if (parent.hasAttribute(ATTRIBUTES.ORIGINAL_TEXT) && targetLang === translatedLang && originalText !== node.text) {
               return;
             }
 
@@ -538,7 +557,7 @@ export class TranslationWidget {
             }
 
             // Add text and node to the batch if valid
-
+            console.log("textToTranslate", textToTranslate);
             if (textToTranslate) {
               const cacheObject = cache.getItem(cache.getPageKey(targetLang)) || {};
               const cachedTranslation = cacheObject[textToTranslate] || null;
@@ -598,7 +617,7 @@ export class TranslationWidget {
             nodes.forEach((node, nodeIndex) => {
               const parent = node.element;
               if (parent && translations[nodeIndex]) {
-                const originalText = node.text || "";
+                const originalText = node.element.textContent || "";
                 const translatedText = translations[nodeIndex];
                 const originalTextWithoutEmojis = removeEmojis(originalText);
 
@@ -687,13 +706,13 @@ export class TranslationWidget {
 
     this.currentLanguage = this.config.pageLanguage;
     // Update lastTranslated to reflect the reset state
-    const nodes = DocumentNavigator.findTranslatableContent();
-    const hash = generateHashForContent(nodes);
-    this.lastTranslated = {
-      url: window.location.href,
-      lang: this.config.pageLanguage,
-      hash,
-    };
+    // const nodes = DocumentNavigator.findTranslatableContent();
+    // const hash = generateHashForContent(nodes);
+    // this.lastTranslated = {
+    //   url: window.location.href,
+    //   lang: this.config.pageLanguage,
+    //   hash,
+    // };
 
     this.updateResetButtonVisibility();
     this.observeBody(); // Reconnect observer
@@ -935,25 +954,24 @@ export class TranslationWidget {
   }
 
   private scheduleTranslation() {
+
+    console.log("scheduleTranslation");
+
+    console.log("isTranslationscheduled", this.translationScheduled);
     if (this.translationScheduled) return;
-    const currentUrl = window.location.href;
-    const currentLang = this.currentLanguage;
-    const nodes = DocumentNavigator.findTranslatableContent();
-    const hash = generateHashForContent(nodes);
-    if (
-      this.lastTranslated &&
-      this.lastTranslated.url === currentUrl &&
-      this.lastTranslated.lang === currentLang &&
-      this.lastTranslated.hash === hash
-    ) {
-      return;
-    }
+    // const currentUrl = window.location.href;
+    // const currentLang = this.currentLanguage;
+    // const nodes = DocumentNavigator.findTranslatableContent();
+    // const hash = generateHashForContent(nodes);
+
+
+   
     this.translationScheduled = true;
     if (this.scheduleTimeout) clearTimeout(this.scheduleTimeout);
     this.scheduleTimeout = window.setTimeout(() => {
       this.translationScheduled = false;
       if (this.currentLanguage !== this.config.pageLanguage) {
-        this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
+        // this.lastTranslated = { url: currentUrl, lang: currentLang, hash };
         const triggerContent = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-content");
         const triggerLoading = this.elements.trigger?.querySelector<HTMLDivElement>(".jigts-trigger-loading");
         if (triggerContent && triggerLoading) {
@@ -1086,6 +1104,25 @@ export class TranslationWidget {
     return TranslationWidget.instance;
   }
 
+  /**
+   * Re-translate a specific element when its content changes
+   * This is useful for React components that change their text content
+   * @param element - The element to re-translate
+   */
+  public reTranslateElement(element: HTMLElement): void {
+    if (this.isTranslating || this.currentLanguage === this.config.pageLanguage) {
+      return;
+    }
+
+    // Clear the original text attribute to force re-translation
+    element.removeAttribute(ATTRIBUTES.ORIGINAL_TEXT);
+    element.removeAttribute(ATTRIBUTES.TRANSLATED_LANG);
+    element.removeAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE);
+
+    // Schedule a translation to pick up the new content
+    this.scheduleTranslation();
+  }
+
   // Add this helper method to the class
   private getLanguageSVG(): string {
     return `\n            <svg class=\"jigts-languages-icon\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"\n                    d=\"M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129\">\n                </path>\n            </svg>\n        `;
@@ -1131,6 +1168,7 @@ declare global {
     ) => void;
     translate: (langCode: string, onComplete?: (result: TranslationResult) => void, onError?: (error: Error) => void) => Promise<TranslationResult>;
     clearCache: (lang_code:string[], onComplete?: () => void, onError?: (error: Error) => void) => void;
+    reTranslateElement: (element: HTMLElement) => void;
   }
 }
 
@@ -1219,5 +1257,19 @@ if (typeof window !== "undefined") {
     } catch (error) {
       onError?.(error as Error);
     }
+  };
+
+  /**
+   * Re-translate a specific element when its content changes
+   * This is useful for React components that change their text content
+   * @param element - The element to re-translate
+   */
+  window.reTranslateElement = (element: HTMLElement) => {
+    const instance = TranslationWidget.getInstance();
+    if (!instance) {
+      console.warn("Translation widget not initialized");
+      return;
+    }
+    instance.reTranslateElement(element);
   };
 }
