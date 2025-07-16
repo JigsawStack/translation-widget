@@ -10,6 +10,7 @@ declare global {
 
 let widgetInstance: TranslationWidget | undefined;
 
+
 const initializeTranslationWidget = (publicKey: string, config?: TranslationConfig): TranslationWidget => {
   if (typeof window === "undefined") {
     throw new Error("Translation widget can only be used in browser environment");
@@ -36,5 +37,20 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
     return initWidget();
   }
 };
+
+(() => {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function<T extends Node>(child: T): T {
+    try {
+      return originalRemoveChild.call(this, child) as T;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "NotFoundError") {
+        return child;
+      }
+      throw err;
+    }
+  };
+})();
+
 
 export default initializeTranslationWidget;

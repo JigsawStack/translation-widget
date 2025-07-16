@@ -20,21 +20,51 @@ export class DocumentNavigator {
     const validator: NodeProcessor = {
       acceptNode(node: Node): number {
         if (node.nodeType !== Node.TEXT_NODE) return NodeFilter.FILTER_REJECT;
-
+    
         const container = (node as Text).parentElement;
         if (!container) return NodeFilter.FILTER_REJECT;
-
+    
         if (container.closest('[aria-hidden="true"]')) return NodeFilter.FILTER_REJECT;
         if (container.classList.contains("sr-only")) return NodeFilter.FILTER_REJECT;
-
-        const shouldSkip =
-          container.closest(
-            "script, style, code, noscript, next-route-announcer, .jigts-translation-widget, .jigts-widget-trigger, .jigts-widget-dropdown, .notranslate"
-          ) !== null || !node.textContent?.trim();
-
-        return shouldSkip ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    
+        const skipBySelector = container.closest(
+          "script, style, code, noscript, next-route-announcer, \
+           .jigts-translation-widget, .jigts-widget-trigger, \
+           .jigts-widget-dropdown, .notranslate"
+        );
+        if (skipBySelector) return NodeFilter.FILTER_REJECT;
+    
+        // ✅ If the text is inside a clean wrapper like <span> → allow
+        const isInSpanWrapper =
+          container.tagName === "SPAN" &&
+          Array.from(container.childNodes).every((n) => n.nodeType === Node.TEXT_NODE);
+    
+        const interactiveAncestor = container.closest(
+          "button, input, select, textarea, [role='button'], [role='link']"
+        ) as HTMLElement | null;
+    
+        if (interactiveAncestor && !isInSpanWrapper) {
+          const isTextSiblingToElement = Array.from(container.childNodes).some(
+            (n) =>
+              n.nodeType === Node.ELEMENT_NODE &&
+              node.parentNode === container // sibling to another element in same container
+          );
+    
+          const isDirectChildOfInteractive =
+            interactiveAncestor === container;
+    
+          if (isTextSiblingToElement && isDirectChildOfInteractive) {
+            // ⚠️ Text node is a sibling to other element nodes inside the button — unsafe
+            return NodeFilter.FILTER_REJECT;
+          }
+        }
+    
+        if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
+    
+        return NodeFilter.FILTER_ACCEPT;
       },
     };
+    
 
     const navigator = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, validator);
     const groupedText = new Map<HTMLElement, Text[]>();
@@ -71,6 +101,25 @@ export class DocumentNavigator {
 
       if (isDescendantOfNested) continue;
 
+      const childNodes = Array.from(element.childNodes);
+      const hasText = childNodes.some(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim()
+      );
+      const hasInteractiveElements = childNodes.some(
+        (n) =>
+          n.nodeType === Node.ELEMENT_NODE &&
+          ["BUTTON", "INPUT", "TEXTAREA", "SELECT"].includes(
+            (n as HTMLElement).tagName
+          )
+      );
+
+      const isTextMixedWithInteractivity = hasText && hasInteractiveElements;
+
+
+      if (isTextMixedWithInteractivity) {
+          continue;
+      }
+
       for (const node of textNodes) {
         let text = node.textContent?.trim() || "";
         const originalText = element.getAttribute("data-original-text");
@@ -81,9 +130,20 @@ export class DocumentNavigator {
 
         combinedText += (combinedText ? " " : "") + text;
 
-        if (element.children.length > 0) {
+        // if(isTextMixedWithInteractivity) {
+        //   continue;
+        // }
+        const hasMixedContent = Array.from(element.childNodes).some(
+          (child) => child.nodeType !== Node.TEXT_NODE
+        );
+
+
+        if (hasMixedContent) {
           isNested = true;
         }
+        // if (element.children.length > 0) {
+        //   isNested = true;
+        // }
       }
 
       if (combinedText.length > 0) {
