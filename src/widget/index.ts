@@ -495,6 +495,8 @@ export class TranslationWidget {
     try {
       // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
+
+      console.log("nodes", nodes);
       // get the visible nodes
       const visibleNodes = nodes.filter((node) => {
         const rect = node.element.getBoundingClientRect();
@@ -1099,7 +1101,8 @@ export class TranslationWidget {
   private setTranslatedContent(element: HTMLElement, translatedText: string): void {
     // Check if the translated text contains HTML tags
     const hasHtmlTags = /<[^>]*>/g.test(translatedText);
-    
+   
+
     if (hasHtmlTags) {
       // Create a temporary container to parse the HTML
       const tempContainer = document.createElement('div');
@@ -1115,7 +1118,6 @@ export class TranslationWidget {
         element.innerHTML = translatedText;
       }
     } else {
-      // No HTML tags, use textContent for safety
       element.textContent = translatedText;
     }
   }
