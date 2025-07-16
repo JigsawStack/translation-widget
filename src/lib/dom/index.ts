@@ -115,7 +115,6 @@ export class DocumentNavigator {
 
       const isTextMixedWithInteractivity = hasText && hasInteractiveElements;
 
-      console.log("isTextMixedWithInteractivity", isTextMixedWithInteractivity)
 
       if (isTextMixedWithInteractivity) {
           continue;

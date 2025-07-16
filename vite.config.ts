@@ -7,9 +7,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  server:{
-    allowedHosts:["61f69d80a580.ngrok-free.app"],
-  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

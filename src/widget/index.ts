@@ -496,7 +496,6 @@ export class TranslationWidget {
       // Find all translatable content nodes in the document
       const nodes = DocumentNavigator.findTranslatableContent();
 
-      console.log("nodes", nodes);
       // get the visible nodes
       const visibleNodes = nodes.filter((node) => {
         const rect = node.element.getBoundingClientRect();
@@ -594,7 +593,6 @@ export class TranslationWidget {
 
           const batchArray: Array<{ originalText: string; translatedText: string }> = [];
 
-          console.log(successfulBatches);
           // Process successful batches
           successfulBatches.forEach(({ translations, nodes }) => {
             nodes.forEach((node, nodeIndex) => {
