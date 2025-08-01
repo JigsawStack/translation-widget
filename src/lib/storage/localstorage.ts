@@ -108,10 +108,16 @@ export class LocalStorageWrapper {
     delete this.cache[key]; // Invalidate the cache for this key
   }
 
-  clear(): void {
+  clear(lang_code: string[] = []): void {
     if (this.prefix) {
       for (const key in localStorage) {
-        if (key.startsWith(this.prefix)) {
+        if (key.startsWith(this.prefix) && (!lang_code.length || lang_code.includes(key.split("--")[1]))) {
+          localStorage.removeItem(key);
+        }
+      }
+    } else if (lang_code && lang_code.length > 0) {
+      for (const key in localStorage) {
+        if (lang_code.includes(key.split("--")[1])) {
           localStorage.removeItem(key);
           delete this.cache[key];
         }

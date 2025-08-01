@@ -37,4 +37,18 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
   }
 };
 
+(() => {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
+    try {
+      return originalRemoveChild.call(this, child) as T;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "NotFoundError") {
+        return child;
+      }
+      throw err;
+    }
+  };
+})();
+
 export default initializeTranslationWidget;

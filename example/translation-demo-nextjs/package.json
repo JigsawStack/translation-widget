@@ -20,7 +20,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.3.0",
-    "translation-widget": "^1.0.11"
+    "translation-widget": "^1.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

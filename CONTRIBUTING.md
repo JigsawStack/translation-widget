@@ -79,6 +79,16 @@ Go to your fork on GitHub and click "Compare & pull request".
    ```
    You can get your Public API key from the [JigsawStack Dashboard](https://jigsawstack.com).
 
+3. **Build the project:**
+   ```bash
+   npm run build
+   ```
+   or
+   ```bash
+   yarn build
+   ```
+   This creates the `dist/` directory with the compiled library files that the demo HTML requires.
+
 4. **Start the development server:**
    ```bash
    npm run dev
