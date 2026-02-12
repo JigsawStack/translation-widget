@@ -132,7 +132,9 @@ Base Styles :root {
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--jigts-text-color);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -142,7 +144,9 @@ Base Styles :root {
 
 .jigts-widget-trigger:hover {
   transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 20px 40px -10px rgba(0, 0, 0, 0.15),
+    0 10px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
 .jigts-widget-trigger:active {

@@ -1,5 +1,5 @@
 import LZString from "lz-string";
-import { TranslationContent } from "../../types";
+import type { TranslationContent } from "../../types";
 
 export class LocalStorageWrapper {
   private prefix: string;
@@ -17,7 +17,7 @@ export class LocalStorageWrapper {
 
   private shouldCompress(value: string): boolean {
     return value.length > this.COMPRESSION_THRESHOLD;
-  } 
+  }
 
   private compress(value: string): string {
     try {
@@ -86,7 +86,7 @@ export class LocalStorageWrapper {
   // Store translation for a node in the page cache (object of originalText)
   setNodeTranslation(originalText: string, targetLang: string, translatedText: string): void {
     const pageKey = this.getPageKey(targetLang);
-    let translations: TranslationContent = this.getItem(pageKey) || {};
+    const translations: TranslationContent = this.getItem(pageKey) || {};
     translations[originalText] = translatedText;
     this.setItem(pageKey, translations);
   }
@@ -110,16 +110,13 @@ export class LocalStorageWrapper {
 
   clear(lang_code: string[] = []): void {
     if (this.prefix) {
-      for (let key in localStorage) {
-        if (
-          key.startsWith(this.prefix) &&
-          (!lang_code.length || lang_code.includes(key.split("--")[1]))
-        ) {
+      for (const key in localStorage) {
+        if (key.startsWith(this.prefix) && (!lang_code.length || lang_code.includes(key.split("--")[1]))) {
           localStorage.removeItem(key);
         }
       }
     } else if (lang_code && lang_code.length > 0) {
-      for (let key in localStorage) {
+      for (const key in localStorage) {
         if (lang_code.includes(key.split("--")[1])) {
           localStorage.removeItem(key);
           delete this.cache[key];

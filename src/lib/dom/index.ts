@@ -10,6 +10,9 @@ export type TranslatableContent = {
   isNested: boolean;
 }[];
 export class DocumentNavigator {
+  // Dummy instance method to avoid linter warning about static-only classesAdd commentMore actions
+  public init() {}
+
   /**
    * Retrieves text nodes eligible for translation from the document
    * @returns Collection of text nodes ready for translation
@@ -20,64 +23,63 @@ export class DocumentNavigator {
     const validator: NodeProcessor = {
       acceptNode(node: Node): number {
         if (node.nodeType !== Node.TEXT_NODE) return NodeFilter.FILTER_REJECT;
-    
+
         const container = (node as Text).parentElement;
         if (!container) return NodeFilter.FILTER_REJECT;
-    
+
         if (container.closest('[aria-hidden="true"]')) return NodeFilter.FILTER_REJECT;
         if (container.classList.contains("sr-only")) return NodeFilter.FILTER_REJECT;
-    
+
         const skipBySelector = container.closest(
           "script, style, code, noscript, next-route-announcer, \
            .jigts-translation-widget, .jigts-widget-trigger, \
            .jigts-widget-dropdown, .notranslate"
         );
         if (skipBySelector) return NodeFilter.FILTER_REJECT;
-    
+
         // ✅ If the text is inside a clean wrapper like <span> → allow
-        const isInSpanWrapper =
-          container.tagName === "SPAN" &&
-          Array.from(container.childNodes).every((n) => n.nodeType === Node.TEXT_NODE);
-    
-        const interactiveAncestor = container.closest(
-          "button, input, select, textarea, [role='button'], [role='link']"
-        ) as HTMLElement | null;
-    
+        const isInSpanWrapper = container.tagName === "SPAN" && Array.from(container.childNodes).every((n) => n.nodeType === Node.TEXT_NODE);
+
+        const interactiveAncestor = container.closest("button, input, select, textarea, [role='button'], [role='link']") as HTMLElement | null;
+
         if (interactiveAncestor && !isInSpanWrapper) {
           const isTextSiblingToElement = Array.from(container.childNodes).some(
-            (n) =>
-              n.nodeType === Node.ELEMENT_NODE &&
-              node.parentNode === container // sibling to another element in same container
+            (n) => n.nodeType === Node.ELEMENT_NODE && node.parentNode === container // sibling to another element in same container
           );
-    
-          const isDirectChildOfInteractive =
-            interactiveAncestor === container;
-    
+
+          const isDirectChildOfInteractive = interactiveAncestor === container;
+
           if (isTextSiblingToElement && isDirectChildOfInteractive) {
             // ⚠️ Text node is a sibling to other element nodes inside the button — unsafe
             return NodeFilter.FILTER_REJECT;
           }
         }
-    
+
         if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
-    
+
         return NodeFilter.FILTER_ACCEPT;
       },
     };
-    
 
     const navigator = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, validator);
     const groupedText = new Map<HTMLElement, Text[]>();
 
-    let currentNode: Node | null;
-    while ((currentNode = navigator.nextNode())) {
+    let currentNode: Node | null = navigator.nextNode();
+    while (currentNode) {
       const parentElement = (currentNode as Text).parentElement;
-      if (!parentElement) continue;
+      if (!parentElement) {
+        currentNode = navigator.nextNode();
+        continue;
+      }
 
       if (!groupedText.has(parentElement)) {
         groupedText.set(parentElement, []);
       }
-      groupedText.get(parentElement)!.push(currentNode as Text);
+      const textArray = groupedText.get(parentElement);
+      if (textArray) {
+        textArray.push(currentNode as Text);
+      }
+      currentNode = navigator.nextNode();
     }
 
     const results: TranslatableContent = [];
@@ -102,22 +104,15 @@ export class DocumentNavigator {
       if (isDescendantOfNested) continue;
 
       const childNodes = Array.from(element.childNodes);
-      const hasText = childNodes.some(
-        (n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim()
-      );
+      const hasText = childNodes.some((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim());
       const hasInteractiveElements = childNodes.some(
-        (n) =>
-          n.nodeType === Node.ELEMENT_NODE &&
-          ["BUTTON", "INPUT", "TEXTAREA", "SELECT"].includes(
-            (n as HTMLElement).tagName
-          )
+        (n) => n.nodeType === Node.ELEMENT_NODE && ["BUTTON", "INPUT", "TEXTAREA", "SELECT"].includes((n as HTMLElement).tagName)
       );
 
       const isTextMixedWithInteractivity = hasText && hasInteractiveElements;
 
-
       if (isTextMixedWithInteractivity) {
-          continue;
+        continue;
       }
 
       for (const node of textNodes) {
@@ -133,10 +128,7 @@ export class DocumentNavigator {
         // if(isTextMixedWithInteractivity) {
         //   continue;
         // }
-        const hasMixedContent = Array.from(element.childNodes).some(
-          (child) => child.nodeType !== Node.TEXT_NODE
-        );
-
+        const hasMixedContent = Array.from(element.childNodes).some((child) => child.nodeType !== Node.TEXT_NODE);
 
         if (hasMixedContent) {
           isNested = true;

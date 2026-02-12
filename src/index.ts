@@ -1,6 +1,6 @@
 import styles from "./translation-widget.css?inline";
 import { TranslationWidget } from "./widget";
-import type { TranslationConfig  } from "./types";
+import type { TranslationConfig } from "./types";
 
 declare global {
   interface Window {
@@ -9,7 +9,6 @@ declare global {
 }
 
 let widgetInstance: TranslationWidget | undefined;
-
 
 const initializeTranslationWidget = (publicKey: string, config?: TranslationConfig): TranslationWidget => {
   if (typeof window === "undefined") {
@@ -40,7 +39,7 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
 
 (() => {
   const originalRemoveChild = Node.prototype.removeChild;
-  Node.prototype.removeChild = function<T extends Node>(child: T): T {
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
     try {
       return originalRemoveChild.call(this, child) as T;
     } catch (err) {
@@ -51,6 +50,5 @@ const initializeTranslationWidget = (publicKey: string, config?: TranslationConf
     }
   };
 })();
-
 
 export default initializeTranslationWidget;
