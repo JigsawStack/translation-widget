@@ -11,7 +11,6 @@ export default function Translation() {
         pageLanguage: "en",
         position: "top-right",
         autoDetectLanguage: false,
-        adjustFontSize: true,
       });
     });
   }, []);
