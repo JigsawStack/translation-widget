@@ -1,6 +1,5 @@
 "use client";
 import { useEffect } from "react";
-
 export default function Translation() {
   useEffect(() => {
     if (typeof window === "undefined" || process.env.NEXT_PUBLIC_NODE_ENV === "development") return;
@@ -12,6 +11,7 @@ export default function Translation() {
         pageLanguage: "en",
         position: "top-right",
         autoDetectLanguage: false,
+        adjustFontSize: true,
       });
     });
   }, []);
