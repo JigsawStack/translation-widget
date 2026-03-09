@@ -307,6 +307,7 @@ declare global {
 | `theme.baseColor`    | string  | `white`     | Yes      | Base color for the widget background and accents                                                                        |
 | `theme.textColor`    | string  | `black`     | Yes      | Text color for all text elements in the widget                                                                          |
 | `showUI`             | boolean | `true`      | Yes      | Toggle on/off the default widget UI                                                                                     |
+| `adjustFontSize`     | boolean | `false`     | Yes      | When enabled, scales down font size for translated text that is longer than the original to prevent overflow       |
 
 ## Theme Configuration Example
 

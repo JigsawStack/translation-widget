@@ -335,8 +335,7 @@ export class TranslationWidget {
       if (originalText) {
         parent.setAttribute(ATTRIBUTES.TRANSLATED_LANG, targetLang);
         parent.setAttribute(ATTRIBUTES.ORIGINAL_TEXT, originalText);
-        // Store original font size if not already stored
-        if (!parent.hasAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE)) {
+        if (this.config.adjustFontSize && !parent.hasAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE)) {
           const computedStyle = window.getComputedStyle(parent);
           parent.setAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE, computedStyle.fontSize);
         }
@@ -369,22 +368,19 @@ export class TranslationWidget {
    * @returns The font size
    */
   private calculateFontSize(text: string, originalFontSize: string, originalText: string): string {
-    const baseFontSize = 12; // Minimum font size in pixels
-    const maxFontSize = parseInt(originalFontSize); // Maximum font size is the original size
+    const minFontSize = 12;
+    const maxFontSize = parseInt(originalFontSize);
     const textLength = text.length;
     const originalLength = originalText.length;
 
-    // Only scale down if translated text is longer than original
     if (textLength <= originalLength) {
       return originalFontSize;
     }
 
-    /**
-     * Calculate font size based on text length
-     * The longer the text, the smaller the font size
-     * Using logarithmic scale to make the reduction more gradual
-     */
-    const fontSize = Math.max(baseFontSize, Math.min(maxFontSize, maxFontSize * (1 - Math.log(textLength) / 10)));
+    // Scale based on the ratio of original to translated length.
+    // A text that's 2x longer gets reduced proportionally, clamped to minFontSize.
+    const ratio = originalLength / textLength;
+    const fontSize = Math.max(minFontSize, Math.round(maxFontSize * ratio));
 
     return `${fontSize}px`;
   }
@@ -548,10 +544,11 @@ export class TranslationWidget {
                 if (this.lastRequestedLanguage === targetLang) {
                   const originalText = textToTranslate;
                   const translatedText = cachedTranslation;
-                  const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
-                  const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-                  parent.style.fontSize = newFontSize;
-                  // Use the helper method to safely set translated content
+                  if (this.config.adjustFontSize) {
+                    const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                    const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                    parent.style.fontSize = newFontSize;
+                  }
                   this.setTranslatedContent(parent, translatedText);
                 }
                 return;
@@ -609,12 +606,12 @@ export class TranslationWidget {
                     translatedText
                   });
 
-                  // Update DOM only if this is the most recent translation request
                   if (this.lastRequestedLanguage === targetLang) {
-                    const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
-                    const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
-                    parent.style.fontSize = newFontSize;
-                    // Use the helper method to safely set translated content
+                    if (this.config.adjustFontSize) {
+                      const originalFontSize = parent.getAttribute(ATTRIBUTES.ORIGINAL_FONT_SIZE) || "16px";
+                      const newFontSize = this.calculateFontSize(translatedText, originalFontSize, originalText);
+                      parent.style.fontSize = newFontSize;
+                    }
                     this.setTranslatedContent(parent, translatedText);
                   }
                 }

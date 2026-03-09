@@ -10,6 +10,7 @@ export interface TranslationConfig {
   pageLanguage?: string;
   position?: "top-right" | "top-left" | "bottom-left" | "bottom-right";
   autoDetectLanguage?: boolean;
+  adjustFontSize?: boolean;
   theme?: {
     baseColor?: string;
     textColor?: string;

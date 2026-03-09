@@ -1,6 +1,5 @@
 "use client";
 import { useEffect } from "react";
-
 export default function Translation() {
   useEffect(() => {
     if (typeof window === "undefined" || process.env.NEXT_PUBLIC_NODE_ENV === "development") return;
