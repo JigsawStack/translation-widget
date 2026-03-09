@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "lz-string": "^1.5.0",
-    "translation-widget": "^1.1.4"
+    "translation-widget": "^1.1.3"
   }
 }
